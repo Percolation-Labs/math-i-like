@@ -322,17 +322,22 @@ is transported along the deterministic SIR orbits in $(S,I)$ space.
 \end{theorem}
 
 \begin{proof}[Verification]
-Under $x = S/N$, $\dot{x} = \dot{S}/N = -\beta SI/N^2 = -(\beta/N)x(Ni/N)$.
-Comparing with \eqref{eq:sir_chars}: $\dot{x} = -(\beta/N)x(y-1)$. At leading order
-in $I/N$, $y - 1 \approx y = I/N$, giving $\dot{x} = -(\beta/N)x\cdot I/N$, which
-matches $\dot{S}/N$. The $y$-equation similarly recovers $\dot{I}$. \qed
+The variables $x$ and $y$ in the characteristic equations \eqref{eq:sir_chars} are
+PGF dummy variables (conjugate to $S$ and $I$), not physical quantities. The
+substitution $x = S/N$, $y = I/N$ is used only as a motivating identification.
+What is exact is that the characteristic curves of the PGF PDE have the same
+\emph{functional form} as the deterministic SIR ODEs \eqref{eq:sir_ode}:
+the $\dot{x}$-equation along a characteristic is $\dot{x} = -(\beta/N)x(y-1)$,
+and the $\dot{y}$-equation similarly matches $\dot{I}/N$ under the correspondence
+$x \leftrightarrow S/N$, $y \leftrightarrow I/N$. No large-$N$ or small-$I/N$
+approximation is needed; the equality is an identity between the ODE systems. \qed
 \end{proof}
 
 \begin{keybox}[The Stochastic--Deterministic Bridge]
 The stochastic probability distribution $P(s,i,t)$ is constant along the
-\emph{deterministic} SIR trajectories. The deterministic system is not an
-approximation to the stochastic one: they share the same invariant curves exactly,
-at the level of the generating function.
+\emph{deterministic} SIR trajectories. The characteristic curves of the PGF PDE
+have the same functional form as the deterministic SIR invariant curves ---
+this is an exact identity between the two ODE systems, not a large-$N$ approximation.
 \end{keybox}
 
 This result was first made explicit by Kendall \cite{kendall1956} and placed in the
@@ -613,6 +618,14 @@ The density at time $t$ is obtained by integrating out all wavenumber modes:
   \label{eq:density_decay}
 \end{equation}
 
+\noindent
+\textbf{Remark.} Equation~\eqref{eq:density_decay} gives the correct \emph{exponent}
+$d/2$ because the Ward identity renders the theory effectively Gaussian, but the
+\emph{amplitude} requires a one-loop calculation and is \emph{universal}
+(independent of $\rho_0$): $\rho(t) \sim A_d / (Dt)^{d/2}$, where $A_d$ is a
+calculable, $\rho_0$-independent constant. The $\rho_0$ prefactor above is a
+schematic placeholder for this universal amplitude $A_d$.
+
 In $d = 1$:
 
 \begin{equation}
@@ -823,7 +836,7 @@ is compressed into the nature of these singularities.
 Let $\rho = 1/|z_*|$ be the exponential growth rate and write $A(z) \sim K(1-z/z_*)^\alpha$
 near $z_*$.
 
-\begin{theorem}[Transfer Theorem, Flajolet--Odlyzko \cite{flajolet2009}]
+\begin{theorem}[Transfer Theorem, Flajolet--Odlyzko \cite{flajoletodlyzko1990}]
 If $A(z)$ is analytic in a \emph{dented domain} around $z_*$ (see Fig.~below)
 and $A(z) \sim K(1 - z/z_*)^\alpha$ as $z\to z_*$ with $\alpha \notin \N$, then:
 
@@ -1208,7 +1221,10 @@ an assessment of what is established and what remains open.
 In any quantum field theory or statistical mechanics model, the partition
 function $Z$ receives contributions from all Feynman diagrams (connected or not).
 The \textbf{free energy} $F = -\log Z$ receives contributions only from
-\emph{connected} diagrams. This is used in every QFT textbook to discard
+\emph{connected} diagrams. (We use the statistical mechanics sign convention
+$F = -\log Z$; in the QFT convention, $W = \log Z$ generates connected diagrams
+directly, matching the AC formula $\hat{C} = \log \hat{A}$.)
+This is used in every QFT textbook to discard
 disconnected vacuum bubbles.
 
 \subsubsection{The AC Statement}
@@ -1244,14 +1260,20 @@ that acts on its legs and propagators, which is exactly the symmetry group
 counted by the EGF.
 
 \begin{example}[Symmetry Factor from the SET Construction]
-A diagram $\Gamma$ consisting of two identical one-loop bubbles (a ``figure-eight''
-vacuum graph) has $|\mathrm{Aut}(\Gamma)| = 8$ in $\phi^4$ theory. In EGF language:
+Consider a \emph{disconnected} vacuum graph $\Gamma$ consisting of two identical,
+separate one-loop bubbles in $\phi^4$ theory (not the connected figure-eight
+topology). Its total symmetry factor is $|\mathrm{Aut}(\Gamma)| = 8$. This
+factorises as $2^2 \times 2$: each one-loop bubble has an internal automorphism
+group of order $2^2 = 4$ (from flipping its two propagators), and the factor
+of $2 = 2!$ comes from the exchange of the two identical disconnected components.
+In EGF language, the exchange factor is exactly the SET construction:
 \[
   \hat{C}_{\text{two-bubble}}(z) = \frac{1}{2!}\hat{C}_{\text{one-bubble}}(z)^2
   = \frac{1}{2}\hat{C}_{\text{one-bubble}}(z)^2.
 \]
-The $1/2!$ is the SET factor for a set of two identical objects. More generally,
-for a vacuum graph consisting of $k$ copies of the same connected diagram $\gamma$:
+The $1/2!$ is the SET factor for an unordered pair of identical connected
+components. More generally, for a disconnected vacuum graph consisting of $k$
+copies of the same connected diagram $\gamma$:
 \[
   \text{symmetry factor} = |\mathrm{Aut}(\gamma)|^k \cdot k!,
 \]
@@ -1264,7 +1286,7 @@ Completely classical. Appears in Flajolet \& Sedgewick \cite{flajolet2009}
 as a standard EGF application, and in every QFT textbook (e.g.\
 Zinn-Justin \cite{zinjustin2002}) as the cluster expansion / cumulant theorem.
 The explicit identification of symmetry factors with EGF overcounting is
-noted in Cvitanovi\'c, Lautrup \& Pearson (1978) and in Yeats \cite{yeats2017}.
+noted in Cvitanovi\'c, Lautrup \& Pearson \cite{cvitanovic1978} and in Yeats \cite{yeats2017}.
 \end{resultbox}
 
 \subsection{Connection 2: Dyson--Schwinger Equations Are Lagrange Equations}
@@ -1327,10 +1349,16 @@ equation that, in the leading-log approximation, reduces to:
   \alpha(\mu^2) = \frac{\alpha_0}{1 - (\alpha_0/3\pi)\log(\mu^2/m^2)}.
 \]
 This has a simple pole at $\mu^2 = m^2 e^{3\pi/\alpha_0}$ --- the Landau pole.
-In Lagrange language, $\phi(T) = 1/(1-cT)$ produces a simple pole at
-$T_* = 1/c$, giving $z_* = 1/(ce)$ and $G \sim (G_0^* - G_0)^{-1}$ near
-the singularity. The transfer theorem then gives $[G_0^n]G \sim C \cdot (G_0^*)^{-n}$
---- pure exponential growth in loop order, with no power-law correction.
+In Lagrange language, $\phi(T) = 1/(1-cT)$ has a pole at $T = 1/c$ (the
+\emph{Landau pole} of the running coupling), but the Lagrange branch point ---
+where the implicit function theorem fails, i.e.\ $1 = z\phi'(T_*)$ --- occurs
+at $T_* = 1/(2c)$, giving $z_* = 1/(4c)$. Since $\phi''(T_*) \neq 0$, this is
+a \emph{square-root} branch point: $T(z) \sim T_* - \mathrm{const}\cdot(1 - z/z_*)^{1/2}$
+near $z_*$. The transfer theorem then gives $[z^n]\,T(z) \sim C \cdot n^{-3/2} \cdot z_*^{-n}$
+--- the familiar $(4c)^n n^{-3/2}$ growth. Note that the Lagrange branch point
+at $T_* = 1/(2c)$ and the Landau pole at $T = 1/c$ are \emph{different}
+singularities; the former governs the large-order asymptotics of the perturbative
+coefficients, while the latter signals the breakdown of the resummed coupling.
 \end{example}
 
 \begin{resultbox}[Status]
@@ -1444,7 +1472,7 @@ and classical complex analysis.
 Rigorously established. Original papers: Connes \& Kreimer
 \cite{conneskreimer1998, conneskreimer2000}. The combinatorial structure
 of the Hopf algebra (without the physics) was known earlier from
-Grossman--Larson (1989) in the context of numerical analysis (Runge--Kutta
+Grossman--Larson \cite{grossmanlarson1989} in the context of numerical analysis (Runge--Kutta
 methods). The book by Yeats \cite{yeats2017} is the most accessible
 treatment oriented toward combinatorialists. Manchon \cite{manchon2004}
 provides a concise mathematical survey.
@@ -1707,8 +1735,9 @@ $3A \to \emptyset$ & 1 & $d/2$ & 1/2 \\
 The \textbf{Weyl algebra} $W_1$ is the unital associative algebra generated by $p$
 and $q$ with relation $[p, q] = 1$ (or equivalently, $pq - qp = 1$). Under the
 representation $p = \partial_z$, $q = z$ (multiplication), $W_1$ acts on $\C[[z]]$.
-This is the unique irreducible representation of $W_1$ on a space of formal
-power series (Stone--von Neumann theorem in the algebraic sense).
+This follows from the simplicity of the Weyl algebra $W_1$ (it has no proper
+two-sided ideals), which ensures that all faithful representations on polynomial
+spaces are isomorphic.
 
 Doi's identification: $a \equiv \partial_z$, $\ad \equiv z$ gives an isomorphism:
 \begin{itemize}[leftmargin=2em]
@@ -1732,9 +1761,15 @@ The combinatorial counterpart: the coproduct of the Connes--Kreimer Hopf algebra
 of rooted trees decomposes a tree into subtree/quotient pairs, which is precisely
 the admissible cut operation. Renormalisation (the antipode of the Hopf algebra)
 corresponds to the inclusion--exclusion in Flajolet's symbolic method for the
-MSET and CYC constructions. This is why the Feynman diagram expansion of the
-Doi--Peliti theory and the AC generating function equations are algebraically
-the same object at different levels of abstraction.
+MSET and CYC constructions.
+
+The Connes--Kreimer Hopf algebra $H_R$ is a \emph{different} algebraic structure
+from $W_1$: its elements are (forests of) rooted trees, not differential operators.
+The connection between the two is that both arise in the perturbative expansion
+of the same field theory --- $W_1$ generates the Feynman rules, while $H_R$
+organises the renormalisation of the resulting diagrams. This is why the Feynman
+diagram expansion of the Doi--Peliti theory and the AC generating function
+equations are algebraically the same object at different levels of abstraction.
 
 \section{Literature Guide}
 \label{app:lit}
@@ -1819,7 +1854,7 @@ the same object at different levels of abstraction.
         of Hopf algebras in renormalisation, including the connection to
         M\"obius inversion and the BPHZ formula.
 
-  \item \textbf{Kreimer (2000)}: \emph{Combinatorics of (perturbative) Quantum
+  \item \textbf{Kreimer (2000)} \cite{kreimer2000}: \emph{Combinatorics of (perturbative) Quantum
         Field Theory}, arXiv:hep-th/0010059. A readable overview of how Feynman
         graphs map to rooted trees and how the Hopf algebra coproduct encodes
         subdivergences.
@@ -1964,6 +1999,27 @@ G.\ V.\ Dunne and M.\ \"Unsal,
 J.\ Zinn-Justin,
 \newblock \emph{Quantum Field Theory and Critical Phenomena},
 \newblock 4th ed., Oxford University Press, 2002.
+
+\bibitem{flajoletodlyzko1990}
+P.\ Flajolet and A.\ Odlyzko,
+\newblock Singularity analysis of generating functions,
+\newblock \emph{SIAM J.\ Discrete Math.}, 3(2):216--240, 1990.
+
+\bibitem{cvitanovic1978}
+P.\ Cvitanovi\'c, B.\ Lautrup, and R.\ B.\ Pearson,
+\newblock Number and weights of {Feynman} diagrams,
+\newblock \emph{Phys.\ Rev.\ D}, 18:1939--1949, 1978.
+
+\bibitem{grossmanlarson1989}
+R.\ Grossman and R.\ G.\ Larson,
+\newblock Hopf-algebraic structure of families of trees,
+\newblock \emph{J.\ Algebra}, 126(1):184--210, 1989.
+
+\bibitem{kreimer2000}
+D.\ Kreimer,
+\newblock Combinatorics of (perturbative) quantum field theory,
+\newblock \emph{Phys.\ Rep.}, 363(4--6):387--424, 2002.
+\newblock arXiv:hep-th/0010059.
 
 \end{thebibliography}
 
