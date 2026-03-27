@@ -166,25 +166,52 @@ class Liouvillian:
 
     def _multispecies_generator(self, rxn: Reaction) -> sp.Expr:
         """
-        Multi-species generator.
+        Multi-species generator (Doi formulation).
 
         For a reaction k_1 A + k_2 B → l_1 A + l_2 B with rate λ,
-        the generator in the tensor product Weyl algebra is:
+        the Liouvillian in the factorial-moment representation is:
 
-            Q = λ · Π_i ((z_i+1)^{l_i} - (z_i+1)^{k_i}) · Dz_i^{k_i}
+            Q = λ · (Π_i (z_i+1)^{l_i} - Π_i (z_i+1)^{k_i}) · Π_i Dz_i^{k_i}
 
-        This follows from the independence of species in the Poisson ansatz.
+        Note: the products over species are JOINT (not factored per species).
+        This is the Doi (1976) formula: the "final state" product minus the
+        "initial state" product, times the annihilation operators.
+
+        For A → A+B (k_A=1,l_A=1, k_B=0,l_B=1):
+          final   = (z_A+1)^1 · (z_B+1)^1
+          initial = (z_A+1)^1 · (z_B+1)^0 = (z_A+1)
+          Q = γ · ((z_A+1)(z_B+1) - (z_A+1)) · Dz_A^1 · Dz_B^0
+            = γ · (z_A+1) · z_B · Dz_A
+            = γ · (z_A·z_B + z_B) · Dz_A
+        which gives vertices φ̃_A φ_A φ̃_B (transmutation) and φ_A φ̃_B (source).
         """
         z_syms  = {sp_: sp.Symbol(f'z_{sp_.name}')  for sp_ in self.network.species}
         Dz_syms = {sp_: sp.Symbol(f'Dz_{sp_.name}') for sp_ in self.network.species}
 
-        result = rxn.rate
-        for sp_ in rxn.all_species:
-            k = rxn.k(sp_)
+        all_species = list(rxn.all_species)
+
+        # Final state product: Π_i (z_i+1)^{l_i}
+        final_product = sp.S.One
+        for sp_ in all_species:
             l = rxn.l(sp_)
-            z  = z_syms[sp_]
+            z = z_syms[sp_]
+            final_product *= (z + 1)**l
+
+        # Initial state product: Π_i (z_i+1)^{k_i}
+        initial_product = sp.S.One
+        for sp_ in all_species:
+            k = rxn.k(sp_)
+            z = z_syms[sp_]
+            initial_product *= (z + 1)**k
+
+        # Annihilation operators: Π_i Dz_i^{k_i}
+        annihilation = sp.S.One
+        for sp_ in all_species:
+            k = rxn.k(sp_)
             Dz = Dz_syms[sp_]
-            result *= ((z + 1)**l - (z + 1)**k) * Dz**k
+            annihilation *= Dz**k
+
+        result = rxn.rate * (final_product - initial_product) * annihilation
 
         return sp.expand(result)
 
@@ -193,28 +220,67 @@ class Liouvillian:
         """
         Extract Feynman vertices from the action.
 
-        Each term of the form λ·z^m·Dz^n corresponds to a vertex with:
-          - m outgoing lines (φ̃ fields, creator fields)
-          - n incoming lines (φ fields, annihilator fields)
-          - coupling constant λ
+        For single-species: each term λ·z^m·Dz^n gives a vertex with
+        m outgoing (φ̃) legs and n incoming (φ) legs.
 
-        Returns dict: (m_out, n_in) → coupling expr
+        For multi-species: each term λ·z_A^{m_A}·z_B^{m_B}·Dz_A^{n_A}·Dz_B^{n_B}
+        gives a vertex with (m_A + m_B) outgoing legs and (n_A + n_B) incoming
+        legs, coloured by species. The key is ((m_A, m_B, ...), (n_A, n_B, ...))
+        for multi-species, or (m_total, n_total) for single-species.
 
-        These vertices are the "primitive corollas" that seed the shuffle product.
+        Returns dict: key → coupling expr
         """
+        if self.network.n_species == 1:
+            return self._single_species_vertices()
+        else:
+            return self._multi_species_vertices()
+
+    def _single_species_vertices(self) -> Dict[Tuple, sp.Expr]:
+        """Extract vertices for single-species theories."""
         z  = sp.Symbol('z')
         Dz = sp.Symbol('Dz')
-
         vertices = {}
-        poly = sp.Poly(self.total, z, Dz) if self.network.n_species == 1 else None
-
-        if poly is not None:
+        try:
+            poly = sp.Poly(self.total, z, Dz)
             for monom, coeff in zip(poly.monoms(), poly.coeffs()):
-                m_out, n_in = monom   # powers of z, Dz
+                m_out, n_in = monom
                 if coeff != 0:
                     key = (m_out, n_in)
                     vertices[key] = vertices.get(key, sp.S.Zero) + coeff
+        except Exception:
+            pass
+        return {k: v for k, v in vertices.items() if v != 0}
 
+    def _multi_species_vertices(self) -> Dict[Tuple, sp.Expr]:
+        """
+        Extract vertices for multi-species theories.
+
+        Each monomial in Q_total is a product of z_i^{m_i} · Dz_i^{n_i}
+        over all species. We extract the exponents per species.
+
+        Returns dict with keys as tuples of per-species (m_i, n_i) pairs:
+            ((m_A, n_A), (m_B, n_B), ...) → coupling
+        """
+        species_list = self.network.species
+        z_syms  = [sp.Symbol(f'z_{s.name}')  for s in species_list]
+        Dz_syms = [sp.Symbol(f'Dz_{s.name}') for s in species_list]
+
+        all_syms = []
+        for z, Dz in zip(z_syms, Dz_syms):
+            all_syms.extend([z, Dz])
+
+        vertices = {}
+        try:
+            poly = sp.Poly(self.total, *all_syms)
+            for monom, coeff in zip(poly.monoms(), poly.coeffs()):
+                if coeff == 0:
+                    continue
+                # monom = (z_A_pow, Dz_A_pow, z_B_pow, Dz_B_pow, ...)
+                key = tuple((monom[2*i], monom[2*i+1])
+                           for i in range(len(species_list)))
+                vertices[key] = vertices.get(key, sp.S.Zero) + coeff
+        except Exception:
+            pass
         return {k: v for k, v in vertices.items() if v != 0}
 
     def action_density(self, include_free: bool = True) -> sp.Expr:
@@ -253,6 +319,102 @@ class Liouvillian:
         for (m, n), coeff in self.vertices.items():
             lines.append(f'    z^{m} Dz^{n}  (φ̃^{m} φ^{n}):  {coeff}')
         return '\n'.join(lines)
+
+
+# ------------------------------------------------------------------ #
+#  BRW transmutation vertices (thesis Eq. 3.21)                        #
+# ------------------------------------------------------------------ #
+
+def brw_transmutation_vertices() -> Dict[Tuple, sp.Expr]:
+    """
+    The 6 transmutation interaction terms from thesis Eq. (3.21).
+
+    These arise from the carrying capacity trick (Eq. 3.17):
+        ρ(n_b) = n_a(c - n_b)|_{c=1}
+
+    which enforces site exclusion: A deposits B only if no B present.
+
+    In the Doi-shifted action (φ† = 1 + φ̃), the 6 terms are:
+
+        -Q_Λ = Λ × [  +φ̃_b φ_a           term 1: transmutation source
+                      -φ̃_b φ_b φ_a        term 2: B-suppressed source
+                      -φ̃²_b φ_b φ_a       term 3: quadratic B suppression
+                      -φ̃²_b φ̃_a φ_b φ_a  term 4: full exclusion
+                      -φ̃_b φ̃_a φ_b φ_a   term 5: mixed exclusion
+                      +φ̃_b φ̃_a φ_a    ]  term 6: transmutation vertex
+
+    In the notation ((m_A, n_A), (m_B, n_B)) for per-species leg counts:
+
+    Returns dict with multi-species vertex keys → couplings.
+    """
+    Λ = sp.Symbol('Lambda', positive=True)
+
+    # The 6 terms from Eq. (3.21), with signs as written
+    # Key: ((m_A, n_A), (m_B, n_B)) = (outgoing_A, incoming_A, outgoing_B, incoming_B)
+    vertices = {
+        # Term 1: +φ̃_b φ_a  = ((0,1), (1,0))
+        ((0, 1), (1, 0)): Λ,
+        # Term 2: -φ̃_b φ_b φ_a = ((0,1), (1,1))
+        ((0, 1), (1, 1)): -Λ,
+        # Term 3: -φ̃²_b φ_b φ_a = ((0,1), (2,1))
+        ((0, 1), (2, 1)): -Λ,
+        # Term 4: -φ̃²_b φ̃_a φ_b φ_a = ((1,1), (2,1))
+        ((1, 1), (2, 1)): -Λ,
+        # Term 5: -φ̃_b φ̃_a φ_b φ_a = ((1,1), (1,1))
+        ((1, 1), (1, 1)): -Λ,
+        # Term 6: +φ̃_b φ̃_a φ_a = ((1,1), (1,0))
+        ((1, 1), (1, 0)): Λ,
+    }
+
+    return vertices
+
+
+def brw_all_vertices(max_legs: int = 4) -> Dict[Tuple, sp.Expr]:
+    """
+    All vertices for the full BRW theory (A-sector + transmutation).
+
+    Combines the Gribov A-sector vertices with the 6 transmutation
+    terms from the carrying capacity trick.
+
+    Parameters
+    ----------
+    max_legs : maximum total number of legs (m_A + n_A + m_B + n_B)
+        for interaction vertices. Default 4 corresponds to the
+        dimensional analysis constraint at d_c = 4 (thesis Eq. 3.12:
+        m + m̃ + 2ñ ≤ 3 for B-species, giving total legs ≤ 4).
+        Set to None to keep all vertices including irrelevant ones.
+
+    Returns multi-species vertex dict with keys
+    ((m_A, n_A), (m_B, n_B)) → coupling.
+    """
+    from .reaction_network import ReactionNetwork
+    net = ReactionNetwork.gribov()
+    L = Liouvillian(net)
+
+    # A-sector vertices (single-species → lift to multi-species format)
+    a_verts = {}
+    for (m, n), g in L.vertices.items():
+        a_verts[((m, n), (0, 0))] = g
+
+    # Transmutation vertices
+    t_verts = brw_transmutation_vertices()
+
+    # Merge
+    all_verts = {**a_verts, **t_verts}
+
+    # Filter by relevance (dimensional analysis at d_c)
+    if max_legs is not None:
+        filtered = {}
+        for key, g in all_verts.items():
+            (m_A, n_A), (m_B, n_B) = key
+            total = m_A + n_A + m_B + n_B
+            # Keep propagators (total ≤ 2) always
+            # Keep interaction vertices only if total ≤ max_legs
+            if total <= 2 or total <= max_legs:
+                filtered[key] = g
+        return filtered
+
+    return all_verts
 
 
 # ------------------------------------------------------------------ #

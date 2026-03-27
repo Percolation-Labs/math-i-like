@@ -2,11 +2,17 @@
 ///
 /// Reproduces the BRW scaling exponents from Bordeu, Amarteifio et al. (2019).
 ///
-/// Usage:
-///   rdft-sim                              # Run full BRW validation suite
-///   rdft-sim --graph lattice:2:50 --crn brw --realizations 1000 --tmax 2000
-///   rdft-sim --graph sierpinski:3 --crn gribov --realizations 500
-///   rdft-sim --graph ba:1000:3 --crn pair_annihilation --realizations 2000
+/// The key theoretical prediction (Bordeu+ 2019, Eqs. 2-5):
+///   ⟨V^p⟩(t) ~ t^{(p·d_s - 2)/2}    for d_s < d_c = 4
+///   ⟨V^p⟩(t) ~ t^{2p-1}              for d_s ≥ d_c = 4 (mean-field)
+///
+/// where V(t) = number of distinct sites ever visited (volume explored),
+/// and the average is UNCONDITIONAL (over all realizations including extinct ones).
+///
+/// The unconditional scaling arises because:
+///   - Surviving walks: V|surv ~ t^{d_s/2} (diffusive spreading)
+///   - Survival probability: P_surv ~ 1/t (critical branching)
+///   - So: ⟨V^p⟩ ~ (1/t) × t^{p·d_s/2} = t^{p·d_s/2 - 1} = t^{(p·d_s-2)/2}
 
 use std::io::Write;
 use std::time::Instant;
@@ -21,12 +27,11 @@ use serde::Serialize;
 struct RunOutput {
     graph: String,
     crn: String,
+    d_s: f64,
     n_realizations: u32,
     n_survived: u32,
     times: Vec<f64>,
-    /// Unconditional moments ⟨V^p⟩ (averaged over all realizations).
     moments: Vec<Vec<f64>>,
-    /// Conditional moments ⟨V^p | survived⟩.
     moments_surviving: Vec<Vec<f64>>,
     fitted_exponents: Vec<ExponentResult>,
     convergence: Vec<Vec<(u32, f64)>>,
@@ -36,9 +41,14 @@ struct RunOutput {
 #[derive(Serialize)]
 struct ExponentResult {
     p: usize,
-    alpha_measured: f64,
-    alpha_surviving: f64,
-    alpha_theory: Option<f64>,
+    /// Unconditional fit: log-log slope of ⟨V^p⟩ vs t.
+    alpha_uncond: f64,
+    /// Conditional fit: log-log slope of ⟨V^p|survived⟩ vs t.
+    alpha_cond: f64,
+    /// Theory: (p*d_s - 2)/2 for unconditional.
+    alpha_theory_uncond: f64,
+    /// Theory: p*d_s/2 for conditional (surviving walks).
+    alpha_theory_cond: f64,
 }
 
 #[derive(Serialize)]
@@ -55,10 +65,10 @@ fn main() {
     }
 
     if args.len() > 1 {
-        let (graph, crn, n_real, t_max, max_per_site) = parse_args(&args);
+        let (graph, crn, n_real, t_max, max_per_site, d_s) = parse_args(&args);
         let mut config = SimConfig::brw_default(t_max);
         config.max_per_site = max_per_site;
-        let result = run_single(&graph, &crn, &config, n_real, None);
+        let result = run_single(&graph, &crn, &config, n_real, d_s);
         let json = serde_json::to_string_pretty(&result).unwrap();
         println!("{}", json);
     } else {
@@ -71,14 +81,14 @@ fn run_single(
     crn: &CRN,
     config: &SimConfig,
     n_real: u32,
-    theory: Option<&[f64]>,
+    d_s: f64,
 ) -> RunOutput {
     let max_p = 3;
     let start = Instant::now();
 
     eprint!(
-        "  Running {} on {} ({} realizations)... ",
-        crn.name, graph.name, n_real
+        "  Running {} on {} (d_s={:.2}, {} realizations)... ",
+        crn.name, graph.name, d_s, n_real
     );
     std::io::stderr().flush().ok();
 
@@ -90,34 +100,41 @@ fn run_single(
         elapsed, ensemble.n_survived, n_real
     );
 
+    let d_c = 4.0;
     let fitted_exponents: Vec<ExponentResult> = (0..max_p)
-        .map(|p| {
-            let alpha = engine::fit_power_law(&ensemble.times, &ensemble.moments[p]);
-            let alpha_surv =
-                engine::fit_power_law(&ensemble.times, &ensemble.moments_surviving[p]);
+        .map(|p_idx| {
+            let p = (p_idx + 1) as f64;
+            let alpha_uncond = engine::fit_power_law(&ensemble.times, &ensemble.moments[p_idx]);
+            let alpha_cond =
+                engine::fit_power_law(&ensemble.times, &ensemble.moments_surviving[p_idx]);
+
+            let (alpha_theory_uncond, alpha_theory_cond) = if d_s < d_c {
+                ((p * d_s - 2.0) / 2.0, p * d_s / 2.0)
+            } else {
+                (2.0 * p - 1.0, 2.0 * p) // mean-field
+            };
+
             ExponentResult {
-                p: p + 1,
-                alpha_measured: alpha,
-                alpha_surviving: alpha_surv,
-                alpha_theory: theory.and_then(|t| t.get(p).copied()),
+                p: p_idx + 1,
+                alpha_uncond,
+                alpha_cond,
+                alpha_theory_uncond,
+                alpha_theory_cond,
             }
         })
         .collect();
 
     for ex in &fitted_exponents {
-        let theory_str = ex
-            .alpha_theory
-            .map(|t| format!("{:.3}", t))
-            .unwrap_or_else(|| "?".into());
         eprintln!(
-            "    p={}: α_all={:.3}  α_surv={:.3}  (theory: {})",
-            ex.p, ex.alpha_measured, ex.alpha_surviving, theory_str
+            "    p={}: α_uncond={:.3} (th {:.3})  α_cond={:.3} (th {:.3})",
+            ex.p, ex.alpha_uncond, ex.alpha_theory_uncond, ex.alpha_cond, ex.alpha_theory_cond
         );
     }
 
     RunOutput {
         graph: graph.name.clone(),
         crn: crn.name.clone(),
+        d_s,
         n_realizations: n_real,
         n_survived: ensemble.n_survived,
         times: ensemble.times,
@@ -129,97 +146,102 @@ fn run_single(
     }
 }
 
-/// Run the full BRW validation suite from Bordeu, Amarteifio et al. (2019).
+/// Full BRW validation suite from Bordeu, Amarteifio et al. (2019).
 fn run_brw_suite() {
     eprintln!("╔══════════════════════════════════════════════════════════╗");
     eprintln!("║  rdft-sim: BRW Validation Suite                        ║");
     eprintln!("║  Bordeu, Amarteifio et al. (2019) Sci. Rep. 9:15590    ║");
     eprintln!("╚══════════════════════════════════════════════════════════╝");
     eprintln!();
+    eprintln!("  Model: Critical birth-death (β=ε=0.1), no coagulation");
+    eprintln!("  Observable: V(t) = distinct sites ever visited");
+    eprintln!("  Theory: ⟨V^p⟩ ~ t^{{(p·d_s - 2)/2}} [unconditional]");
+    eprintln!("          ⟨V^p|surv⟩ ~ t^{{p·d_s/2}}  [conditional]");
+    eprintln!();
 
-    let crn = CRN::brw_coalescent();
-    let n_real = 2000;
+    let crn = CRN::birth_death(0.1, 0.1);
 
-    // Theory: alpha_p = (p*d_s - 2)/2 for d_s < 4, else 2p-1
-    let configs: Vec<(Graph, f64, Vec<f64>)> = vec![
-        // 1D lattice: d_s = 1, alpha_p = (p-2)/2
-        (
-            Graph::hypercubic(1, 10000),
-            5000.0,
-            vec![-0.5, 0.0, 0.5],
-        ),
-        // 2D lattice: d_s = 2, alpha_p = (2p-2)/2 = p-1
-        (
-            Graph::hypercubic(2, 200),
-            3000.0,
-            vec![0.0, 1.0, 2.0],
-        ),
-        // 3D lattice: d_s = 3, alpha_p = (3p-2)/2
-        (
-            Graph::hypercubic(3, 50),
-            2000.0,
-            vec![0.5, 2.0, 3.5],
-        ),
-        // 5D lattice: d_s = 5 >= 4 → mean-field: alpha_p = 2p-1
-        (
-            Graph::hypercubic(5, 10),
-            1000.0,
-            vec![1.0, 3.0, 5.0],
-        ),
-        // Sierpinski carpet: d_s ~ 1.86
-        (
-            Graph::sierpinski_carpet(4),
-            2000.0,
-            vec![-0.07, 0.86, 1.79],
-        ),
-        // Random tree: d_s ~ 4/3
-        (
-            Graph::random_tree(10000, 42),
-            2000.0,
-            vec![-0.33, 0.33, 1.0],
-        ),
-        // Barabási-Albert: d_s >= 4 → mean-field
-        (
-            Graph::barabasi_albert(5000, 3, 42),
-            1000.0,
-            vec![1.0, 3.0, 5.0],
-        ),
+    // (graph, d_s, t_max, n_realizations)
+    let configs: Vec<(Graph, f64, f64, u32)> = vec![
+        // 1D: d_s=1
+        (Graph::hypercubic(1, 20000), 1.0, 10000.0, 20000),
+        // 2D: d_s=2
+        (Graph::hypercubic(2, 300), 2.0, 5000.0, 20000),
+        // 3D: d_s=3
+        (Graph::hypercubic(3, 50), 3.0, 5000.0, 20000),
+        // 5D: d_s=5 >= d_c=4 → mean-field
+        (Graph::hypercubic(5, 10), 5.0, 2000.0, 20000),
+        // Sierpinski: d_s ≈ 1.86
+        (Graph::sierpinski_carpet(4), 1.86, 5000.0, 20000),
+        // Random tree: d_s ≈ 4/3
+        (Graph::random_tree(20000, 42), 1.333, 5000.0, 20000),
+        // BA network: d_s ≥ 4 → mean-field
+        (Graph::barabasi_albert(5000, 3, 42), 4.0, 2000.0, 10000),
     ];
 
     let start = Instant::now();
     let mut runs = Vec::new();
 
-    for (graph, t_max, theory) in &configs {
+    for (graph, d_s, t_max, n_real) in &configs {
         let config = SimConfig::brw_default(*t_max);
-        let result = run_single(graph, &crn, &config, n_real, Some(theory));
+        let result = run_single(graph, &crn, &config, *n_real, *d_s);
         runs.push(result);
     }
 
     let total_time = start.elapsed().as_secs_f64();
     eprintln!("\n  Total wall time: {:.1}s", total_time);
 
-    // Summary table
+    // Summary: conditional exponents (cleaner signal)
     eprintln!(
-        "\n{:<30} {:>3} {:>8} {:>8} {:>8} {:>5}",
-        "Graph", "p", "Theory", "All", "Surv.", "Match"
+        "\n  CONDITIONAL EXPONENTS (surviving walks): α_cond/p → d_s/2"
     );
-    eprintln!("{}", "-".repeat(67));
+    eprintln!(
+        "  {:<28} {:>5} {:>3} {:>8} {:>8} {:>8} {:>6}",
+        "Graph", "d_s", "p", "α_cond", "Theory", "α/p", "Match"
+    );
+    eprintln!("  {}", "-".repeat(65));
     for run in &runs {
         for ex in &run.fitted_exponents {
-            let theory_str = ex
-                .alpha_theory
-                .map(|t| format!("{:.3}", t))
-                .unwrap_or("?".into());
-            let ok = ex.alpha_theory.map_or("?", |t| {
-                if (ex.alpha_measured - t).abs() < 0.3 {
-                    "ok"
-                } else {
-                    "MISS"
-                }
-            });
+            let ratio = ex.alpha_cond / ex.p as f64;
+            let ok = if (ex.alpha_cond - ex.alpha_theory_cond).abs()
+                < 0.3 * ex.alpha_theory_cond.abs().max(0.5)
+            {
+                "ok"
+            } else {
+                "MISS"
+            };
             eprintln!(
-                "  {:<28} {:>3} {:>8} {:>8.3} {:>8.3} {:>5}",
-                run.graph, ex.p, theory_str, ex.alpha_measured, ex.alpha_surviving, ok
+                "  {:<28} {:>5.2} {:>3} {:>8.3} {:>8.3} {:>8.3} {:>6}",
+                run.graph,
+                run.d_s,
+                ex.p,
+                ex.alpha_cond,
+                ex.alpha_theory_cond,
+                ratio,
+                ok
+            );
+        }
+    }
+
+    // Summary: unconditional exponents (BRW paper formula)
+    eprintln!(
+        "\n  UNCONDITIONAL EXPONENTS (all walks): α = (p·d_s - 2)/2"
+    );
+    eprintln!(
+        "  {:<28} {:>3} {:>8} {:>8} {:>6}",
+        "Graph", "p", "Meas.", "Theory", "Match"
+    );
+    eprintln!("  {}", "-".repeat(55));
+    for run in &runs {
+        for ex in &run.fitted_exponents {
+            let ok = if (ex.alpha_uncond - ex.alpha_theory_uncond).abs() < 0.5 {
+                "ok"
+            } else {
+                "MISS"
+            };
+            eprintln!(
+                "  {:<28} {:>3} {:>8.3} {:>8.3} {:>6}",
+                run.graph, ex.p, ex.alpha_uncond, ex.alpha_theory_uncond, ok
             );
         }
     }
@@ -229,12 +251,13 @@ fn run_brw_suite() {
     println!("{}", json);
 }
 
-fn parse_args(args: &[String]) -> (Graph, CRN, u32, f64, u32) {
+fn parse_args(args: &[String]) -> (Graph, CRN, u32, f64, u32, f64) {
     let mut graph_str = "lattice:2:100".to_string();
-    let mut crn_str = "brw".to_string();
+    let mut crn_str = "gribov".to_string();
     let mut n_real = 1000u32;
     let mut t_max = 2000.0f64;
-    let mut max_per_site = 1u32;
+    let mut max_per_site = 0u32;
+    let mut d_s = 2.0f64;
 
     let mut i = 1;
     while i < args.len() {
@@ -259,6 +282,10 @@ fn parse_args(args: &[String]) -> (Graph, CRN, u32, f64, u32) {
                 max_per_site = args[i + 1].parse().unwrap();
                 i += 2;
             }
+            "--ds" => {
+                d_s = args[i + 1].parse().unwrap();
+                i += 2;
+            }
             _ => {
                 eprintln!("Unknown arg: {}", args[i]);
                 i += 1;
@@ -268,7 +295,7 @@ fn parse_args(args: &[String]) -> (Graph, CRN, u32, f64, u32) {
 
     let graph = parse_graph(&graph_str);
     let crn = parse_crn(&crn_str);
-    (graph, crn, n_real, t_max, max_per_site)
+    (graph, crn, n_real, t_max, max_per_site, d_s)
 }
 
 fn parse_graph(s: &str) -> Graph {
@@ -312,8 +339,8 @@ fn parse_crn(s: &str) -> CRN {
         "coagulation" => CRN::coagulation(0.5),
         "birth_death" => CRN::birth_death(0.1, 0.1),
         _ => {
-            eprintln!("Unknown CRN: {}. Using brw.", s);
-            CRN::brw_coalescent()
+            eprintln!("Unknown CRN: {}. Using birth_death.", s);
+            CRN::birth_death(0.1, 0.1)
         }
     }
 }
@@ -333,21 +360,22 @@ OPTIONS:
                           tree:N:SEED        Random tree
                           ba:N:M             Barabási-Albert network
                           complete:N         Complete graph
-  --crn TYPE              CRN type (default: brw)
-                          brw                BRW with coalescence (Bordeu+ 2019)
-                          gribov             Gribov process (A→2A, A→∅, 2A→A)
+  --crn TYPE              CRN type (default: gribov)
+                          brw                BRW with coalescence
+                          gribov             Gribov (A→2A, A→∅, 2A→A)
+                          birth_death        Critical (A→2A, A→∅, β=ε=0.1)
                           pair_annihilation  2A → ∅
                           coagulation        2A → A
-                          birth_death        A → 2A, A → ∅
+  --ds D                  Spectral dimension (for theory comparison)
   --realizations N        Number of realizations (default: 1000)
   --tmax T                Max simulation time (default: 2000)
-  --max-per-site N        Max particles per site (default: 1 for coalescence)
+  --max-per-site N        Max particles per site (0=unlimited, default: 0)
   --help                  This message
 
 EXAMPLES:
-  rdft-sim --graph lattice:3:30 --crn brw -n 5000 --tmax 1000
-  rdft-sim --graph sierpinski:4 --crn gribov -n 2000 --max-per-site 0
-  rdft-sim --graph ba:5000:3 --crn pair_annihilation -n 3000
+  rdft-sim --graph lattice:3:30 --crn birth_death -n 20000 --tmax 5000 --ds 3
+  rdft-sim --graph sierpinski:4 --crn birth_death -n 20000 --ds 1.86
+  rdft-sim --graph ba:5000:3 --crn birth_death -n 10000 --ds 4
 
 OUTPUT:
   JSON to stdout, progress to stderr.

@@ -281,9 +281,12 @@ giving the $\beta$-function:
 \end{equation}
 with Wilson--Fisher fixed point $\lambda^* = 4\pi^2 D^2 \epsilon$.
 
-For pair annihilation $2A \to \emptyset$, the Ward identity from probability
-conservation $\mathcal{H}(1, a) = 0$ cancels the quartic vertex exactly,
-making $\alpha = d/2$ exact to all loop orders~\cite{lee1994}.
+For pair annihilation $2A \to \emptyset$, a Ward identity from probability
+conservation $\mathcal{H}(1, a) = 0$ cancels the quartic vertex
+exactly~\cite{lee1994,tauber2005}, making $\alpha = d/2$ exact to all
+loop orders. The field-theoretic treatment of the branching Wiener
+sausage (BRW trace) was introduced by Nekovar and
+Pruessner~\cite{nekovar2016}.
 
 %% ================================================================
 \section{Analytic Combinatorics: The Direct Route}
@@ -343,8 +346,8 @@ G^*\, \phi'(G^*) = \phi(G^*), \quad G_0^* = \frac{G^*}{\phi(G^*)}
 \label{eq:branch_point}
 \end{equation}
 
-The Puiseux exponent $p/q$ is determined by the Newton polygon of the shifted
-polynomial $F(G^* + \delta G, G_0^* + \delta G_0)$. For a quadratic $\phi$
+The Puiseux exponent $p/q$ is determined by the Newton polygon~\cite{bogner2010}
+of the shifted polynomial $F(G^* + \delta G, G_0^* + \delta G_0)$. For a quadratic $\phi$
 (all single-species reaction-diffusion processes with cubic/quartic vertices),
 $\phi''(G^*) \neq 0$, giving:
 \begin{equation}
@@ -872,6 +875,73 @@ H.~Weyl,
 \newblock \"Uber die asymptotische Verteilung der Eigenwerte,
 \newblock \emph{Nachr.\ K\"onigl.\ Ges.\ Wiss.\ G\"ottingen}, 110--117, 1911.
 
+\bibitem{bogner2010}
+C.~Bogner and S.~Weinzierl,
+\newblock Feynman graph polynomials,
+\newblock \emph{Int.\ J.\ Mod.\ Phys.\ A}\ \textbf{25}, 2585--2618 (2010).
+\newblock arXiv:1002.3458.
+
+\bibitem{panzer2015}
+E.~Panzer,
+\newblock \emph{Algorithms for the symbolic integration of hyperlogarithms
+with applications to Feynman integrals},
+\newblock PhD thesis, Humboldt-Universit\"at zu Berlin (2015).
+\newblock arXiv:1403.3385.
+
+\bibitem{chengwu1987}
+T.~T.~Cheng and L.~F.~Wu,
+\newblock Expanding proton: scattering at high energies,
+\newblock \emph{Phys.\ Rev.}\ \textbf{D35}, 3419 (1987).
+
+\bibitem{schwinger1951}
+J.~Schwinger,
+\newblock On gauge invariance and vacuum polarization,
+\newblock \emph{Phys.\ Rev.}\ \textbf{82}, 664--679 (1951).
+
+\bibitem{kirchhoff1847}
+G.~Kirchhoff,
+\newblock \"Uber die Aufl\"osung der Gleichungen, auf welche man bei der
+Untersuchung der linearen Vertheilung galvanischer Str\"ome gef\"uhrt wird,
+\newblock \emph{Ann.\ Phys.\ Chem.}\ \textbf{72}, 497--508 (1847).
+
+\bibitem{watanabe1985}
+H.~Watanabe,
+\newblock Spectral dimension of a wire network,
+\newblock \emph{J.\ Phys.\ A: Math.\ Gen.}\ \textbf{18}, 2807--2823 (1985).
+
+\bibitem{destri2002}
+C.~Destri and L.~Donetti,
+\newblock The spectral dimension of random trees,
+\newblock \emph{J.\ Phys.\ A: Math.\ Gen.}\ \textbf{35}, 9499--9515 (2002).
+
+\bibitem{barabasi1999}
+A.-L.~Barab\'asi and R.~Albert,
+\newblock Emergence of scaling in random networks,
+\newblock \emph{Science}\ \textbf{286}, 509--512 (1999).
+
+\bibitem{nekovar2016}
+S.~Nekovar and G.~Pruessner,
+\newblock A field-theoretic approach to the Wiener sausage,
+\newblock \emph{J.\ Stat.\ Phys.}\ \textbf{163}, 604--641 (2016).
+
+\bibitem{burioni2005}
+R.~Burioni and D.~Cassi,
+\newblock Random walks on graphs: ideas, techniques and results,
+\newblock \emph{J.\ Phys.\ A: Math.\ Gen.}\ \textbf{38}, R45--R78 (2005).
+
+\bibitem{conneskreimer2000}
+A.~Connes and D.~Kreimer,
+\newblock Renormalization in quantum field theory and the
+Riemann--Hilbert problem. {II.} The $\beta$-function, diffeomorphisms
+and the renormalization group,
+\newblock \emph{Comm.\ Math.\ Phys.}\ \textbf{216}, 215--241 (2001).
+
+\bibitem{leecardy1995}
+B.~P.~Lee and J.~Cardy,
+\newblock Renormalization group study of the $A+B\to\emptyset$ diffusion-limited
+reaction,
+\newblock \emph{J.\ Stat.\ Phys.}\ \textbf{80}, 971--1007 (1995).
+
 \end{thebibliography}
 
 \clearpage
@@ -1109,38 +1179,74 @@ outgoing half-edges ($\tilde\phi$ type) and $n$ incoming half-edges
 
 \begin{figure}[H]
 \centering
-% Corollas (amputated vertices) — cf. thesis Figure 3.3
-\begin{tikzpicture}[>=Stealth, scale=0.8]
-  % Quartic vertex (2,2): coupling -chi
-  \fill (0.0,0.0) circle (2.5pt);
-  \draw[->, thick] (0.0,0.0) -- (-0.60,0.00);
-  \draw[->, thick] (0.0,0.0) -- (-0.30,0.52);
-  \draw[<-, thick] (0.0,0.0) -- (0.30,0.52);
-  \draw[<-, thick] (0.0,0.0) -- (0.60,0.00);
-  \node[below=8pt, font=\scriptsize] at (0.0,-0.2) {$\tilde{\phi}^2\phi^2$: $-\chi$};
-  % Cubic vertex (2,1): coupling beta
-  \fill (2.5,0.0) circle (2.5pt);
-  \draw[->, thick] (2.5,0.0) -- (1.90,0.00);
-  \draw[->, thick] (2.5,0.0) -- (2.50,0.60);
-  \draw[<-, thick] (2.5,0.0) -- (3.10,0.00);
-  \node[below=8pt, font=\scriptsize] at (2.5,-0.2) {$\tilde{\phi}^2\phi^1$: $\beta$};
-  % Cubic vertex (1,2): coupling -chi
-  \fill (5.0,0.0) circle (2.5pt);
-  \draw[->, thick] (5.0,0.0) -- (4.40,0.00);
-  \draw[<-, thick] (5.0,0.0) -- (5.00,0.60);
-  \draw[<-, thick] (5.0,0.0) -- (5.60,0.00);
-  \node[below=8pt, font=\scriptsize] at (5.0,-0.2) {$\tilde{\phi}^1\phi^2$: $-\chi$};
-  % Mass vertex (1,1): coupling beta-epsilon
-  \fill (7.5,0.0) circle (2.5pt);
-  \draw[->, thick] (7.5,0.0) -- (6.90,0.00);
-  \draw[<-, thick] (7.5,0.0) -- (8.10,0.00);
-  \node[below=8pt, font=\scriptsize] at (7.5,-0.2) {$\tilde{\phi}^1\phi^1$: $\beta{-}\epsilon$};
+% BRW Corollas — thesis Figure 3.3 style (auto-generated by rdft)
+% Black solid arrows: A-species (walkers)
+% Orange dashed arrows: B-species (tracers)
+\begin{tikzpicture}[>=Stealth, scale=0.9]
+  % --- Row 1: Propagators ---
+  \fill (0.00,0.00) circle (2.5pt);
+  \draw[->, thick, orange, dashed] (0.00,0.00) -- (-0.60,0.00);
+  \draw[<-, thick] (0.00,0.00) -- (0.60,0.00);
+  \node[below=10pt, font=\scriptsize] at (0.00,-0.15) {$\tilde{\phi}_B\phi_A$: $\Lambda$};
+  \fill (2.50,0.00) circle (2.5pt);
+  \draw[->, thick] (2.50,0.00) -- (1.90,0.00);
+  \draw[<-, thick] (2.50,0.00) -- (3.10,0.00);
+  \node[below=10pt, font=\scriptsize] at (2.50,-0.15) {$\tilde{\phi}_A\phi_A$: $\beta{-}\epsilon$};
+  % --- Row 2: A-sector (black) ---
+  \fill (0.00,-2.00) circle (2.5pt);
+  \draw[->, thick] (0.00,-2.00) -- (-0.60,-2.00);
+  \draw[<-, thick] (0.00,-2.00) -- (0.30,-1.48);
+  \draw[<-, thick] (0.00,-2.00) -- (0.30,-2.52);
+  \node[below=10pt, font=\scriptsize] at (0.00,-2.15) {$\tilde{\phi}_A\phi_A^2$: $-\chi$};
+  \fill (2.50,-2.00) circle (2.5pt);
+  \draw[->, thick] (2.50,-2.00) -- (1.90,-2.00);
+  \draw[->, thick] (2.50,-2.00) -- (2.80,-1.48);
+  \draw[<-, thick] (2.50,-2.00) -- (2.80,-2.52);
+  \node[below=10pt, font=\scriptsize] at (2.50,-2.15) {$\tilde{\phi}_A^2\phi_A$: $\beta$};
+  \fill (5.00,-2.00) circle (2.5pt);
+  \draw[->, thick] (5.00,-2.00) -- (4.40,-2.00);
+  \draw[->, thick] (5.00,-2.00) -- (5.00,-1.40);
+  \draw[<-, thick] (5.00,-2.00) -- (5.60,-2.00);
+  \draw[<-, thick] (5.00,-2.00) -- (5.00,-2.60);
+  \node[below=10pt, font=\scriptsize] at (5.00,-2.15) {$\tilde{\phi}_A^2\phi_A^2$: $-\chi$};
+  % --- Row 3: Transmutation (orange B-legs) ---
+  \fill (0.00,-4.00) circle (2.5pt);
+  \draw[->, thick, orange, dashed] (0.00,-4.00) -- (-0.60,-4.00);
+  \draw[<-, thick] (0.00,-4.00) -- (0.30,-3.48);
+  \draw[<-, thick, orange, dashed] (0.00,-4.00) -- (0.30,-4.52);
+  \node[below=10pt, font=\scriptsize] at (0.00,-4.15) {$\tilde{\phi}_B\phi_A\phi_B$: $-\Lambda$};
+  \fill (2.50,-4.00) circle (2.5pt);
+  \draw[->, thick, orange, dashed] (2.50,-4.00) -- (1.90,-4.00);
+  \draw[->, thick, orange, dashed] (2.50,-4.00) -- (2.50,-3.40);
+  \draw[<-, thick] (2.50,-4.00) -- (3.10,-4.00);
+  \draw[<-, thick, orange, dashed] (2.50,-4.00) -- (2.50,-4.60);
+  \node[below=10pt, font=\scriptsize] at (2.50,-4.15) {$\tilde{\phi}_B^2\phi_A\phi_B$: $-\Lambda$};
+  \fill (5.00,-4.00) circle (2.5pt);
+  \draw[->, thick] (5.00,-4.00) -- (4.40,-4.00);
+  \draw[->, thick, orange, dashed] (5.00,-4.00) -- (5.30,-3.48);
+  \draw[<-, thick] (5.00,-4.00) -- (5.30,-4.52);
+  \node[below=10pt, font=\scriptsize] at (5.00,-4.15) {$\tilde{\phi}_A\tilde{\phi}_B\phi_A$: $\Lambda$};
+  \fill (7.50,-4.00) circle (2.5pt);
+  \draw[->, thick] (7.50,-4.00) -- (6.90,-4.00);
+  \draw[->, thick, orange, dashed] (7.50,-4.00) -- (7.50,-3.40);
+  \draw[<-, thick] (7.50,-4.00) -- (8.10,-4.00);
+  \draw[<-, thick, orange, dashed] (7.50,-4.00) -- (7.50,-4.60);
+  \node[below=10pt, font=\scriptsize] at (7.50,-4.15) {$\tilde{\phi}_A\tilde{\phi}_B\phi_A\phi_B$: $-\Lambda$};
+  % Row labels
+  \node[left=15pt, font=\small\itshape] at (-0.8, 0) {propagators};
+  \node[left=15pt, font=\small\itshape] at (-0.8, -2.0) {A-sector};
+  \node[left=15pt, font=\small\itshape] at (-0.8, -4.0) {transmutation};
 \end{tikzpicture}
-\caption{Corollas of the Gribov process, generated automatically from the
-stoichiometry matrix by the code \texttt{Liouvillian(network).vertices}.
-Compare thesis Figure~3.3.
-Outgoing arrows: $\tilde\phi$ (creation); incoming arrows: $\phi$ (annihilation).
-The mass vertex $(1,1)$ contributes to the propagator, not to loop diagrams.}
+\caption{Corollas (amputated vertices) of the BRW, generated automatically
+by \texttt{brw\_all\_vertices(max\_legs=4)}. Compare thesis Figure~3.3.
+\textbf{Black solid arrows}: A-species (active walkers).
+\textbf{Orange dashed arrows}: B-species (immobile tracers).
+Row~1: propagator corrections.
+Row~2: A-sector interactions (branching~$\beta$, coagulation~$\chi$).
+Row~3: transmutation vertices from the carrying capacity trick
+(thesis Eq.~3.21), coupling~$\Lambda$.
+The dimensional filter \texttt{max\_legs=4} at $d_c = 4$ selects exactly
+these 9 vertices from the 10 generated; one 5-leg vertex is irrelevant.}
 \label{fig:corollas}
 \end{figure}
 
@@ -1202,6 +1308,141 @@ exp = FeynmanExpansion(net, max_loops=1)
 diagrams = exp.expand()
 # diagrams[1] contains all one-loop 1PI graphs
 \end{verbatim}
+
+\section{Worked Integral: Graph Polynomials to UV Pole}
+\label{app:integral}
+
+We trace the complete ``scenic route'' calculation for the BRW one-loop
+self-energy (thesis Example~2.5.15, Eqs.~2.102--2.103), showing how
+the graph polynomials produce the amplitude step by step.
+
+\subsection{The graph and its polynomials}
+
+The one-loop self-energy has two propagators of species~$A$ with
+diffusion constant~$D_A$ and mass $m_A$:
+
+\begin{center}
+\begin{tikzpicture}[>=Stealth, scale=1.0]
+  \fill (-1.2, 0) circle (3pt) node[below=5pt] {$v_0$};
+  \fill ( 1.2, 0) circle (3pt) node[below=5pt] {$v_1$};
+  \draw[->, thick, blue!70!black, bend left=40] (-1.2,0) to
+    node[above, font=\footnotesize] {$\alpha_0$: $(-i\omega, D_Ak^2{+}m_A)$} (1.2,0);
+  \draw[->, thick, blue!70!black, bend left=40] (1.2,0) to
+    node[below, font=\footnotesize] {$\alpha_1$: $(i\omega, D_Ak^2{+}m_A)$} (-1.2,0);
+  \draw[<-, thin, dashed, gray] (-1.2,0) -- (-2.4,0) node[left] {$\hat{k},\hat\omega$};
+  \draw[->, thin, dashed, gray] (1.2,0) -- (2.4,0);
+\end{tikzpicture}
+\end{center}
+
+From the incidence matrix (computed by \texttt{rdft}):
+\begin{align}
+\Psi &= \alpha_0 + \alpha_1 \qquad\text{(2 spanning trees, Kirchhoff complement)}
+\label{eq:psi_example}\\
+\Psi' &= D_A\alpha_0 + D_A\alpha_1 \qquad\text{(scaled by diffusion constants)}
+\label{eq:psi_prime}\\
+\frac{\Phi'}{\Psi'}\bigg|_{\hat k,\hat\omega=0}
+&= \alpha_0(m_A - i\omega) + \alpha_1(m_A + i\omega) \qquad\text{(thesis Eq.~2.102)}
+\label{eq:phi_prime}
+\end{align}
+
+\subsection{$\omega$-integration: the causal fingerprint}
+
+The non-equilibrium $\omega$-integration applies $\delta(\Sigma_l)$ where
+$\Sigma_l = \alpha_1 - \alpha_0$ is the circuit constraint from the edge-basis
+matrix~$E_f$. This is Kirchhoff's frequency law on the single loop:
+the sum of frequencies around the circuit vanishes.
+
+After applying the $\delta$-function, the contracted graph $G'$ has one
+fewer edge. The degree of divergence of the contracted graph is:
+\begin{equation}
+\sigma_d(G') = |E'| - \tfrac{d}{2}\,L' = 1 - d/2
+\end{equation}
+
+\subsection{The parametric integral}
+
+Using the general formula (thesis Eq.~2.99) with $n_e = 1$ for all edges:
+\begin{equation}
+\mathcal{I}(G) = \Omega_d \cdot \Gamma\bigl(-\sigma_d(G')\bigr)
+\int \dd\alpha_2 \; \frac{1}{(\Psi')^{d/2}}
+\left(\frac{\Psi'}{\Phi'}\right)^{\!\sigma_d(G')}
+\bigg|_{\alpha_2=1}
+\end{equation}
+
+Substituting the polynomials \eqref{eq:psi_prime}--\eqref{eq:phi_prime}
+and using Cheng--Wu ($\alpha_2 = 1$ normalisation):
+\begin{align}
+\mathcal{I}(G)
+&= \frac{\Gamma(1-d/2)}{(2\pi)^{d/2}}
+\int \dd\alpha_2 \; \frac{1}{(2\alpha_2 D_A)^{d/2}}
+\,[\alpha_2 \cdot 2m_A]^{\sigma_d(G')}
+\bigg|_{\alpha_2=1}
+\label{eq:integral_sub}\\
+&= \frac{\Gamma(1-d/2)}{(2\pi)^{d/2}} \cdot \frac{1}{(2D_A)^{d/2}}
+\cdot (2m_A)^{2/d-1}
+\label{eq:integral_eval}\\
+&= \mathcal{A}_d \cdot \Gamma(1-d/2) \cdot [2m_A]^{2/d-1}
+\label{eq:integral_result}
+\end{align}
+
+where $\mathcal{A}_d = (4\pi D_A)^{-d/2}$ is the angular factor.
+
+\begin{tcolorbox}[colback=blue!3, colframe=deepblue, arc=4pt]
+\small
+\textbf{What happened}: the graph polynomials $\Psi, \Phi$ (read from the
+incidence matrix) and the $\delta$-function (from the edge-basis matrix)
+reduced the integral to a \emph{single Gamma function} --- no momentum
+integral was evaluated directly. The topology of the graph is encoded
+in $\Psi$ and $\Phi$; the \emph{dimension} $d$ enters only through the
+exponents $d/2$ and $\sigma_d$.
+\end{tcolorbox}
+
+\subsection{$\varepsilon$-expansion and the UV pole}
+
+At the BRW upper critical dimension $d_c = 4$, set $d = 4 - \varepsilon$:
+\begin{equation}
+\Gamma(1 - d/2) = \Gamma(\varepsilon/2 - 1)
+= \frac{-\Gamma(\varepsilon/2)}{1 - \varepsilon/2}
+\xrightarrow{\varepsilon\to 0} \frac{-2}{\varepsilon} + \mathcal{O}(1)
+\end{equation}
+
+Including the symmetry factor $\mathfrak{s}(G) = 2$ (thesis Eq.~3.25):
+\begin{equation}
+\mathcal{I}_\lambda = \lambda \cdot \frac{\mathcal{A}_d}{\mathfrak{s}(G)}
+\cdot \Gamma(\varepsilon/2) \cdot [1/\tilde{M}]^{\varepsilon/2}
+\label{eq:amplitude_brw}
+\end{equation}
+
+The pole part (minimal subtraction, thesis Eq.~3.28):
+\begin{equation}
+\mathfrak{P}\!\left(\mathcal{I}_\lambda\right)
+= \mu^\varepsilon \lambda_R \cdot \frac{\mathcal{A}_d}{\mathfrak{s}(G)}
+\cdot \frac{2}{\varepsilon}
+\end{equation}
+
+This gives the $Z$-factor and $\beta$-function (thesis Eq.~3.30--3.31):
+\begin{equation}
+\boxed{Z_\lambda = 1 + \frac{\lambda}{(2\pi D)^2\,\varepsilon}
+\qquad\Longrightarrow\qquad
+\beta(\lambda) = \varepsilon\lambda_R + B\lambda_R^2,
+\quad \lambda_R^* = \varepsilon/B}
+\end{equation}
+
+\noindent\textbf{Code:}
+\begin{verbatim}
+from rdft.graphs.incidence import FeynmanGraph
+from rdft.integrals.symanzik import SymanzikPolynomials
+G = FeynmanGraph.one_loop_self_energy()
+sym = SymanzikPolynomials(G)
+# Psi = alpha0 + alpha1, K = alpha0 + alpha1
+# sigma_d = 2 - d/2, trees = [[0], [1]]
+\end{verbatim}
+
+The entire chain --- from incidence matrix to UV pole --- is automated by
+\texttt{rdft}. The graph polynomial $\Psi$ determines the integral; the
+dimension $d$ enters only as an exponent; and the pole $1/\varepsilon$ at
+$d_c = 4$ produces the $Z$-factor that feeds the RG flow.
+This is the scenic route; the AC route (Section~\ref{sec:ac_recovers_brw})
+arrives at the same exponent without evaluating the integral.
 
 \subsection{Connection to AC}
 

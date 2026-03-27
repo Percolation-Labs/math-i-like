@@ -41,9 +41,9 @@ impl CRN {
         }
     }
 
-    /// Critical BRW with default parameters.
+    /// Critical BRW with default parameters (β=ε for criticality).
     pub fn gribov_critical() -> Self {
-        Self::gribov(0.3, 0.1, 0.05)
+        Self::gribov(0.3, 0.3, 0.1)
     }
 
     /// BRW with instant coalescence (max 1 particle per site).

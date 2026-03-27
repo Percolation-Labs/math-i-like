@@ -353,3 +353,163 @@ def _external_angle(positions: Dict[int, Tuple[float, float]],
     # Spread multiple external legs
     spread = 0.4 * (ext_idx - n_ext / 2)
     return base_angle + spread
+
+
+# ------------------------------------------------------------------ #
+#  Two-species coloured corollas (thesis Figure 3.3 style)             #
+# ------------------------------------------------------------------ #
+
+# Colours matching thesis: black for A, orange for B
+_A_COLOUR = 'black'
+_B_COLOUR = 'orange'
+_A_STYLE = 'thick'
+_B_STYLE = 'thick, orange, dashed'
+
+
+def _leg_style(species: str, direction: str) -> str:
+    """TikZ style string for a leg of given species and direction."""
+    if species == 'B':
+        arrow = '->' if direction == 'out' else '<-'
+        return f'{arrow}, {_B_STYLE}'
+    else:
+        arrow = '->' if direction == 'out' else '<-'
+        return f'{arrow}, {_A_STYLE}'
+
+
+def multispecies_corolla_tikz(m_A: int, n_A: int, m_B: int, n_B: int,
+                               coupling_str: str = '',
+                               x_off: float = 0.0, y_off: float = 0.0,
+                               leg_len: float = 0.6) -> List[str]:
+    """
+    Generate TikZ lines for a single two-species corolla.
+
+    A-legs: solid black arrows
+    B-legs: dashed orange arrows
+    """
+    lines = []
+    total = m_A + n_A + m_B + n_B
+
+    # Central vertex
+    lines.append(f'  \\fill ({x_off:.2f},{y_off:.2f}) circle (2.5pt);')
+
+    if total == 0:
+        return lines
+
+    # Arrange legs radially: outgoing on left, incoming on right
+    # Order: A-out, B-out, A-in, B-in
+    legs = []
+    for _ in range(m_A):
+        legs.append(('A', 'out'))
+    for _ in range(m_B):
+        legs.append(('B', 'out'))
+    for _ in range(n_A):
+        legs.append(('A', 'in'))
+    for _ in range(n_B):
+        legs.append(('B', 'in'))
+
+    n_legs = len(legs)
+    for idx, (species, direction) in enumerate(legs):
+        if n_legs == 1:
+            angle = 180.0 if direction == 'out' else 0.0
+        elif n_legs == 2:
+            angle = 180.0 - idx * 180.0
+        else:
+            angle = 180.0 - idx * (360.0 / n_legs)
+
+        rad = math.radians(angle)
+        ex = x_off + leg_len * math.cos(rad)
+        ey = y_off + leg_len * math.sin(rad)
+
+        style = _leg_style(species, direction)
+        lines.append(f'  \\draw[{style}] '
+                    f'({x_off:.2f},{y_off:.2f}) -- ({ex:.2f},{ey:.2f});')
+
+    # Label
+    if coupling_str:
+        lines.append(f'  \\node[below=10pt, font=\\scriptsize] at '
+                    f'({x_off:.2f},{y_off - 0.15:.2f}) '
+                    f'{{{coupling_str}}};')
+
+    return lines
+
+
+def brw_corollas_figure_33() -> str:
+    """
+    Generate TikZ for the full BRW corollas grid matching thesis Figure 3.3.
+
+    3×3 grid:
+      Row 1: Propagators (A→A black, A→B mixed, B→B placeholder)
+      Row 2: A-sector cubic vertices (branching, coagulation, quartic)
+      Row 3: Transmutation vertices (mixed A/B, orange B-legs)
+
+    Uses brw_all_vertices(max_legs=4) to get the 9 relevant vertices.
+    """
+    from ..core.generators import brw_all_vertices
+    import sympy as sp
+
+    verts = brw_all_vertices(max_legs=4)
+
+    # Classify into rows
+    propagators = []
+    a_cubic = []
+    transmutation = []
+
+    for key, g in sorted(verts.items()):
+        (m_A, n_A), (m_B, n_B) = key
+        total = m_A + n_A + m_B + n_B
+        has_B = m_B > 0 or n_B > 0
+
+        label_parts = []
+        if m_A > 0: label_parts.append(f'$\\tilde{{\\phi}}_A^{m_A}$')
+        if m_B > 0: label_parts.append(f'$\\tilde{{\\phi}}_B^{m_B}$')
+        if n_A > 0: label_parts.append(f'$\\phi_A^{n_A}$')
+        if n_B > 0: label_parts.append(f'$\\phi_B^{n_B}$')
+        label = ''.join(label_parts)
+
+        coupling_label = f'{label}: ${sp.latex(g)}$'
+
+        entry = (m_A, n_A, m_B, n_B, coupling_label)
+
+        if total <= 2:
+            propagators.append(entry)
+        elif not has_B:
+            a_cubic.append(entry)
+        else:
+            transmutation.append(entry)
+
+    lines = ['% BRW Corollas — thesis Figure 3.3 style']
+    lines.append('% Black arrows: A-species, Orange dashed: B-species')
+    lines.append(r'\begin{tikzpicture}[>=Stealth, scale=0.9]')
+
+    col_spacing = 2.5
+    row_spacing = 2.0
+
+    # Row 1: Propagators
+    for i, (mA, nA, mB, nB, label) in enumerate(propagators):
+        x = i * col_spacing
+        y = 0
+        lines.extend(multispecies_corolla_tikz(mA, nA, mB, nB, label, x, y))
+
+    # Row 2: A-sector cubic
+    for i, (mA, nA, mB, nB, label) in enumerate(a_cubic):
+        x = i * col_spacing
+        y = -row_spacing
+        lines.extend(multispecies_corolla_tikz(mA, nA, mB, nB, label, x, y))
+
+    # Row 3: Transmutation
+    for i, (mA, nA, mB, nB, label) in enumerate(transmutation):
+        x = i * col_spacing
+        y = -2 * row_spacing
+        lines.extend(multispecies_corolla_tikz(mA, nA, mB, nB, label, x, y))
+
+    # Row labels
+    mid_x = col_spacing  # middle column
+    lines.append(f'  \\node[left=15pt, font=\\small\\itshape] at '
+                f'(-0.8, 0) {{propagators}};')
+    lines.append(f'  \\node[left=15pt, font=\\small\\itshape] at '
+                f'(-0.8, {-row_spacing:.1f}) {{A-sector}};')
+    lines.append(f'  \\node[left=15pt, font=\\small\\itshape] at '
+                f'(-0.8, {-2*row_spacing:.1f}) {{transmutation}};')
+
+    lines.append(r'\end{tikzpicture}')
+    return '\n'.join(lines)

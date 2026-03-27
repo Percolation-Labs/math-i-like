@@ -365,6 +365,88 @@ print(results)
 
 ---
 
+## Rust Simulation Engine
+
+The `simulations/` directory contains a high-performance Rust simulator for
+particle-based reaction-diffusion systems on arbitrary graphs. It reproduces
+the BRW (Branching Wiener Sausage) scaling exponents from
+Bordeu, Amarteifio et al. (2019) Sci. Rep. 9:15590.
+
+### Building
+
+```bash
+# Install Rust (if needed)
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+
+# Build in release mode (with LTO optimisation)
+cd simulations
+cargo build --release
+```
+
+### Running the BRW Validation Suite
+
+```bash
+# Full suite: all graph types (1D-5D lattice, Sierpinski, random tree, BA network)
+# JSON → stdout, progress → stderr
+cargo run --release > output/brw_results.json
+
+# Single graph configuration
+./target/release/rdft-sim --graph lattice:3:50 --crn birth_death -n 20000 --tmax 5000 --ds 3
+./target/release/rdft-sim --graph sierpinski:4 --crn birth_death -n 20000 --ds 1.86
+./target/release/rdft-sim --graph ba:5000:3 --crn birth_death -n 10000 --ds 4
+```
+
+Graph types: `lattice:DIM:SIZE`, `sierpinski:LEVEL`, `tree:N:SEED`, `ba:N:M`, `complete:N`
+
+CRN types: `birth_death` (critical BRW), `gribov`, `brw` (coalescent), `pair_annihilation`, `coagulation`
+
+### Plotting
+
+```bash
+# Generate scaling, convergence, and comparison plots
+python simulations/python/plot_brw.py simulations/output/brw_results.json
+
+# Or build + run + plot in one go
+python simulations/python/plot_brw.py
+```
+
+Produces three figures in `simulations/output/`:
+- **scaling.png** — Log-log ⟨V^p | survived⟩ vs t for each graph type
+- **convergence.png** — Exponent estimate vs N realizations
+- **comparison.png** — Theory vs simulation bar chart
+
+### Key Results
+
+The simulator validates the BRW scaling law (Bordeu+ 2019):
+
+    ⟨V^p⟩(t) ~ t^{(p·d_s - 2)/2}    [unconditional, d_s < 4]
+    ⟨V^p | survived⟩(t) ~ t^{p·d_s/2} [conditional on survival]
+
+where V(t) = number of distinct sites ever visited and d_s is the spectral
+dimension of the graph. The conditional exponent α_cond/p → d_s/2 converges
+cleanly:
+
+| Graph | d_s | α_cond/p (sim) | d_s/2 (theory) |
+|-------|-----|----------------|----------------|
+| 1D lattice | 1 | 0.50 | 0.50 |
+| 3D lattice | 3 | 1.53 | 1.50 |
+| Sierpinski | 1.86 | 0.96 | 0.93 |
+
+### Architecture
+
+- **`src/graph.rs`** — Graph types (lattice, Sierpinski, random tree, BA, custom edge list)
+- **`src/crn.rs`** — Chemical reaction network specification (single species kA→lA)
+- **`src/engine.rs`** — Core simulation: multinomial unary reactions (avoids sequential bias),
+  Poisson binary reactions, multinomial diffusion. Parallel via rayon.
+- **`src/main.rs`** — CLI + BRW validation suite
+- **`python/plot_brw.py`** — Matplotlib plotting utilities
+
+Parallelism: independent realizations run in parallel across all CPU cores via
+[rayon](https://docs.rs/rayon). The full 7-graph suite with 20k realizations
+each completes in ~80 seconds on an M-series Mac.
+
+---
+
 ## Key References
 
 | Reference | What it contributes |
