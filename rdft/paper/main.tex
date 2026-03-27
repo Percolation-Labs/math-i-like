@@ -793,7 +793,7 @@ The cluster size distribution follows:
 \label{eq:cluster_dist}
 \end{equation}
 
-\begin{table}[H]
+\begin{table}[!htb]
 \centering
 \caption{BRW scaling exponents $\alpha_p$ in $\langle a^p \rangle \sim t^{\alpha_p}$:
 three-way comparison. \textbf{Theory (RG)}: dimensional analysis + field-theoretic
@@ -1113,11 +1113,109 @@ collapses to a pole;
 parameter values where the Puiseux exponent changes from $1/2$ to $1/3$.
 \end{itemize}
 
-The example script \texttt{crn\_survey.py} runs all 14 CRNs through the
+The example script \texttt{crn\_survey.py} runs all 16 CRNs through the
 full pipeline, producing the summary in Table~\ref{tab:crn_survey}.
-All 12 systems with expected values pass validation; the remaining 2
-(Lotka--Volterra and $2A \rightleftharpoons C$) are multi-species systems
-whose effective single-variable DSE correctly produces square-root branches.
+All 12 systems with expected values pass validation; the remaining multi-species
+systems correctly produce square-root branches via the effective DSE.
+
+\subsection{Novel application: prion propagation}
+
+As a demonstration of the pipeline on a biologically motivated system with
+no prior field-theoretic analysis, we apply it to \textbf{prion propagation}
+--- the autocatalytic conversion of correctly folded proteins to a misfolded
+(pathogenic) conformation. The reactions are:
+\begin{align}
+H + M &\xrightarrow{\;\beta\;} 2M
+&& \text{(template-directed conversion)} \notag\\
+\emptyset &\xrightarrow{\;\lambda\;} H
+&& \text{(healthy protein production)} \notag\\
+H &\xrightarrow{\;\mu_H\;} \emptyset
+&& \text{(healthy protein degradation)} \notag\\
+M &\xrightarrow{\;\mu_M\;} \emptyset
+&& \text{(misfolded protein clearance)}
+\end{align}
+
+\paragraph{Biological context.}
+This CRN models the protein-only hypothesis of transmissible spongiform
+encephalopathies (prion diseases: Creutzfeldt--Jakob disease, bovine
+spongiform encephalopathy, scrapie) as well as the templated misfolding
+mechanism proposed for amyloid propagation in Alzheimer's ($\beta$-amyloid,
+tau) and Parkinson's ($\alpha$-synuclein) disease. In these disorders, a
+misfolded protein conformer~$M$ acts as a template that recruits healthy
+copies~$H$ of the same protein, converting them to the pathogenic fold.
+The cell continuously produces healthy protein ($\emptyset \to H$ via
+ribosomal translation) and clears both forms via proteolysis and autophagy.
+The disease threshold corresponds to a critical conversion rate
+$\beta_c$ above which the misfolded population persists despite clearance.
+
+The basic reproduction number is
+$R_0 = \beta\lambda / (\mu_H \mu_M)$; the disease-free state ($M = 0$)
+is absorbing. Below $R_0 = 1$, cellular quality control (the $\mu_M$ term:
+ubiquitin-proteasome system and autophagy) clears all misfolded protein.
+Above $R_0 = 1$, the autocatalytic feedback overwhelms clearance and
+disease propagates.
+
+\paragraph{Structural novelty.}
+The prion stoichiometry is distinct from all systems in
+Table~\ref{tab:crn_survey}. The key structural difference from both
+directed percolation and Lotka--Volterra is the healthy protein production
+reaction $\emptyset \to H$: this is a \emph{constant external source}
+(rate independent of~$H$), not an autocatalytic branching reaction
+$A \to 2A$ (rate proportional to~$A$). In the Doi--Peliti formalism,
+$\emptyset \to H$ generates a \emph{tadpole} vertex $\tilde\phi_H$
+(one outgoing leg, no incoming legs), whereas $A \to 2A$ generates a
+cubic vertex $\tilde\phi_A^2 \phi_A$. These have different engineering
+dimensions and different RG relevance. The vertex structure of the
+prion system --- tadpole source for $H$, mixed-species cubic conversion
+$H{+}M \to 2M$, independent mass terms for both species --- has no
+precedent in the reaction-diffusion field theory literature.
+
+\paragraph{Doi--Peliti analysis.}
+The Doi--Peliti formulation gives 4~interaction vertices (two 3-leg and
+two 4-leg, all with mixed $H$--$M$ species structure) with $d_c = 4$.
+The mean-field transition at $R_0 = 1$ is an absorbing-state phase
+transition.
+
+The AC analysis proceeds by integrating out the $H$ field at tree level.
+Since $H$ has a mass gap $\mu_H > 0$ (finite protein half-life), the $H$
+propagator is short-ranged: $G_H(k) = 1/(\omega + \mu_H + D_H k^2)$.
+Contracting the $H$ leg of the $H{+}M \to 2M$ vertex gives an effective
+$M$-sector with birth rate $\beta\lambda/\mu_H$ and death rate $\mu_M$.
+This is a birth--death process --- the same as the contact process, in the
+\textbf{directed percolation universality class}.
+
+$H$-loop corrections are suppressed by powers of $1/\mu_H$ (massive
+propagator), confirming their RG irrelevance. The prediction is:
+\begin{equation}
+\text{Prion propagation at $\mu_H > 0$:} \quad
+\text{DP universality class,} \quad d_c = 4.
+\label{eq:prion_dp}
+\end{equation}
+
+\paragraph{Biological interpretation.}
+Equation~\eqref{eq:prion_dp} has a concrete biological meaning: it
+predicts that the spatial spreading of protein misfolding exhibits the
+same universal scaling as directed percolation --- regardless of the
+specific protein (PrP, $\alpha$-synuclein, tau, $\beta$-amyloid), the
+cell type, or the tissue geometry, provided that three conditions hold:
+(i)~the healthy protein has a finite lifetime ($\mu_H > 0$),
+(ii)~the system is near the clearance--propagation threshold ($R_0
+\approx 1$), and (iii)~spatial diffusion is the dominant transport
+mechanism. In particular, the spatial density of misfolded aggregates
+near the disease threshold should decay as $\rho_M(t) \sim t^{-\delta}$
+with the DP exponent $\delta \approx 0.159$ in effectively
+one-dimensional geometries (e.g.\ along axonal tracts in the brain).
+
+\paragraph{Open regime: long-lived proteins.}
+An interesting open question arises in the limit $\mu_H \to 0$
+(long-lived healthy proteins, such as structural proteins with half-lives
+of weeks to months). The $H$ propagator becomes massless,
+$H$ fluctuations become long-ranged, and the effective M-sector acquires
+a non-local self-energy from $H$ loops. Whether this drives the system
+to a new universality class --- distinct from DP --- is a testable
+prediction. This regime is biologically relevant for proteins like
+collagen (half-life $\sim$years) or crystallin (lifetime of the organism),
+where the healthy protein pool is effectively conserved.
 
 %% ================================================================
 \section{Conclusion}
