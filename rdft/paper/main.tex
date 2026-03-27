@@ -1803,15 +1803,14 @@ to be computed (thesis Eq.~3.24). The canonical diagram is:
 \begin{tikzpicture}[>=Stealth, scale=1.0]
   \fill (-1.2, 0) circle (3pt) node[below=5pt] {$v_0$};
   \fill ( 1.2, 0) circle (3pt) node[below=5pt] {$v_1$};
-  \draw[->, thick, blue!70!black, bend left=40] (-1.2,0) to
+  \draw[->, thick, blue!70!black, bend left=35] (-1.2,0) to
     node[above, font=\footnotesize] {$\alpha_0$} (1.2,0);
-  \draw[->, thick, blue!70!black, bend left=40] (1.2,0) to
+  \draw[->, thick, blue!70!black, bend left=35] (1.2,0) to
     node[below, font=\footnotesize] {$\alpha_1$} (-1.2,0);
   \draw[<-, thin, dashed, gray] (-1.2,0) -- (-2.2,0) node[left] {$q_0$};
   \draw[->, thin, dashed, gray] (1.2,0) -- (2.2,0) node[right] {$q_1$};
-  \node at (0,-1.0) {\small $L=1$,\quad $s(G) = 2$};
-  \node at (0,-1.5) {\small $\Psi = \alpha_0 + \alpha_1$,\quad
-    $K = \alpha_0 + \alpha_1$};
+  \node at (0,-1.2) {\small $L=1$, \; $s(G) = 2$, \;
+    $\Psi = \alpha_0 {+} \alpha_1$, \; $K = \alpha_0 {+} \alpha_1$};
 \end{tikzpicture}
 \caption{One-loop self-energy diagram, automatically generated. The
 Kirchhoff polynomial $K = \alpha_0 + \alpha_1$ (two spanning trees, one
