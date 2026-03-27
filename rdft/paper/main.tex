@@ -1314,7 +1314,7 @@ outgoing half-edges ($\tilde\phi$ type) and $n$ incoming half-edges
   \node[left=15pt, font=\small\itshape] at (-0.8, -2.0) {A-sector};
   \node[left=15pt, font=\small\itshape] at (-0.8, -4.0) {transmutation};
 \end{tikzpicture}
-\caption{Amputated vertexs (amputated vertices) of the BRW, generated automatically
+\caption{Amputated vertices of the BRW, generated automatically
 by \texttt{brw\_all\_vertices(max\_legs=4)}. Compare thesis Figure~3.3.
 \textbf{Black solid arrows}: A-species (active walkers).
 \textbf{Orange dashed arrows}: B-species (immobile tracers).
@@ -1350,8 +1350,19 @@ remove duplicates. The \textbf{symmetry factor} $s(G) = N_{\mathrm{total}} / N_{
 
 \subsection{Step 3: One-Loop Diagrams}
 
-At one loop ($L = 1$), the canonical self-energy diagram is two vertices
-connected by two propagators:
+From the 9 amputated vertices, the code enumerates all possible vertex pairs
+that can form one-loop ($L=1$) 1PI diagrams. There are 28 such pairs: 6
+A-only and 22 mixed A/B. However, only the \textbf{A-sector} diagrams
+contribute to the RG flow, because the B-species (immobile tracers) does
+not diffuse and its propagator does not renormalise~\cite{nekovar2016,bordeu2019}.
+The transmutation vertices couple the A-sector to the B-observable at
+tree level only.
+
+Of the 6 A-sector pairs, the thesis~\cite{amarteifio2019} shows that at
+\textbf{vanishing external momentum} ($\hat{k} = \hat\omega = 0$), the
+relevant diagrams (Eqs.~3.23a--b) are \textbf{loop-isomorphic}: they
+evaluate to the same integral. Therefore only \textbf{one integral} needs
+to be computed (thesis Eq.~3.24). The canonical diagram is:
 
 \begin{figure}[H]
 \centering
