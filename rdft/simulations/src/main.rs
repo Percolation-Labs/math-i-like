@@ -68,6 +68,16 @@ fn main() {
         let (graph, crn, n_real, t_max, max_per_site, d_s) = parse_args(&args);
         let mut config = SimConfig::brw_default(t_max);
         config.max_per_site = max_per_site;
+        // For multi-species CRNs, configure initial species and tracking
+        if crn.name.starts_with("Prion") {
+            config.initial_species = 1; // seed M (species 1)
+            config.track_species = Some(1); // track M population
+        } else if crn.name.starts_with("Lotka") {
+            config.initial_species = 0; // seed prey A
+            // Seed some predators too
+        } else if crn.name == "A+B->0" {
+            config.initial_species = 0; // seed A; B should be seeded separately
+        }
         let result = run_single(&graph, &crn, &config, n_real, d_s);
         let json = serde_json::to_string_pretty(&result).unwrap();
         println!("{}", json);
@@ -338,6 +348,16 @@ fn parse_crn(s: &str) -> CRN {
         "pair_annihilation" => CRN::pair_annihilation(0.5),
         "coagulation" => CRN::coagulation(0.5),
         "birth_death" => CRN::birth_death(0.1, 0.1),
+        "contact" => CRN::contact_process(0.3, 0.1),
+        "triplet" => CRN::triplet_annihilation(0.3),
+        "barw_even" => CRN::barw_even(0.3, 0.3),
+        "pcpd" => CRN::pcpd(0.3, 0.3),
+        "schlogl2" => CRN::schlogl_second(0.3, 0.1),
+        "prion" => CRN::prion(0.175, 1.0, 0.5, 0.1),
+        "prion_critical" => CRN::prion_critical(1.0, 0.5, 0.1),
+        "lotka_volterra" => CRN::lotka_volterra(0.5, 0.3, 0.1),
+        "ab_annihilation" => CRN::two_species_annihilation(0.5),
+        "michaelis_menten" => CRN::michaelis_menten(1.0, 0.5, 1.0),
         _ => {
             eprintln!("Unknown CRN: {}. Using birth_death.", s);
             CRN::birth_death(0.1, 0.1)
@@ -361,11 +381,23 @@ OPTIONS:
                           ba:N:M             Barabási-Albert network
                           complete:N         Complete graph
   --crn TYPE              CRN type (default: gribov)
+                          --- Single species ---
                           brw                BRW with coalescence
-                          gribov             Gribov (A→2A, A→∅, 2A→A)
-                          birth_death        Critical (A→2A, A→∅, β=ε=0.1)
-                          pair_annihilation  2A → ∅
-                          coagulation        2A → A
+                          gribov             Gribov (A->2A, A->0, 2A->A)
+                          birth_death        Critical (A->2A, A->0)
+                          pair_annihilation  2A -> 0
+                          coagulation        2A -> A
+                          contact            Contact process (A->2A, 2A->0)
+                          triplet            3A -> 0
+                          barw_even          A->3A, 2A->0 (parity-conserving)
+                          pcpd               2A->3A, 2A->0
+                          schlogl2           2A->3A, A->0 (DP class)
+                          --- Multi-species ---
+                          prion              H+M->2M, 0->H, H->0, M->0
+                          prion_critical     Prion at mean-field R0=1
+                          lotka_volterra     A->2A, A+B->2B, B->0
+                          ab_annihilation    A+B -> 0
+                          michaelis_menten   E+S->ES, ES->E+S, ES->E+P
   --ds D                  Spectral dimension (for theory comparison)
   --realizations N        Number of realizations (default: 1000)
   --tmax T                Max simulation time (default: 2000)

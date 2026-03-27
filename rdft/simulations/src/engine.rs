@@ -1,15 +1,14 @@
 /// Core simulation engine: tau-leaping on arbitrary graphs.
 ///
-/// Algorithm per timestep:
-///   1. Reactions — at each occupied site:
-///      - Unary reactions applied simultaneously via multinomial sampling
-///        (avoids sequential bias: (1+β)(1-ε) ≠ 1 even when β=ε).
-///      - Binary (k=2): Poisson tau-leaping.
-///   2. Coalescence cap — if max_per_site > 0, truncate each site.
-///   3. Diffusion — each particle hops to a random neighbor.
-///      Multinomial O(degree) per site, not O(n_particles).
-///   4. Book-keeping — update visited set, record observables.
+/// Supports arbitrary multi-species CRNs. Each site stores a vector
+/// of per-species particle counts. Reactions are applied via:
+///   - Source reactions (no reactants): Poisson production per site
+///   - Unary reactions (1 particle): multinomial sampling
+///   - Binary same-species (2 of same): Poisson tau-leaping on pairs
+///   - Binary cross-species (1+1 different): Poisson on product of counts
+///   - Higher-order: Poisson on combinatorial count
 ///
+/// Diffusion is per-species with independent rates.
 /// Realizations are embarrassingly parallel via rayon.
 
 use std::collections::HashMap;
@@ -34,11 +33,16 @@ pub struct SimConfig {
     pub record_times: Vec<f64>,
     pub origin: u32,
     pub initial_count: u32,
-    /// Max particles per site after reactions (0 = unlimited).
-    /// Set to 1 for BRW with instant coalescence.
+    /// Which species to seed initially (index). Default 0.
+    /// For prion: seed species 1 (M) at origin.
+    pub initial_species: usize,
+    /// Max particles per site per species after reactions (0 = unlimited).
     pub max_per_site: u32,
-    /// Global population cap.
+    /// Global population cap (total across all species).
     pub max_particles: u32,
+    /// Which species to track for "population" observable.
+    /// None = total all species. Some(i) = species i only.
+    pub track_species: Option<usize>,
 }
 
 impl SimConfig {
@@ -59,8 +63,10 @@ impl SimConfig {
             record_times,
             origin: 0,
             initial_count: 1,
-            max_per_site: 0, // no cap — let reactions handle dynamics
+            initial_species: 0,
+            max_per_site: 0,
             max_particles: 500_000,
+            track_species: None,
         }
     }
 }
@@ -72,9 +78,9 @@ impl SimConfig {
 #[derive(Clone, Debug, Serialize)]
 pub struct Realization {
     pub times: Vec<f64>,
-    /// Number of distinct sites ever visited.
+    /// Number of distinct sites ever visited (by any species).
     pub volume: Vec<u32>,
-    /// Current total particle count.
+    /// Tracked population at each time.
     pub population: Vec<u32>,
     pub survived: bool,
 }
@@ -82,41 +88,120 @@ pub struct Realization {
 #[derive(Clone, Debug, Serialize)]
 pub struct EnsembleResult {
     pub times: Vec<f64>,
-    /// moments[p-1][t_idx] = ⟨V^p⟩ unconditional (all realizations).
     pub moments: Vec<Vec<f64>>,
-    /// moments_surviving[p-1][t_idx] = ⟨V^p | survived⟩
     pub moments_surviving: Vec<Vec<f64>>,
     pub max_p: usize,
     pub n_survived: u32,
     pub n_total: u32,
-    /// convergence[p-1] = vec of (n_so_far, alpha_estimate).
     pub convergence: Vec<Vec<(u32, f64)>>,
 }
 
 // ----------------------------------------------------------------
-// Precomputed reaction classification
+// Site state: per-species counts
 // ----------------------------------------------------------------
 
-struct ReactionSets {
-    /// Unary reactions (k=1) with their output particle count and probability.
-    unary: Vec<(u32, f64)>, // (l, rate*dt)
-    /// Binary reactions (k=2).
-    binary: Vec<(u32, f64)>, // (l, rate*dt)
+type SiteState = Vec<u32>; // counts[species_idx]
+
+fn total_count(state: &SiteState) -> u32 {
+    state.iter().sum()
 }
 
-impl ReactionSets {
-    fn from_crn(crn: &CRN, dt: f64) -> Self {
-        let mut unary = Vec::new();
-        let mut binary = Vec::new();
-        for rxn in &crn.reactions {
-            match rxn.k {
-                1 => unary.push((rxn.l, rxn.rate * dt)),
-                2 => binary.push((rxn.l, rxn.rate * dt)),
-                _ => {} // higher order ignored
+fn is_empty(state: &SiteState) -> bool {
+    state.iter().all(|&c| c == 0)
+}
+
+// ----------------------------------------------------------------
+// Reaction classification
+// ----------------------------------------------------------------
+
+#[derive(Clone, Debug)]
+enum ReactionType {
+    /// No reactants needed (source): ∅ → products. Poisson production.
+    Source { products: Vec<u32>, rate_dt: f64 },
+    /// Exactly one particle of one species consumed.
+    Unary { species: usize, products: Vec<u32>, rate_dt: f64 },
+    /// Two particles of the SAME species consumed.
+    BinarySame { species: usize, products: Vec<u32>, rate_dt: f64 },
+    /// One particle each of two DIFFERENT species consumed.
+    BinaryCross { sp_a: usize, sp_b: usize, products: Vec<u32>, rate_dt: f64 },
+    /// Three particles of same species.
+    TernarySame { species: usize, products: Vec<u32>, rate_dt: f64 },
+    /// General higher-order (fallback).
+    General { reactants: Vec<u32>, products: Vec<u32>, rate_dt: f64 },
+}
+
+fn classify_reactions(crn: &CRN, dt: f64) -> Vec<ReactionType> {
+    let mut classified = Vec::new();
+    for rxn in &crn.reactions {
+        let total_r: u32 = rxn.reactants.iter().sum();
+        let rate_dt = rxn.rate * dt;
+
+        if total_r == 0 {
+            classified.push(ReactionType::Source {
+                products: rxn.products.clone(),
+                rate_dt,
+            });
+        } else if total_r == 1 {
+            let sp = rxn.reactants.iter().position(|&r| r > 0).unwrap();
+            classified.push(ReactionType::Unary {
+                species: sp,
+                products: rxn.products.clone(),
+                rate_dt,
+            });
+        } else if total_r == 2 {
+            let nonzero: Vec<(usize, u32)> = rxn.reactants.iter()
+                .enumerate()
+                .filter(|(_, &r)| r > 0)
+                .map(|(i, &r)| (i, r))
+                .collect();
+            if nonzero.len() == 1 && nonzero[0].1 == 2 {
+                classified.push(ReactionType::BinarySame {
+                    species: nonzero[0].0,
+                    products: rxn.products.clone(),
+                    rate_dt,
+                });
+            } else if nonzero.len() == 2 {
+                classified.push(ReactionType::BinaryCross {
+                    sp_a: nonzero[0].0,
+                    sp_b: nonzero[1].0,
+                    products: rxn.products.clone(),
+                    rate_dt,
+                });
+            } else {
+                classified.push(ReactionType::General {
+                    reactants: rxn.reactants.clone(),
+                    products: rxn.products.clone(),
+                    rate_dt,
+                });
             }
+        } else if total_r == 3 {
+            let nonzero: Vec<(usize, u32)> = rxn.reactants.iter()
+                .enumerate()
+                .filter(|(_, &r)| r > 0)
+                .map(|(i, &r)| (i, r))
+                .collect();
+            if nonzero.len() == 1 && nonzero[0].1 == 3 {
+                classified.push(ReactionType::TernarySame {
+                    species: nonzero[0].0,
+                    products: rxn.products.clone(),
+                    rate_dt,
+                });
+            } else {
+                classified.push(ReactionType::General {
+                    reactants: rxn.reactants.clone(),
+                    products: rxn.products.clone(),
+                    rate_dt,
+                });
+            }
+        } else {
+            classified.push(ReactionType::General {
+                reactants: rxn.reactants.clone(),
+                products: rxn.products.clone(),
+                rate_dt,
+            });
         }
-        ReactionSets { unary, binary }
     }
+    classified
 }
 
 // ----------------------------------------------------------------
@@ -126,11 +211,14 @@ impl ReactionSets {
 pub fn run_realization(graph: &Graph, crn: &CRN, config: &SimConfig, seed: u64) -> Realization {
     let mut rng = SmallRng::seed_from_u64(seed);
     let n_sites = graph.num_nodes();
-    let rxn_sets = ReactionSets::from_crn(crn, config.dt);
+    let n_sp = crn.n_species;
+    let rxn_types = classify_reactions(crn, config.dt);
 
-    // Sparse occupation: site -> particle count
-    let mut occupation: HashMap<u32, u32> = HashMap::new();
-    occupation.insert(config.origin, config.initial_count);
+    // Sparse occupation: site -> [count_per_species]
+    let mut occupation: HashMap<u32, SiteState> = HashMap::new();
+    let mut init_state = vec![0u32; n_sp];
+    init_state[config.initial_species] = config.initial_count;
+    occupation.insert(config.origin, init_state);
 
     let mut visited = vec![false; n_sites];
     visited[config.origin as usize] = true;
@@ -147,7 +235,10 @@ pub fn run_realization(graph: &Graph, crn: &CRN, config: &SimConfig, seed: u64) 
     loop {
         // Record observables
         while next_rec < n_rec && t >= config.record_times[next_rec] {
-            let pop: u32 = occupation.values().sum();
+            let pop: u32 = match config.track_species {
+                Some(sp) => occupation.values().map(|s| s[sp]).sum(),
+                None => occupation.values().map(|s| total_count(s)).sum(),
+            };
             times.push(config.record_times[next_rec]);
             volumes.push(n_visited);
             populations.push(pop);
@@ -159,85 +250,201 @@ pub fn run_realization(graph: &Graph, crn: &CRN, config: &SimConfig, seed: u64) 
         }
 
         // --- Step 1: Reactions at each site ---
-        let sites: Vec<(u32, u32)> = occupation.drain().collect();
-        for (site, mut n) in sites {
-            if n == 0 {
-                continue;
-            }
+        let sites: Vec<(u32, SiteState)> = occupation.drain().collect();
 
-            // Unary reactions (applied SIMULTANEOUSLY via multinomial)
-            n = apply_unary_multinomial(&mut rng, n, &rxn_sets.unary);
+        // First: apply source reactions (production at ALL sites, not just occupied)
+        // For efficiency, only apply at sites that exist + a Poisson number of new sites
+        let mut new_occupation: HashMap<u32, SiteState> = HashMap::with_capacity(sites.len() * 2);
 
-            // Binary reactions (tau-leaping)
-            for &(l, rate_dt) in &rxn_sets.binary {
-                if n < 2 {
-                    break;
+        // Source reactions: produce at each existing site
+        for rxn in &rxn_types {
+            if let ReactionType::Source { products, rate_dt } = rxn {
+                for &(site, _) in &sites {
+                    let produced: Vec<u32> = products.iter()
+                        .map(|&p| if p > 0 { sample_poisson(&mut rng, *rate_dt * p as f64) } else { 0 })
+                        .collect();
+                    if produced.iter().any(|&p| p > 0) {
+                        let entry = new_occupation.entry(site).or_insert_with(|| vec![0; n_sp]);
+                        for (i, &p) in produced.iter().enumerate() {
+                            entry[i] += p;
+                        }
+                    }
                 }
-                n = apply_binary(&mut rng, n, l, rate_dt);
-            }
-
-            // Per-site cap (coalescence)
-            if config.max_per_site > 0 && n > config.max_per_site {
-                n = config.max_per_site;
-            }
-
-            if n > 0 {
-                occupation.insert(site, n);
             }
         }
 
-        // --- Step 2: Diffusion ---
-        if crn.diffusion_rate > 0.0 {
-            let mut new_occ: HashMap<u32, u32> =
-                HashMap::with_capacity(occupation.len() * 2);
-
-            for (&site, &count) in &occupation {
-                if count == 0 {
-                    continue;
+        // Non-source reactions at occupied sites
+        for (site, mut state) in sites {
+            // Apply non-source reactions
+            for rxn in &rxn_types {
+                match rxn {
+                    ReactionType::Source { .. } => {} // already handled
+                    ReactionType::Unary { species, products, rate_dt } => {
+                        let n = state[*species];
+                        if n > 0 {
+                            let firings = sample_binomial(&mut rng, n, rate_dt.min(1.0));
+                            state[*species] -= firings;
+                            for (i, &p) in products.iter().enumerate() {
+                                state[i] += firings * p;
+                            }
+                        }
+                    }
+                    ReactionType::BinarySame { species, products, rate_dt } => {
+                        let n = state[*species];
+                        if n >= 2 {
+                            let pairs = (n as f64) * (n as f64 - 1.0) / 2.0;
+                            let mean = rate_dt * pairs;
+                            let firings = sample_poisson(&mut rng, mean).min(n / 2);
+                            state[*species] -= firings * 2;
+                            for (i, &p) in products.iter().enumerate() {
+                                state[i] += firings * p;
+                            }
+                        }
+                    }
+                    ReactionType::BinaryCross { sp_a, sp_b, products, rate_dt } => {
+                        let na = state[*sp_a];
+                        let nb = state[*sp_b];
+                        if na > 0 && nb > 0 {
+                            let combos = na as f64 * nb as f64;
+                            let mean = rate_dt * combos;
+                            let firings = sample_poisson(&mut rng, mean)
+                                .min(na).min(nb);
+                            state[*sp_a] -= firings;
+                            state[*sp_b] -= firings;
+                            for (i, &p) in products.iter().enumerate() {
+                                state[i] += firings * p;
+                            }
+                        }
+                    }
+                    ReactionType::TernarySame { species, products, rate_dt } => {
+                        let n = state[*species];
+                        if n >= 3 {
+                            let triples = (n as f64) * (n as f64 - 1.0) * (n as f64 - 2.0) / 6.0;
+                            let mean = rate_dt * triples;
+                            let firings = sample_poisson(&mut rng, mean).min(n / 3);
+                            state[*species] -= firings * 3;
+                            for (i, &p) in products.iter().enumerate() {
+                                state[i] += firings * p;
+                            }
+                        }
+                    }
+                    ReactionType::General { reactants, products, rate_dt } => {
+                        // Check all reactants available
+                        let feasible = reactants.iter().enumerate()
+                            .all(|(i, &r)| state[i] >= r);
+                        if feasible {
+                            // Combinatorial count of reactant tuples
+                            let mut combos = 1.0f64;
+                            for (i, &r) in reactants.iter().enumerate() {
+                                let n = state[i] as f64;
+                                // C(n, r) ≈ n^r / r! for tau-leaping
+                                for j in 0..r {
+                                    combos *= (n - j as f64) / (j as f64 + 1.0);
+                                }
+                            }
+                            let mean = rate_dt * combos;
+                            let max_firings = reactants.iter().enumerate()
+                                .filter(|(_, &r)| r > 0)
+                                .map(|(i, &r)| state[i] / r)
+                                .min()
+                                .unwrap_or(0);
+                            let firings = sample_poisson(&mut rng, mean).min(max_firings);
+                            for (i, &r) in reactants.iter().enumerate() {
+                                state[i] -= firings * r;
+                            }
+                            for (i, &p) in products.iter().enumerate() {
+                                state[i] += firings * p;
+                            }
+                        }
+                    }
                 }
-                let nbrs = graph.neighbors(site);
-                let deg = nbrs.len();
-                if deg == 0 {
-                    *new_occ.entry(site).or_insert(0) += count;
-                    continue;
-                }
+            }
 
-                let hopping = if crn.diffusion_rate >= 1.0 {
+            // Per-site cap
+            if config.max_per_site > 0 {
+                for c in state.iter_mut() {
+                    if *c > config.max_per_site {
+                        *c = config.max_per_site;
+                    }
+                }
+            }
+
+            // Merge with source-produced particles
+            if !is_empty(&state) {
+                let entry = new_occupation.entry(site).or_insert_with(|| vec![0; n_sp]);
+                for (i, &c) in state.iter().enumerate() {
+                    entry[i] += c;
+                }
+            }
+        }
+
+        occupation = new_occupation;
+        // Remove empty sites
+        occupation.retain(|_, s| !is_empty(s));
+
+        // --- Step 2: Diffusion (per species) ---
+        let mut diff_occupation: HashMap<u32, SiteState> =
+            HashMap::with_capacity(occupation.len() * 2);
+
+        for (&site, state) in &occupation {
+            let nbrs = graph.neighbors(site);
+            let deg = nbrs.len();
+            if deg == 0 {
+                let entry = diff_occupation.entry(site).or_insert_with(|| vec![0; n_sp]);
+                for (i, &c) in state.iter().enumerate() {
+                    entry[i] += c;
+                }
+                continue;
+            }
+
+            for sp in 0..n_sp {
+                let count = state[sp];
+                if count == 0 { continue; }
+
+                let d_rate = crn.diffusion_rates[sp];
+                let hopping = if d_rate >= 1.0 {
                     count
+                } else if d_rate <= 0.0 {
+                    0
                 } else {
-                    sample_binomial(&mut rng, count, crn.diffusion_rate)
+                    sample_binomial(&mut rng, count, d_rate)
                 };
                 let staying = count - hopping;
+
                 if staying > 0 {
-                    *new_occ.entry(site).or_insert(0) += staying;
+                    let entry = diff_occupation.entry(site).or_insert_with(|| vec![0; n_sp]);
+                    entry[sp] += staying;
                 }
 
-                // Multinomial: distribute hopping particles among neighbors
+                // Distribute hoppers among neighbors (multinomial)
                 let mut remaining = hopping;
                 for (i, &nbr) in nbrs.iter().enumerate() {
-                    if remaining == 0 {
-                        break;
-                    }
+                    if remaining == 0 { break; }
                     if i == deg - 1 {
-                        *new_occ.entry(nbr).or_insert(0) += remaining;
+                        let entry = diff_occupation.entry(nbr).or_insert_with(|| vec![0; n_sp]);
+                        entry[sp] += remaining;
                     } else {
                         let slots_left = (deg - i) as f64;
                         let going = sample_binomial(&mut rng, remaining, 1.0 / slots_left);
                         if going > 0 {
-                            *new_occ.entry(nbr).or_insert(0) += going;
+                            let entry = diff_occupation.entry(nbr).or_insert_with(|| vec![0; n_sp]);
+                            entry[sp] += going;
                         }
                         remaining -= going;
                     }
                 }
             }
+        }
 
-            occupation = new_occ;
+        occupation = diff_occupation;
+        occupation.retain(|_, s| !is_empty(s));
 
-            // Apply coalescence after diffusion too
-            if config.max_per_site > 0 {
-                for val in occupation.values_mut() {
-                    if *val > config.max_per_site {
-                        *val = config.max_per_site;
+        // Coalescence cap after diffusion
+        if config.max_per_site > 0 {
+            for state in occupation.values_mut() {
+                for c in state.iter_mut() {
+                    if *c > config.max_per_site {
+                        *c = config.max_per_site;
                     }
                 }
             }
@@ -253,21 +460,28 @@ pub fn run_realization(graph: &Graph, crn: &CRN, config: &SimConfig, seed: u64) 
         }
 
         // Global population cap
-        let total: u32 = occupation.values().sum();
-        if total > config.max_particles {
-            let keep_frac = config.max_particles as f64 / total as f64;
-            let sites: Vec<(u32, u32)> = occupation.drain().collect();
-            for (site, n) in sites {
-                let kept = sample_binomial(&mut rng, n, keep_frac);
-                if kept > 0 {
-                    occupation.insert(site, kept);
+        let grand_total: u32 = occupation.values().map(|s| total_count(s)).sum();
+        if grand_total > config.max_particles {
+            let keep_frac = config.max_particles as f64 / grand_total as f64;
+            let sites: Vec<(u32, SiteState)> = occupation.drain().collect();
+            for (site, state) in sites {
+                let new_state: SiteState = state.iter()
+                    .map(|&c| sample_binomial(&mut rng, c, keep_frac))
+                    .collect();
+                if !is_empty(&new_state) {
+                    occupation.insert(site, new_state);
                 }
             }
         }
 
         t += config.dt;
 
-        if occupation.is_empty() {
+        // Check extinction of tracked species
+        let tracked_alive = match config.track_species {
+            Some(sp) => occupation.values().any(|s| s[sp] > 0),
+            None => !occupation.is_empty(),
+        };
+        if !tracked_alive {
             while next_rec < n_rec {
                 times.push(config.record_times[next_rec]);
                 volumes.push(n_visited);
@@ -278,7 +492,11 @@ pub fn run_realization(graph: &Graph, crn: &CRN, config: &SimConfig, seed: u64) 
         }
     }
 
-    let survived = !occupation.is_empty();
+    let survived = match config.track_species {
+        Some(sp) => occupation.values().any(|s| s[sp] > 0),
+        None => !occupation.is_empty(),
+    };
+
     Realization {
         times,
         volume: volumes,
@@ -288,100 +506,13 @@ pub fn run_realization(graph: &Graph, crn: &CRN, config: &SimConfig, seed: u64) 
 }
 
 // ----------------------------------------------------------------
-// Unary reactions: simultaneous multinomial
-// ----------------------------------------------------------------
-// For each particle, exactly one outcome occurs:
-//   - Reaction i fires: particle → l_i offspring, with prob p_i
-//   - No reaction: particle survives as-is, with prob 1 - Σp_i
-// This avoids the sequential bias where (1+β)(1-ε) ≠ 1 for β=ε.
-
-#[inline]
-fn apply_unary_multinomial(rng: &mut impl Rng, n: u32, reactions: &[(u32, f64)]) -> u32 {
-    if n == 0 || reactions.is_empty() {
-        return n;
-    }
-
-    let probs: Vec<f64> = reactions.iter().map(|&(_, p)| p.min(1.0)).collect();
-    let p_sum: f64 = probs.iter().sum();
-
-    if p_sum > 1.0 {
-        // Rates too high for this dt — rescale
-        let scale = 0.99 / p_sum;
-        return apply_unary_multinomial_inner(
-            rng,
-            n,
-            reactions,
-            &probs.iter().map(|p| p * scale).collect::<Vec<_>>(),
-        );
-    }
-
-    apply_unary_multinomial_inner(rng, n, reactions, &probs)
-}
-
-#[inline]
-fn apply_unary_multinomial_inner(
-    rng: &mut impl Rng,
-    n: u32,
-    reactions: &[(u32, f64)],
-    probs: &[f64],
-) -> u32 {
-    // Sequential multinomial decomposition
-    let mut remaining = n;
-    let mut total_offspring: u32 = 0;
-    let mut p_used: f64 = 0.0;
-
-    for (i, &(l, _)) in reactions.iter().enumerate() {
-        if remaining == 0 {
-            break;
-        }
-        // Conditional probability for this reaction
-        let p_cond = if 1.0 - p_used > 1e-12 {
-            (probs[i] / (1.0 - p_used)).clamp(0.0, 1.0)
-        } else {
-            0.0
-        };
-
-        let n_i = sample_binomial(rng, remaining, p_cond);
-        total_offspring += n_i * l; // l offspring per firing
-        remaining -= n_i;
-        p_used += probs[i];
-    }
-
-    // Remaining particles had no reaction → survive as 1 each
-    total_offspring += remaining;
-    total_offspring
-}
-
-// ----------------------------------------------------------------
-// Binary reactions: Poisson tau-leaping
-// ----------------------------------------------------------------
-
-#[inline]
-fn apply_binary(rng: &mut impl Rng, n: u32, l: u32, rate_dt: f64) -> u32 {
-    if n < 2 || rate_dt <= 0.0 {
-        return n;
-    }
-    let pairs = (n as f64) * (n as f64 - 1.0) / 2.0;
-    let mean = rate_dt * pairs;
-    let firings = sample_poisson(rng, mean).min(n / 2);
-    // Each firing: consume 2 particles, produce l
-    let removed = firings * 2;
-    let added = firings * l;
-    n.saturating_sub(removed) + added
-}
-
-// ----------------------------------------------------------------
 // Distribution samplers
 // ----------------------------------------------------------------
 
 #[inline]
 fn sample_binomial(rng: &mut impl Rng, n: u32, p: f64) -> u32 {
-    if n == 0 || p <= 0.0 {
-        return 0;
-    }
-    if p >= 1.0 {
-        return n;
-    }
+    if n == 0 || p <= 0.0 { return 0; }
+    if p >= 1.0 { return n; }
     if let Ok(dist) = Binomial::new(n as u64, p) {
         dist.sample(rng) as u32
     } else {
@@ -391,9 +522,7 @@ fn sample_binomial(rng: &mut impl Rng, n: u32, p: f64) -> u32 {
 
 #[inline]
 fn sample_poisson(rng: &mut impl Rng, mean: f64) -> u32 {
-    if mean <= 0.0 {
-        return 0;
-    }
+    if mean <= 0.0 { return 0; }
     if mean > 1e6 {
         let std = mean.sqrt();
         return (mean + std * rng.gen::<f64>()).max(0.0) as u32;
@@ -501,25 +630,18 @@ pub fn run_ensemble(
 // Power-law fitting
 // ----------------------------------------------------------------
 
-/// Fit log(y) = alpha * log(t) + const in the late-time regime.
-/// Uses the last 60% of the data (in log-space) to avoid early transients.
 pub fn fit_power_law(times: &[f64], values: &[f64]) -> f64 {
     fit_power_law_window(times, values, 0.55, 0.92)
 }
 
-/// Fit with explicit start/end fractions of the data range.
 pub fn fit_power_law_window(times: &[f64], values: &[f64], frac_start: f64, frac_end: f64) -> f64 {
     let n = times.len();
-    if n < 4 {
-        return f64::NAN;
-    }
+    if n < 4 { return f64::NAN; }
 
     let start = (n as f64 * frac_start) as usize;
     let end = (n as f64 * frac_end).ceil() as usize;
     let end = end.min(n);
-    if end <= start + 2 {
-        return f64::NAN;
-    }
+    if end <= start + 2 { return f64::NAN; }
 
     let mut sum_x = 0.0f64;
     let mut sum_y = 0.0f64;
@@ -539,10 +661,7 @@ pub fn fit_power_law_window(times: &[f64], values: &[f64], frac_start: f64, frac
         }
     }
 
-    if count < 3.0 {
-        return f64::NAN;
-    }
-
+    if count < 3.0 { return f64::NAN; }
     (count * sum_xy - sum_x * sum_y) / (count * sum_xx - sum_x * sum_x)
 }
 
@@ -563,24 +682,25 @@ mod tests {
     }
 
     #[test]
-    fn test_critical_mean_offspring() {
-        // Verify that unary multinomial preserves mean for β=ε
-        let mut rng = SmallRng::seed_from_u64(12345);
-        let reactions = vec![(2u32, 0.3f64), (0u32, 0.3f64)]; // branch, death
-        let mut total = 0u64;
-        let n_trials = 100_000;
-        let n_init = 100u32;
-        for _ in 0..n_trials {
-            total += apply_unary_multinomial(&mut rng, n_init, &reactions) as u64;
-        }
-        let mean = total as f64 / n_trials as f64;
-        // Should be very close to n_init (critical)
-        assert!(
-            (mean - n_init as f64).abs() < 1.0,
-            "Mean offspring {} should be close to {}",
-            mean,
-            n_init
-        );
+    fn test_prion_realization_runs() {
+        let g = Graph::hypercubic(1, 100);
+        let crn = CRN::prion(0.5, 1.0, 0.5, 0.1);
+        let mut config = SimConfig::brw_default(50.0);
+        config.initial_species = 1; // seed M
+        config.track_species = Some(1); // track M
+        let real = run_realization(&g, &crn, &config, 42);
+        assert!(!real.times.is_empty());
+    }
+
+    #[test]
+    fn test_multispecies_ensemble() {
+        let g = Graph::hypercubic(1, 50);
+        let crn = CRN::prion(0.5, 1.0, 0.5, 0.1);
+        let mut config = SimConfig::brw_default(20.0);
+        config.initial_species = 1;
+        config.track_species = Some(1);
+        let result = run_ensemble(&g, &crn, &config, 50, 2);
+        assert_eq!(result.moments.len(), 2);
     }
 
     #[test]
