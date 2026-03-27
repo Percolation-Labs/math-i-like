@@ -268,6 +268,7 @@ fn parse_args(args: &[String]) -> (Graph, CRN, u32, f64, u32, f64) {
     let mut t_max = 2000.0f64;
     let mut max_per_site = 0u32;
     let mut d_s = 2.0f64;
+    let mut rates_str: Option<String> = None;
 
     let mut i = 1;
     while i < args.len() {
@@ -296,6 +297,10 @@ fn parse_args(args: &[String]) -> (Graph, CRN, u32, f64, u32, f64) {
                 d_s = args[i + 1].parse().unwrap();
                 i += 2;
             }
+            "--rates" => {
+                rates_str = Some(args[i + 1].clone());
+                i += 2;
+            }
             _ => {
                 eprintln!("Unknown arg: {}", args[i]);
                 i += 1;
@@ -304,7 +309,7 @@ fn parse_args(args: &[String]) -> (Graph, CRN, u32, f64, u32, f64) {
     }
 
     let graph = parse_graph(&graph_str);
-    let crn = parse_crn(&crn_str);
+    let crn = parse_crn_with_rates(&crn_str, rates_str.as_deref());
     (graph, crn, n_real, t_max, max_per_site, d_s)
 }
 
@@ -338,6 +343,32 @@ fn parse_graph(s: &str) -> Graph {
             eprintln!("Unknown graph type: {}. Using 2D lattice.", parts[0]);
             Graph::hypercubic(2, 100)
         }
+    }
+}
+
+fn parse_crn_with_rates(s: &str, rates: Option<&str>) -> CRN {
+    // Parse comma-separated rates if provided
+    let r: Vec<f64> = rates
+        .map(|r| r.split(',').map(|v| v.parse().unwrap()).collect())
+        .unwrap_or_default();
+
+    match s {
+        "prion" if !r.is_empty() => {
+            // --rates beta,lambda,mu_h,mu_m
+            CRN::prion(
+                r.get(0).copied().unwrap_or(0.175),
+                r.get(1).copied().unwrap_or(1.0),
+                r.get(2).copied().unwrap_or(0.5),
+                r.get(3).copied().unwrap_or(0.1),
+            )
+        }
+        "birth_death" if !r.is_empty() => {
+            CRN::birth_death(
+                r.get(0).copied().unwrap_or(0.1),
+                r.get(1).copied().unwrap_or(0.1),
+            )
+        }
+        _ => parse_crn(s),
     }
 }
 
