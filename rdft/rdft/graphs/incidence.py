@@ -329,6 +329,50 @@ class FeynmanGraph:
         """1PI (one-particle irreducible): no bridges among internal edges."""
         return not self.has_bridge()
 
+    def symmetry_factor_from_incidence(self) -> int:
+        """
+        Compute |Aut(G)| directly from the directed incidence matrix E.
+
+        An automorphism is a pair (σ_v, σ_e) of vertex and edge permutations
+        satisfying E[σ_e(i), σ_v(j)] = E[i, j] for all (i, j).
+
+        This uses the DIRECTED incidence matrix, which preserves edge
+        orientation — unlike the Kirchhoff polynomial K = det(E^T D E),
+        which is symmetric and only captures undirected automorphisms.
+
+        For the triangle: |Aut(E)| = 3 (cyclic Z₃), while |Aut(K)| = 6 (full S₃).
+        """
+        from itertools import permutations as perms
+
+        # Build directed incidence matrix for internal edges/vertices
+        int_edge_idx = self.internal_edge_indices
+        n_e = len(int_edge_idx)
+        n_v = self.n_vertices_int
+
+        E_int = sp.zeros(n_e, n_v)
+        for new_e, old_e in enumerate(int_edge_idx):
+            src, tgt, _ = self.edges[old_e]
+            if src < n_v:
+                E_int[new_e, src] = -1
+            if tgt < n_v:
+                E_int[new_e, tgt] = +1
+
+        count = 0
+        for v_perm in perms(range(n_v)):
+            for e_perm in perms(range(n_e)):
+                ok = True
+                for i in range(n_e):
+                    for j in range(n_v):
+                        if E_int[e_perm[i], v_perm[j]] != E_int[i, j]:
+                            ok = False
+                            break
+                    if not ok:
+                        break
+                if ok:
+                    count += 1
+
+        return count
+
     def symmetry_factor(self) -> int:
         """
         Compute |Aut(G)| for the internal subgraph as a directed,
