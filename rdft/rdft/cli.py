@@ -95,6 +95,16 @@ def corollas(
         'pair_annihilation': ReactionNetwork.pair_annihilation,
         'coagulation': ReactionNetwork.coagulation,
         'contact_process': ReactionNetwork.contact_process,
+        'triplet_annihilation': ReactionNetwork.triplet_annihilation,
+        'barw_even': ReactionNetwork.barw_even,
+        'barw_odd': ReactionNetwork.barw_odd,
+        'pcpd': ReactionNetwork.pcpd,
+        'schlogl_first': ReactionNetwork.schlogl_first,
+        'schlogl_second': ReactionNetwork.schlogl_second,
+        'prion': lambda: ReactionNetwork.prion_propagation(minimal=True),
+        'lotka_volterra': ReactionNetwork.lotka_volterra,
+        'michaelis_menten': ReactionNetwork.michaelis_menten,
+        'reversible_annihilation': ReactionNetwork.reversible_annihilation,
     }
 
     if process not in factories:
@@ -161,6 +171,75 @@ def stoichiometry(
     for p in range(1, 6):
         r = ac_full_derivation(L, d, p=p)
         typer.echo(f"  p={p}: α_{p} = {r['alpha_p']}")
+
+
+@app.command()
+def survey():
+    """Run all 16 literature CRNs through the AC pipeline."""
+    from rdft.core.reaction_network import ReactionNetwork
+    from rdft.core.generators import Liouvillian
+    from rdft.ac.dse import (
+        combinatorial_dse_kernel, upper_critical_dimension,
+        classify_vertices, diagnose_singularity,
+    )
+    import sympy as sp
+
+    G = sp.Symbol('G')
+
+    factories = {
+        '2A→∅':          ReactionNetwork.pair_annihilation,
+        '2A→A':          ReactionNetwork.coagulation,
+        '3A→∅':          lambda: ReactionNetwork.triplet_annihilation(),
+        '4A→∅':          lambda: ReactionNetwork.k_particle_annihilation(4),
+        'Gribov':        ReactionNetwork.gribov,
+        'Contact':       ReactionNetwork.contact_process,
+        'Schlögl II':    ReactionNetwork.schlogl_second,
+        'BARW-odd':      ReactionNetwork.barw_odd,
+        'BARW-even':     ReactionNetwork.barw_even,
+        'PCPD':          ReactionNetwork.pcpd,
+        'Schlögl I':     ReactionNetwork.schlogl_first,
+        'Lotka-Volterra': ReactionNetwork.lotka_volterra,
+        '2A⇌C':          ReactionNetwork.reversible_annihilation,
+        'Prion':         lambda: ReactionNetwork.prion_propagation(minimal=True),
+        'Michaelis-Menten': ReactionNetwork.michaelis_menten,
+    }
+
+    typer.echo(f"\n{'='*70}")
+    typer.echo(f"  RDFT: CRN Survey — AC Pipeline on 15 Literature Processes")
+    typer.echo(f"{'='*70}\n")
+
+    for name, factory in factories.items():
+        net = factory()
+        L = Liouvillian(net)
+        verts = L.vertices
+
+        # Handle multi-species
+        if net.n_species == 1:
+            phi = combinatorial_dse_kernel(verts, G)
+            d_c = upper_critical_dimension(verts)
+            diag = diagnose_singularity(verts)
+            stype = diag.get('singularity_type', '?')
+            warnings = diag.get('warnings', [])
+        else:
+            d_c_vals = []
+            for key in verts:
+                total_legs = sum(sum(pair) for pair in key)
+                if total_legs >= 3:
+                    d_c_vals.append(sp.Rational(4, total_legs - 2))
+            d_c = max(d_c_vals) if d_c_vals else '∞'
+            stype = 'multi-species'
+            warnings = []
+
+        try:
+            deg = sp.Poly(combinatorial_dse_kernel(verts, G), G).degree() if net.n_species == 1 else '?'
+        except Exception:
+            deg = '?'
+
+        typer.echo(f"  {name:<18s}  d_c={str(d_c):>5s}  deg={str(deg):>2s}  {stype}")
+        for w in warnings:
+            typer.echo(f"    ⚠ {w}")
+
+    typer.echo(f"\nDone. See `rdft analyze <process>` for detailed analysis of any single CRN.")
 
 
 @app.command()

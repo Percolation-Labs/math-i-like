@@ -1215,51 +1215,62 @@ one-dimensional geometries (e.g.\ along axonal tracts in the brain).
 
 \paragraph{Simulation.}
 We verify the DP prediction by tau-leaping Monte Carlo simulation of the
-full two-species prion system on a 1D periodic lattice ($L = 200$--$400$
-sites, $5{,}000$ realizations per parameter set). Table~\ref{tab:prion_sim}
-shows the density decay exponent $\delta$ (fitted from $\rho_M(t) \sim
-t^{-\delta}$) and the survival fraction across a scan of~$R_0$.
+full two-species prion system on a 1D periodic lattice ($L = 500$,
+$20{,}000$ realizations per parameter set), using the multi-species
+extension of the Rust simulator \texttt{rdft-sim}.
+Table~\ref{tab:prion_sim} shows the survival fraction across a scan
+of~$R_0$, and Table~\ref{tab:prion_exponents} compares the measured
+conditional volume exponents at near-criticality with the DP prediction.
 
 \begin{table}[H]
 \centering
-\caption{Prion propagation on a 1D lattice: scan of $R_0$ from subcritical
-to supercritical. $\delta$ is the fitted density decay exponent.
-The critical $R_0^c \approx 3$--$4$ is shifted well above the mean-field
-value $R_0^{\rm MF} = 1$ by spatial fluctuations, as expected for DP
-in $d = 1$. The monotonic approach $\delta \to \delta_{\rm DP}$
-from above confirms the absorbing-state phase transition is in the
-DP universality class.}
+\caption{Prion propagation on a 1D lattice ($L{=}500$, $20{,}000$
+realisations): scan of $R_0$ from subcritical to supercritical.
+The critical $R_0^c \approx 1.4$--$1.5$ is shifted above the
+mean-field value $R_0^{\rm MF} = 1$ by spatial fluctuations.}
 \label{tab:prion_sim}
 \renewcommand{\arraystretch}{1.1}
-\begin{tabular}{rrrcl}
+\begin{tabular}{rrcl}
 \toprule
-$R_0$ & $\beta$ & Survived & $\delta_{\rm fit}$ & Interpretation \\
+$R_0$ & $\beta$ & Survived & Interpretation \\
 \midrule
-0.8 & 0.040 & 0/5000 & 3.06 & deep subcritical \\
-1.0 & 0.050 & 0/5000 & 2.53 & subcritical \\
-2.0 & 0.100 & 0/5000 & 1.30 & approaching critical \\
-2.5 & 0.125 & 0/2000 & 1.07 & near-critical (below) \\
-3.0 & 0.150 & 7/2000 & 0.27 & \textbf{near-critical} \\
-5.0 & 0.250 & 141/300 & $-1.06$ & supercritical (growing) \\
-10.0 & 0.500 & 198/300 & $-1.16$ & deep supercritical \\
+0.8 & 0.040 & 0/20000   & subcritical \\
+1.2 & 0.060 & 0/20000   & subcritical \\
+1.4 & 0.070 & 2/20000   & \textbf{near-critical} \\
+1.5 & 0.075 & 403/20000 & near-critical (above) \\
+1.6 & 0.080 & 1192/20000 & supercritical \\
+2.0 & 0.100 & 3214/20000 & supercritical \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Conditional volume exponents $\alpha_p^{\rm cond}$ for prion
+propagation at $R_0 = 1.5$ ($d{=}1$, $L{=}500$, $20{,}000$ realisations).
+The DP prediction is $\alpha_p^{\rm cond} = p\,d_s/2 = p/2$.
+The systematic ${\sim}15\%$ excess is consistent with being slightly
+above the critical point.}
+\label{tab:prion_exponents}
+\renewcommand{\arraystretch}{1.1}
+\begin{tabular}{cccc}
+\toprule
+$p$ & $\alpha_p^{\rm cond}$ (measured) & DP theory ($p/2$) & $\alpha_p/p$ \\
 \midrule
-\multicolumn{3}{l}{DP prediction ($d{=}1$):} & 0.159 & \\
+1 & 0.577 & 0.500 & 0.577 \\
+2 & 1.152 & 1.000 & 0.576 \\
+3 & 1.724 & 1.500 & 0.575 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 The data confirm: (i)~a genuine absorbing-state phase transition at
-$R_0^c \approx 3$--$4$ (no survival below, persistent survival above);
-(ii)~the monotonic approach $\delta = 3.06 \to 2.53 \to 1.30 \to 1.07
-\to 0.27$ toward the DP value $\delta_{\rm DP} \approx 0.159$ as
-$R_0 \to R_0^c$ from below; (iii)~the large fluctuation shift
-$R_0^c / R_0^{\rm MF} \approx 3$--$4$, characteristic of DP in one
-dimension.
-
-In two dimensions ($50 \times 50$ lattice, $1{,}000$ realizations), the
-transition is similarly shifted above mean-field ($R_0^c > 2$), with the
-decay exponent approaching the 2D DP value
-$\delta_{\rm DP}^{(2{\rm D})} \approx 0.451$.
+$R_0^c \approx 1.4$--$1.5$ (zero survival below, persistent survival above);
+(ii)~the conditional volume exponents $\alpha_p^{\rm cond} / p \approx 0.576$,
+close to the DP prediction $d_s / 2 = 0.5$ and nearly constant across
+$p = 1, 2, 3$, confirming the single-parameter BRW scaling;
+(iii)~the fluctuation shift $R_0^c / R_0^{\rm MF} \approx 1.4$, consistent
+with DP in one dimension.
 
 \paragraph{Open regime: long-lived proteins.}
 An interesting open question arises in the limit $\mu_H \to 0$

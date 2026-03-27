@@ -39,11 +39,8 @@ rdft corollas gribov
 # Full BRW worked example — reproduces Bordeu, Amarteifio+ (2019)
 rdft brw
 
-# Full BRW worked example (6 steps, Bordeu+ 2019)
-python examples/brw_complete.py
-
-# CRN survey — run all 14 literature CRNs through the AC pipeline
-python examples/crn_survey.py
+# Run all 15 literature CRNs through the AC pipeline
+rdft survey
 ```
 
 ## Python API
