@@ -1,0 +1,1972 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{tcolorbox}
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{natbib}
+
+\geometry{margin=2.5cm, top=3cm, bottom=3cm}
+
+\definecolor{deepblue}{RGB}{0,51,102}
+\definecolor{midblue}{RGB}{0,100,180}
+\definecolor{lightblue}{RGB}{220,235,250}
+\definecolor{deepred}{RGB}{140,0,0}
+\definecolor{boxgrey}{RGB}{245,245,248}
+\definecolor{gold}{RGB}{180,140,0}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=deepblue,
+  citecolor=deepred,
+  urlcolor=midblue
+}
+
+\tcbuselibrary{skins,breakable}
+
+\newtcolorbox{keybox}[1][]{
+  colback=lightblue,
+  colframe=deepblue,
+  fonttitle=\bfseries,
+  title=#1,
+  breakable,
+  arc=3pt
+}
+
+\newtcolorbox{defbox}[1][]{
+  colback=boxgrey,
+  colframe=midblue,
+  fonttitle=\bfseries\color{deepblue},
+  title=#1,
+  breakable,
+  arc=3pt
+}
+
+\newtcolorbox{resultbox}[1][]{
+  colback=lightblue!40,
+  colframe=gold,
+  fonttitle=\bfseries\color{gold!80!black},
+  title=#1,
+  breakable,
+  arc=3pt
+}
+
+\titleformat{\section}{\large\bfseries\color{deepblue}}{{\thesection}}{1em}{}[\color{deepblue}\titlerule]
+\titleformat{\subsection}{\normalsize\bfseries\color{midblue}}{{\thesubsection}}{1em}{}
+\titleformat{\subsubsection}{\normalsize\itshape\color{deepblue}}{{\thesubsubsection}}{1em}{}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{deepblue}\textit{Generating Functions, Field Theory, and Analytic Combinatorics}}
+\fancyhead[R]{\small\color{deepblue}\thepage}
+\fancyfoot[C]{\small\color{gray}Tutorial Draft}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem*{remark}{Remark}
+
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+
+% ---- Notation shortcuts ----
+\newcommand{\GF}[1]{#1(z)}
+\newcommand{\EGF}[1]{\hat{#1}(z)}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\ad}{a^\dagger}
+\newcommand{\Hcal}{\mathcal{H}}
+\newcommand{\Acal}{\mathcal{A}}
+\newcommand{\Tcal}{\mathcal{T}}
+\newcommand{\diff}{\,\mathrm{d}}
+\newcommand{\coeff}[2]{[#1^{#2}]}
+\newcommand{\abs}[1]{\left|#1\right|}
+\newcommand{\set}[1]{\left\{#1\right\}}
+
+\begin{document}
+
+% ========== TITLE PAGE ==========
+\begin{titlepage}
+\centering
+\vspace*{2cm}
+{\Huge\bfseries\color{deepblue} Generating Functions, Field Theory,\\[0.4em] and Analytic Combinatorics}\\[1em]
+{\large\color{midblue} A Unified Tutorial on the Stochastic SIR Epidemic,\\
+Doi--Peliti Reaction--Diffusion Theory,\\
+and the Analytic Combinatorics of Critical Exponents}\\[3cm]
+
+\begin{tcolorbox}[colback=lightblue,colframe=deepblue,width=0.85\textwidth]
+\centering\itshape
+This document develops three parallel frameworks---probability generating functions
+for stochastic processes, Doi--Peliti field theory for reaction--diffusion systems,
+and Flajolet's analytic combinatorics---showing that all three share a common
+algebraic backbone and arrive at the same critical exponents by different routes.
+Every identity is motivated and every definition is given before it is used.
+\end{tcolorbox}
+
+\vfill
+{\small Version 1.0 \quad|\quad March 2026}
+\end{titlepage}
+
+\tableofcontents
+\clearpage
+
+% ========== INTRODUCTION ==========
+\section{Introduction and Motivation}
+
+Three apparently distinct bodies of mathematics meet at a single generating function.
+
+\begin{itemize}[leftmargin=2em]
+  \item \textbf{Stochastic epidemiology} asks: given a random SIR epidemic,
+        what is the probability of an outbreak of size $n$? The answer is encoded
+        in a probability generating function (PGF) satisfying a first-order PDE
+        whose \emph{characteristics are the deterministic SIR orbits}.
+
+  \item \textbf{Doi--Peliti field theory} asks: what is the long-time density
+        of particles undergoing the reaction $A+A\to\emptyset$?
+        The answer emerges from a path integral whose saddle-point equation
+        is identical to the mean-field rate equation.
+
+  \item \textbf{Analytic combinatorics} asks: given a recursively defined
+        class of combinatorial objects, how many exist of size $n$, and what
+        is the asymptotic growth? The answer comes from the type of singularity
+        of the corresponding generating function.
+\end{itemize}
+
+The central message is:
+
+\begin{keybox}[The Unifying Principle]
+A phase transition, epidemic threshold, or asymptotic exponent is a
+\textbf{singularity} of a generating function. The \emph{type} of singularity
+(pole, square-root branch point, logarithm) determines the universality class.
+The three frameworks are three different algebraic routes to the same singularity.
+\end{keybox}
+
+\subsection{Notation and Conventions}
+
+Throughout this document:
+\begin{itemize}[leftmargin=2em]
+  \item $[z^n] f(z)$ denotes the coefficient of $z^n$ in the power series $f(z)$.
+  \item $f(z) \sim g(z)$ as $z\to z_*$ means $f(z)/g(z)\to 1$.
+  \item $a_n \sim C \cdot \alpha^n \cdot n^\beta$ means the ratio of the two sides
+        tends to 1 as $n\to\infty$.
+  \item $[a,b] = ab - ba$ is the commutator of operators $a$ and $b$.
+  \item $\Gamma(s)$ is the Euler gamma function, with $\Gamma(1/2)=\sqrt{\pi}$.
+  \item All generating functions are \emph{formal} power series unless the context
+        specifies analytic continuation.
+\end{itemize}
+
+A quick-reference table of standard results, notation, and literature is provided
+in Appendix~\ref{app:table}.
+
+\clearpage
+
+% ========== PART I: SIR ==========
+\section{Part I: The Stochastic SIR Epidemic}
+\label{sec:sir}
+
+\subsection{The Deterministic SIR System}
+
+The Kermack--McKendrick SIR model \cite{kermack1927} partitions a population of
+size $N$ into susceptible ($S$), infectious ($I$), and recovered ($R$) compartments.
+The deterministic dynamics are:
+
+\begin{equation}
+  \frac{dS}{dt} = -\beta SI, \qquad
+  \frac{dI}{dt} = \beta SI - \gamma I, \qquad
+  \frac{dR}{dt} = \gamma I,
+  \label{eq:sir_ode}
+\end{equation}
+
+where $\beta > 0$ is the infection rate and $\gamma > 0$ is the recovery rate.
+The \emph{basic reproduction number} is
+
+\begin{equation}
+  R_0 = \frac{\beta N}{\gamma}.
+  \label{eq:R0}
+\end{equation}
+
+\subsubsection{The Conservation Law}
+
+Dividing the $I$-equation by the $S$-equation:
+
+\[
+  \frac{dI}{dS} = \frac{\beta SI - \gamma I}{-\beta SI} = -1 + \frac{\gamma}{\beta S}
+  = -1 + \frac{1}{R_0 S/N}.
+\]
+
+Integrating (with $s = S/N$ the normalised susceptible fraction):
+
+\begin{equation}
+  \boxed{ I + S - \frac{N}{R_0}\ln S = C_0, }
+  \label{eq:sir_conserved}
+\end{equation}
+
+where $C_0 = I(0) + S(0) - \frac{N}{R_0}\ln S(0)$ is fixed by initial conditions.
+Equation~\eqref{eq:sir_conserved} defines the \textbf{SIR orbit} in $(S,I)$ space.
+It is the single most important equation in this document; we will rederive it
+from two completely different directions in Parts II and III.
+
+\subsubsection{The Epidemic Threshold}
+
+The epidemic peak occurs where $dI/dt = 0$, which gives $S_* = N/R_0$, i.e.\ the
+threshold susceptible fraction is $s_* = 1/R_0$. The epidemic grows if $S > S_*$
+(i.e.\ $R_0 > 1$) and decays if $S < S_*$.
+
+\begin{keybox}[Epidemic Threshold]
+$R_0 = 1$ is the critical point. For $R_0 > 1$ a major epidemic is possible;
+for $R_0 < 1$ the epidemic always dies out. The bifurcation is continuous
+(second-order in the statistical-physics sense).
+\end{keybox}
+
+\subsection{The Stochastic SIR: Master Equation}
+
+The stochastic SIR is a continuous-time Markov chain on $(S, I)$ with transitions:
+
+\[
+  (S,I) \to (S-1,I+1) \quad\text{at rate}\quad \frac{\beta S I}{N},
+  \qquad
+  (S,I) \to (S, I-1) \quad\text{at rate}\quad \gamma I.
+\]
+
+Let $P(s, i, t)$ be the probability of state $(S=s, I=i)$ at time $t$.
+The \textbf{master equation} (Kolmogorov forward equation) is:
+
+\begin{align}
+  \partial_t P(s,i,t) &=
+    \frac{\beta(s+1)(i-1)}{N} P(s+1,i-1,t)
+    + \gamma(i+1) P(s, i+1, t) \notag\\
+  &\quad - \left[\frac{\beta si}{N} + \gamma i\right] P(s,i,t).
+  \label{eq:master_sir}
+\end{align}
+
+This is a system of $(N+1)^2$ coupled ODEs --- impossible to solve directly
+for large $N$.
+
+\subsection{The Probability Generating Function}
+
+\begin{definition}[Joint PGF]
+The joint probability generating function of $(S, I)$ is:
+\begin{equation}
+  G(x, y, t) = \sum_{s=0}^{N}\sum_{i=0}^{N} P(s,i,t)\, x^s y^i.
+  \label{eq:sir_pgf}
+\end{equation}
+\end{definition}
+
+The dummy variables $x$ and $y$ serve purely as \emph{size markers}: the coefficient
+of $x^s y^i$ in $G$ is the probability of exactly $s$ susceptibles and $i$
+infectives. No probabilistic meaning is attached to $x$ or $y$ themselves.
+
+\subsubsection{Why This Helps}
+
+The shift operators in the master equation act as multiplication and differentiation
+on $G$. Specifically:
+\begin{align*}
+  \sum_{s,i} s\, P(s,i) x^s y^i &= x\,\partial_x G,\\
+  \sum_{s,i} (s+1) P(s+1, i-1) x^s y^i &= \partial_x G \cdot \frac{y}{1} \cdot \ldots
+\end{align*}
+
+After careful bookkeeping (multiplying each term in \eqref{eq:master_sir} by $x^s y^i$
+and summing), the master equation becomes a \textbf{single PDE}:
+
+\begin{equation}
+  \partial_t G = \frac{\beta}{N}(y - x)\,\partial_x(x\,\partial_y G)
+                + \gamma(1 - y)\,\partial_y G.
+  \label{eq:sir_pgf_pde}
+\end{equation}
+
+This is a first-order linear PDE in $(x, y, t)$ --- amenable to the method of
+characteristics.
+
+\subsection{Method of Characteristics}
+
+\subsubsection{Setup}
+
+For a PDE of the form $\partial_t G + A(x,y)\partial_x G + B(x,y)\partial_y G = 0$,
+the \textbf{characteristics} are curves $(x(t), y(t))$ along which $G$ is constant.
+They satisfy:
+
+\[
+  \frac{dx}{dt} = A(x,y), \qquad \frac{dy}{dt} = B(x,y).
+\]
+
+Reading off from \eqref{eq:sir_pgf_pde} (after rearranging to standard form):
+
+\begin{equation}
+  \frac{dx}{dt} = -\frac{\beta}{N} x(y-1), \qquad
+  \frac{dy}{dt} = \frac{\beta}{N} y(y-1) - \gamma(y-1) = (y-1)\!\left(\frac{\beta y}{N} - \gamma\right).
+  \label{eq:sir_chars}
+\end{equation}
+
+\subsubsection{The Key Result}
+
+\begin{theorem}[Kendall 1956, \cite{kendall1956}]
+The characteristic equations \eqref{eq:sir_chars} of the SIR PGF PDE are, under
+the substitution $x = S/N$, $y = I/N$, identical to the deterministic SIR
+equations \eqref{eq:sir_ode}. Therefore, the probability distribution $P(s,i,t)$
+is transported along the deterministic SIR orbits in $(S,I)$ space.
+\end{theorem}
+
+\begin{proof}[Verification]
+Under $x = S/N$, $\dot{x} = \dot{S}/N = -\beta SI/N^2 = -(\beta/N)x(Ni/N)$.
+Comparing with \eqref{eq:sir_chars}: $\dot{x} = -(\beta/N)x(y-1)$. At leading order
+in $I/N$, $y - 1 \approx y = I/N$, giving $\dot{x} = -(\beta/N)x\cdot I/N$, which
+matches $\dot{S}/N$. The $y$-equation similarly recovers $\dot{I}$. \qed
+\end{proof}
+
+\begin{keybox}[The Stochastic--Deterministic Bridge]
+The stochastic probability distribution $P(s,i,t)$ is constant along the
+\emph{deterministic} SIR trajectories. The deterministic system is not an
+approximation to the stochastic one: they share the same invariant curves exactly,
+at the level of the generating function.
+\end{keybox}
+
+This result was first made explicit by Kendall \cite{kendall1956} and placed in the
+PDE framework by Chalub and Souza \cite{chalub2011}. Whittle \cite{whittle1955} had
+earlier used generating function methods to derive the final-size distribution.
+
+\subsection{Critical Exponents for the SIR}
+
+\subsubsection{Final Size Distribution}
+
+Solving along characteristics and applying boundary conditions at $I = 0$ gives the
+\textbf{final size distribution} (the probability that exactly $n$ individuals were
+infected in total). For the Markovian SIR with one initial infective in a large
+population:
+
+\begin{equation}
+  P(\text{total size} = n) = \frac{e^{-R_0 n}(R_0 n)^{n-1}}{n!}.
+  \label{eq:sir_finalsize}
+\end{equation}
+
+This is the \textbf{Borel distribution}. It is derivable directly from Lagrange
+inversion (see Part III). The generating function $T(z) = \sum_n P_n z^n$ satisfies:
+
+\begin{equation}
+  T(z) = z\, e^{R_0(T(z) - 1)}.
+  \label{eq:sir_lagrange}
+\end{equation}
+
+\subsubsection{Singularity and Critical Exponent}
+
+The singularity of $T(z)$ occurs where the implicit function theorem fails
+(see Section~\ref{sec:lagrange} for the general theory). Setting
+$\partial/\partial T[T - ze^{R_0(T-1)}] = 0$:
+
+\begin{equation}
+  T_* = \frac{1}{R_0}, \qquad z_* = \frac{1}{R_0} e^{1 - 1/R_0}.
+  \label{eq:sir_singularity}
+\end{equation}
+
+Near $z_*$, Taylor expanding to second order:
+
+\begin{equation}
+  T(z) \approx \frac{1}{R_0} - \sqrt{\frac{2}{R_0}} \cdot (z_* - z)^{1/2}
+  + \mathcal{O}(z_* - z).
+  \label{eq:sir_sqrtbranch}
+\end{equation}
+
+This is a \textbf{square-root branch point}. By the transfer theorem
+(Section~\ref{sec:transfer}):
+
+\begin{equation}
+  \boxed{P(\text{size} = n) \sim C \cdot n^{-3/2} \cdot z_*^{-n}, \qquad n\to\infty.}
+  \label{eq:sir_asymptotics}
+\end{equation}
+
+At criticality $R_0 = 1$: $z_* = 1$, and the $z_*^{-n}$ factor disappears, leaving
+the \textbf{pure power law} $P_n \sim C n^{-3/2}$.
+
+\begin{resultbox}[SIR Critical Exponent Summary]
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+Quantity & Formula & Derivation \\
+\midrule
+Epidemic threshold & $R_0 = 1$ & $T_* = 1/R_0 \to 1$ \\
+GF singularity & $z_* = e^{1-1/R_0}/R_0$ & IFT failure \\
+Singularity type & Square-root branch & $F_{TT} \neq 0$ \\
+Final-size decay & $P_n \sim n^{-3/2}$ at $R_0=1$ & Transfer theorem \\
+Final-size GF & Borel distribution & Lagrange inversion \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{resultbox}
+
+\clearpage
+
+% ========== PART II: DOI-PELITI ==========
+\section{Part II: Doi--Peliti Field Theory}
+\label{sec:dp}
+
+\subsection{Physical Motivation}
+
+Consider a population of identical particles $A$ in a volume, undergoing
+diffusion and the annihilation reaction $A + A \to \emptyset$ at rate $\lambda$.
+In one dimension, the mean particle density $\rho(t)$ is observed to decay as:
+
+\[
+  \rho(t) \sim t^{-1/2}, \qquad t\to\infty.
+\]
+
+Deriving this rigorously --- including the universal amplitude --- requires going
+beyond the mean-field rate equation $\dot\rho = -\lambda\rho^2$, which gives only
+$\rho \sim (\lambda t)^{-1}$. Fluctuations dominate in low dimensions, and a
+field-theoretic treatment is needed.
+
+\subsection{Second Quantisation of the Master Equation}
+
+\subsubsection{The Fock Space}
+
+Let the state of the system at site $x$ be a non-negative integer $n_x$ (the
+particle number). Define a \textbf{Fock space} $\mathcal{F}$ with basis vectors
+$|n\rangle$ (for a single site, suppressing spatial index for now). The state of
+the system at time $t$ is encoded in the \textbf{probability vector}:
+
+\begin{equation}
+  |\psi(t)\rangle = \sum_{n=0}^\infty P(n,t)\,|n\rangle.
+  \label{eq:fock_state}
+\end{equation}
+
+\begin{definition}[Creation and Annihilation Operators]
+Define operators $a$ (annihilation) and $\ad$ (creation) by their action on
+basis states:
+\begin{equation}
+  a\,|n\rangle = n\,|n-1\rangle, \qquad
+  \ad|n\rangle = |n+1\rangle.
+  \label{eq:ladder}
+\end{equation}
+\end{definition}
+
+These satisfy the canonical commutation relation:
+
+\begin{equation}
+  \boxed{[a, \ad] = 1.}
+  \label{eq:ccr}
+\end{equation}
+
+This is the \textbf{Weyl algebra} (or Heisenberg algebra), identical to the
+algebra of quantum mechanical ladder operators. The difference from quantum
+mechanics is purely interpretational: here $|n\rangle$ is a probability state,
+not a quantum state, so no Born rule applies.
+
+The number operator $\hat{N} = \ad a$ satisfies $\hat{N}|n\rangle = n|n\rangle$.
+
+\subsubsection{Why Annihilation and Creation?}
+
+In the master equation, the transition $n \to n-k$ (a reaction removing $k$
+particles) appears as:
+
+\[
+  \text{rate} \times P(n) \sim \text{rate} \times [n(n-1)\cdots(n-k+1)]\, P(n).
+\]
+
+The prefactor $n(n-1)\cdots(n-k+1)$ is exactly the action of $a^k$ on $|n\rangle$
+(followed by appropriate factors). So the master equation becomes:
+
+\begin{equation}
+  \partial_t |\psi\rangle = \Hcal\,|\psi\rangle,
+  \label{eq:doit_master}
+\end{equation}
+
+where $\Hcal$ is a polynomial in $a$ and $\ad$ called the \textbf{Liouvillian}
+(or pseudo-Hamiltonian). This was Doi's key insight \cite{doi1976a, doi1976b}.
+
+\subsubsection{The Liouvillian for $A + A \to \emptyset$}
+
+For pair annihilation at rate $\lambda$, the transition $n \to n-2$ occurs at rate
+$\lambda n(n-1)$. Writing the master equation and expressing it in terms of $a, \ad$:
+
+\begin{equation}
+  \Hcal = \lambda\bigl(1 - \ad{}^2\bigr)a^2.
+  \label{eq:liouvillian_aa}
+\end{equation}
+
+\begin{remark}
+The structure $(\text{final state operator} - \text{initial state operator})
+\times \text{rate operator}$ is universal: any reaction $kA \to \ell A$ gives
+$\Hcal = r(\ad{}^\ell - \ad{}^k)a^k$. See Appendix~\ref{app:table}.
+\end{remark}
+
+\subsection{The Generating Function as a Coherent State}
+
+\subsubsection{Representation on Power Series}
+
+Represent $\ad \to z$ (multiplication by $z$) and $a \to \partial_z$ (differentiation).
+Then:
+
+\begin{equation}
+  |\psi(t)\rangle \equiv G(z,t) = \sum_{n=0}^\infty P(n,t)\,z^n,
+  \label{eq:dp_gf}
+\end{equation}
+
+and the evolution equation \eqref{eq:doit_master} becomes:
+
+\begin{equation}
+  \partial_t G(z,t) = \Hcal(z, \partial_z)\, G(z,t).
+  \label{eq:dp_gfeq}
+\end{equation}
+
+\begin{keybox}[The Fundamental Identification]
+The probability generating function $G(z,t) = \sum_n P(n,t)z^n$ is \emph{identical}
+to the Doi Fock-space state vector in the representation $\ad = z$, $a = \partial_z$.
+The Weyl algebra acts on the space of formal power series exactly as on Fock space.
+This is not an analogy: it is an isomorphism.
+\end{keybox}
+
+\subsubsection{The Weyl Algebra Explicitly}
+
+The Weyl algebra $W_1$ is the algebra of polynomial differential operators generated
+by $z$ and $\partial_z$ with relation $[\partial_z, z] = 1$. It acts on $\C[[z]]$
+(formal power series) via:
+
+\[
+  z \cdot \sum_n c_n z^n = \sum_n c_n z^{n+1}, \qquad
+  \partial_z \cdot \sum_n c_n z^n = \sum_n n\,c_n z^{n-1}.
+\]
+
+Every reaction Liouvillian is an element of $W_1$ (or its spatial version
+$W_1 \otimes C^\infty(x)$ for field theories). The master equation is an
+ODE in $W_1$.
+
+\subsection{The Path Integral (Peliti's Construction)}
+
+Peliti \cite{peliti1985} showed how to convert the operator evolution
+\eqref{eq:doit_master} into a functional integral by inserting resolutions of
+identity in coherent states at each time step. The result is:
+
+\begin{equation}
+  \langle \text{observable} \rangle =
+  \int \mathcal{D}[\phi, \tilde\phi]\; \mathcal{O}[\phi]\; e^{-S[\phi,\tilde\phi]},
+  \label{eq:path_integral}
+\end{equation}
+
+where the \textbf{action} for a single-species system with reaction $A+A\to\emptyset$
+and diffusion is (after the \emph{Doi shift} $\tilde\phi \to 1 + \tilde\phi$):
+
+\begin{equation}
+  S = \int d^dx\,dt\; \left[
+    \tilde\phi\,(\partial_t - D\nabla^2)\phi
+    + 2\lambda\,\tilde\phi\phi^2
+    + \lambda\,\tilde\phi^2\phi^2
+  \right].
+  \label{eq:action_aa}
+\end{equation}
+
+The fields $\phi(x,t)$ and $\tilde\phi(x,t)$ are the Peliti \emph{response field}
+and \emph{density field} respectively. The physical density is $\rho(x,t) = \langle\phi(x,t)\rangle$.
+
+\subsubsection{Mean-Field Limit}
+
+Ignoring fluctuations ($\tilde\phi \to 0$, saddle-point approximation) and setting
+$\phi = \rho$ uniform: only the $\tilde\phi\phi^2$ term survives in the variation,
+giving $\partial_t\rho = -2\lambda\rho^2$, i.e.\ the mean-field rate equation.
+The path integral saddle is the deterministic orbit, exactly as the PGF characteristic
+is the SIR orbit.
+
+\subsection{Renormalisation Group Analysis}
+
+\subsubsection{The Ward Identity Cancellation}
+
+For the reaction $A+A\to\emptyset$ in $d$ dimensions, the quartic vertex
+$\tilde\phi^2\phi^2$ in \eqref{eq:action_aa} is exactly cancelled by a
+counter-term generated by the cubic vertex $\tilde\phi\phi^2$ at one loop.
+This follows from a Ward identity associated with the probability conservation
+constraint $H(1, a) = 0$ (see \cite{tauber2005} for the proof). The effective action is:
+
+\begin{equation}
+  S_\mathrm{eff} = \int d^dx\,dt\; \tilde\phi\,(-\partial_t + D\nabla^2)\phi,
+  \label{eq:action_free}
+\end{equation}
+
+i.e.\ the theory is \emph{Gaussian} in the IR. This is an exact statement,
+valid to all loop orders in $d \leq 2$.
+
+\subsubsection{Computing the Density Decay}
+
+From \eqref{eq:action_free}, the retarded Green's function (propagator) is:
+
+\begin{equation}
+  G_R(k, \omega) = \frac{1}{-i\omega + Dk^2}.
+  \label{eq:propagator}
+\end{equation}
+
+The density at time $t$ is obtained by integrating out all wavenumber modes:
+
+\begin{equation}
+  \rho(t) = \rho_0 \int \frac{d^dk}{(2\pi)^d}\; e^{-Dk^2 t}
+           = \frac{\rho_0}{(4\pi D t)^{d/2}}.
+  \label{eq:density_decay}
+\end{equation}
+
+In $d = 1$:
+
+\begin{equation}
+  \boxed{\rho(t) \sim t^{-1/2}.}
+  \label{eq:rho_half}
+\end{equation}
+
+The exponent $1/2$ comes from the Gaussian integral over a single momentum component
+in one spatial dimension. The upper critical dimension is $d_c = 2$; for $d > d_c$
+the mean-field result $\rho \sim t^{-1}$ holds.
+
+\subsubsection{The Full Doi--Peliti Calculation: Lee (1994)}
+
+The above treatment is schematic. The complete RG calculation for $kA\to\emptyset$
+was performed by Lee \cite{lee1994}, who showed:
+
+\begin{itemize}[leftmargin=2em]
+  \item The density decay exponent $\alpha_d = d/2$ for $d < d_c = 2/(k-1)$ is
+        \emph{exact} --- determined by dimensional analysis alone, not corrected
+        by loops.
+  \item For $k=2$ (pair annihilation), $d_c = 2$ and $\alpha_1 = 1/2$ is exact.
+  \item The amplitude requires an explicit one-loop calculation.
+\end{itemize}
+
+The comprehensive review by T\"auber, Howard, and Vollmayr-Lee \cite{tauber2005}
+presents the full pedagogical derivation including Feynman rules, renormalisation,
+and the Callan--Symanzik equation.
+
+\begin{resultbox}[Doi--Peliti Critical Exponent Summary]
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+Quantity & Formula & Source \\
+\midrule
+Upper critical dimension & $d_c = 2/(k-1)$ & Dimensional analysis \\
+Density decay ($d < d_c$) & $\rho \sim t^{-d/2}$ & Gaussian integral \\
+Density decay ($d > d_c$) & $\rho \sim t^{-1}$ & Mean-field \\
+Density decay ($d=1$, $k=2$) & $\rho \sim t^{-1/2}$ & Exact \\
+Exponent exactness & All orders in $\epsilon = d_c - d$ & Ward identity \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{resultbox}
+
+\subsection{The Linking Structure: Same Square Root}
+
+Before proceeding to analytic combinatorics, it is worth noting the common
+algebraic structure between the SIR and Doi--Peliti results.
+
+In Laplace space ($t \to s$), the density propagator is:
+
+\[
+  \hat\rho(s) = \int \frac{d^dk}{(2\pi)^d} \frac{1}{s + Dk^2} \sim s^{-1+d/2}
+  \qquad (d=1) \implies \hat\rho(s) \sim s^{-1/2}.
+\]
+
+For the SIR final-size distribution, the Laplace transform of the $n^{-3/2}$ tail is:
+
+\[
+  \sum_n n^{-3/2} e^{-sn} \sim \int_0^\infty n^{-3/2} e^{-sn}\diff n = \Gamma(-1/2)\cdot s^{1/2} \sim s^{1/2}.
+\]
+
+The survival probability $P_{\mathrm{surv}}(t) = \sum_{n>t} P_n \sim t^{-1/2}$ in Laplace space gives $\sim s^{-1/2}$.
+
+Both are shadows of the same $\sqrt{s}$, which is the Laplace transform signature
+of Brownian motion. The square root appears because the underlying conserved
+quantity --- the SIR orbit \eqref{eq:sir_conserved} and the Doi diffusion
+propagator \eqref{eq:propagator} --- both encode a one-dimensional Gaussian
+random walk.
+
+\clearpage
+
+% ========== PART III: ANALYTIC COMBINATORICS ==========
+\section{Part III: Analytic Combinatorics}
+\label{sec:ac}
+
+\subsection{What is Analytic Combinatorics?}
+
+Analytic combinatorics \cite{flajolet2009} is a systematic framework for translating
+between:
+
+\begin{enumerate}[leftmargin=2em]
+  \item The \textbf{recursive structure} of a combinatorial class (how its objects
+        are built from smaller objects), and
+  \item The \textbf{asymptotic count} of objects of size $n$.
+\end{enumerate}
+
+The bridge is the generating function. The route is:
+
+\[
+  \textbf{Grammar} \xrightarrow{\text{symbolic method}}
+  \textbf{GF equation} \xrightarrow{\text{complex analysis}}
+  \textbf{Asymptotics.}
+\]
+
+The power of the method is that both arrows are \emph{mechanical}: given the
+grammar, the GF equation follows by a dictionary; given the GF equation, asymptotics
+follow from the type of its dominant singularity.
+
+\subsection{Combinatorial Classes and Generating Functions}
+
+\begin{definition}[Combinatorial Class]
+A \textbf{combinatorial class} is a set $\mathcal{A}$ with a \emph{size} function
+$|\cdot|: \mathcal{A} \to \N$ such that the number of objects of each size is
+finite. Write $a_n = |\{\alpha \in \mathcal{A} : |\alpha| = n\}|$.
+\end{definition}
+
+\begin{definition}[Ordinary Generating Function]
+The \textbf{ordinary generating function (OGF)} of a class $\mathcal{A}$ is the
+formal power series:
+\begin{equation}
+  A(z) = \sum_{n \geq 0} a_n z^n.
+  \label{eq:ogf}
+\end{equation}
+The variable $z$ is a \emph{size marker}: the coefficient of $z^n$ counts objects
+of size $n$.
+\end{definition}
+
+\begin{definition}[Exponential Generating Function]
+For \emph{labelled} structures (where atoms are distinguishable), use the
+\textbf{exponential generating function (EGF)}:
+\begin{equation}
+  \hat{A}(z) = \sum_{n \geq 0} a_n \frac{z^n}{n!}.
+  \label{eq:egf}
+\end{equation}
+\end{definition}
+
+\subsubsection{Why Two Kinds?}
+
+In an unlabelled structure, atoms are indistinguishable (e.g.\ binary trees
+with identical leaves). In a labelled structure, each atom carries a unique
+label $1, \ldots, n$ (e.g.\ permutations, Poisson-offspring trees).
+
+The factor $1/n!$ in the EGF precisely cancels the overcounting from relabellings.
+The combinatorial constructions of Section~\ref{sec:symbolic} look identical for
+both, but with different GFs.
+
+\subsection{The Symbolic Method}
+\label{sec:symbolic}
+
+The key insight is that set-theoretic operations on combinatorial classes
+correspond to algebraic operations on generating functions. The following
+table holds for both OGFs (unlabelled) and EGFs (labelled):
+
+\begin{center}
+\begin{tabular}{llll}
+\toprule
+Construction & Notation & OGF & EGF \\
+\midrule
+Disjoint union & $\mathcal{A} + \mathcal{B}$ & $A(z) + B(z)$ & $\hat{A}(z) + \hat{B}(z)$ \\
+Cartesian product & $\mathcal{A} \times \mathcal{B}$ & $A(z)\cdot B(z)$ & $\hat{A}(z)\cdot\hat{B}(z)$ \\
+Sequence & $\mathrm{SEQ}(\mathcal{A})$ & $\frac{1}{1-A(z)}$ & $\frac{1}{1-\hat{A}(z)}$ \\
+Set (unlabelled) & $\mathrm{MSET}(\mathcal{A})$ & $\exp\!\sum_{k\geq 1}\frac{A(z^k)}{k}$ & --- \\
+Set (labelled) & $\mathrm{SET}(\mathcal{A})$ & --- & $e^{\hat{A}(z)}$ \\
+Cycle & $\mathrm{CYC}(\mathcal{A})$ & $\log\frac{1}{1-A(z)}$ & $\log\frac{1}{1-\hat{A}(z)}$ \\
+Pointing & $\Theta\mathcal{A}$ & $z\, A'(z)$ & $z\,\hat{A}'(z)$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsubsection{Why These Rules Hold}
+
+\textbf{Disjoint union:} The $a_n + b_n$ objects of size $n$ in $\mathcal{A}+\mathcal{B}$
+contribute $a_n z^n + b_n z^n = (a_n + b_n)z^n$.
+
+\textbf{Cartesian product:} An object in $\mathcal{A}\times\mathcal{B}$ of size $n$
+is a pair $(\alpha, \beta)$ with $|\alpha| + |\beta| = n$. Summing over all splits:
+$\sum_{j=0}^n a_j b_{n-j}$, which is the coefficient of $z^n$ in $A(z)B(z)$.
+This is just the Cauchy product of series.
+
+\textbf{Sequence:} $\mathrm{SEQ}(\mathcal{A}) = \epsilon + \mathcal{A} + \mathcal{A}^2 + \ldots$
+where $\epsilon$ is the empty sequence. Translating: $1 + A + A^2 + \ldots = 1/(1-A)$.
+
+\textbf{Labelled set:} A set of $k$ labelled objects from $\mathcal{A}$ has EGF
+$\hat{A}(z)^k/k!$ (divide by $k!$ because the set has no order). Summing over $k$:
+$\sum_{k\geq 0} \hat{A}^k/k! = e^{\hat{A}(z)}$.
+
+\begin{example}[Binary Trees]
+A binary tree $\mathcal{T}$ is either a leaf $\bullet$ (size 1) or a pair of
+binary trees joined at a root (size $= 1 + $ size of left subtree $+$ size of
+right subtree). The grammar is:
+\[
+  \mathcal{T} = \{\bullet\} + \bullet \times \mathcal{T} \times \mathcal{T}.
+\]
+Translating: $T(z) = z + z\cdot T(z)^2$. Solving: $T(z) = (1-\sqrt{1-4z})/2$.
+Expanding: $[z^n]T(z) = C_{n-1}$ where $C_n = \binom{2n}{n}/(n+1)$ is the $n$-th
+Catalan number.
+\end{example}
+
+\subsection{Singularity Analysis}
+\label{sec:singularity}
+
+\subsubsection{Why Singularities Determine Asymptotics}
+
+The coefficients of a GF are recovered by Cauchy's integral formula:
+
+\begin{equation}
+  a_n = [z^n]\,A(z) = \frac{1}{2\pi i}\oint_{|z|=r} \frac{A(z)}{z^{n+1}}\diff z.
+  \label{eq:cauchy}
+\end{equation}
+
+For large $n$, this contour integral is dominated by the \textbf{singularities of
+$A(z)$ closest to the origin} (smallest $|z_*|$). All the large-$n$ information
+is compressed into the nature of these singularities.
+
+\subsubsection{The Transfer Theorems}
+
+Let $\rho = 1/|z_*|$ be the exponential growth rate and write $A(z) \sim K(1-z/z_*)^\alpha$
+near $z_*$.
+
+\begin{theorem}[Transfer Theorem, Flajolet--Odlyzko \cite{flajolet2009}]
+If $A(z)$ is analytic in a \emph{dented domain} around $z_*$ (see Fig.~below)
+and $A(z) \sim K(1 - z/z_*)^\alpha$ as $z\to z_*$ with $\alpha \notin \N$, then:
+
+\begin{equation}
+  [z^n]\,A(z) \sim \frac{K}{\Gamma(-\alpha)}\cdot n^{-\alpha-1} \cdot z_*^{-n}.
+  \label{eq:transfer}
+\end{equation}
+\end{theorem}
+
+\noindent The key cases:
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+Singularity type & Local form & $a_n$ asymptotics \\
+\midrule
+Simple pole & $(1 - z/z_*)^{-1}$ & $C \cdot z_*^{-n}$ \\
+$k$-th order pole & $(1 - z/z_*)^{-k}$ & $C \cdot n^{k-1} \cdot z_*^{-n}$ \\
+Square-root branch & $(1-z/z_*)^{1/2}$ & $C \cdot n^{-3/2} \cdot z_*^{-n}$ \\
+Inverse square-root & $(1-z/z_*)^{-1/2}$ & $C \cdot n^{-1/2} \cdot z_*^{-n}$ \\
+Logarithm & $\log(1-z/z_*)$ & $C \cdot n^{-1} \cdot z_*^{-n}$ \\
+General $\alpha$ & $(1-z/z_*)^\alpha$ & $C \cdot n^{-\alpha-1} \cdot z_*^{-n}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The $\Gamma(-\alpha)$ in \eqref{eq:transfer} is the normalisation from the
+generalised binomial expansion: $(1-u)^\alpha = \sum_n \binom{\alpha}{n}(-u)^n$
+and $\binom{\alpha}{n} \sim n^{-\alpha-1}/\Gamma(-\alpha)$.
+
+\subsubsection{The Dented Domain (Briefly)}
+
+The transfer theorem requires that $A(z)$ can be analytically continued to a
+region $\Delta$ that \emph{dents into} the disk $|z| < |z_*|$ from outside
+the singularity. This excludes cases where there are infinitely many singularities
+on the circle $|z| = |z_*|$ (which can happen for combinatorial GFs with
+periodic structure). For all the GFs in this document, the condition is satisfied.
+
+\subsection{Lagrange Inversion}
+\label{sec:lagrange}
+
+\subsubsection{The Problem}
+
+Many combinatorial recursions take the \textbf{Lagrange form}:
+
+\begin{equation}
+  T(z) = z\,\phi(T(z)),
+  \label{eq:lagrange_eq}
+\end{equation}
+
+for some known function $\phi$. The GF $T(z)$ is implicitly defined and generally
+has no closed form. Lagrange (1770) gave a direct formula for its coefficients.
+
+\subsubsection{Origin: Fixed-Point Inversion}
+
+Equation \eqref{eq:lagrange_eq} says that $T$ is a fixed point of the map
+$T \mapsto z\phi(T)$. For small $z$, this map is a contraction and the fixed point
+is unique and analytic. As $z$ increases, the map eventually ceases to be a
+contraction --- this is exactly the singularity.
+
+More precisely, the implicit function theorem guarantees that $T(z)$ is analytic
+near $z = 0$ as long as $\partial/\partial T[T - z\phi(T)] \neq 0$, i.e.\ as long as
+$1 \neq z\phi'(T)$.
+
+\begin{theorem}[Lagrange Inversion Formula]
+If $T = z\phi(T)$ and $\phi(0) \neq 0$, then:
+
+\begin{equation}
+  [z^n]\,T(z) = \frac{1}{n}\,[T^{n-1}]\,\phi(T)^n.
+  \label{eq:lagrange_inversion}
+\end{equation}
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+Write $z = T/\phi(T)$ so that $dz = (1/\phi - T\phi'/\phi^2)dT$. By Cauchy's formula:
+\[
+[z^n]T = \frac{1}{2\pi i}\oint \frac{T}{z^{n+1}}\diff z
+= \frac{1}{2\pi i}\oint \frac{T}{\left(T/\phi(T)\right)^{n+1}}\frac{d z}{d T}\diff T.
+\]
+Computing $dz/dT$, using residue calculus at $T=0$, and simplifying yields
+\eqref{eq:lagrange_inversion}. \qed
+\end{proof}
+
+\subsubsection{The Singularity of the Lagrange Equation}
+
+Setting $\partial F/\partial T = 0$ where $F(T,z) = T - z\phi(T)$:
+
+\begin{equation}
+  1 = z_*\phi'(T_*), \qquad T_* = z_*\phi(T_*).
+  \label{eq:lagrange_singular}
+\end{equation}
+
+These two equations determine the branch point $(T_*, z_*)$. Near $(T_*, z_*)$,
+expanding to second order in $\delta T = T - T_*$:
+
+\[
+  0 = F_z(z_* - z) + \tfrac{1}{2}F_{TT}\,(\delta T)^2 + \ldots
+\]
+
+Since $F_z = -\phi(T_*)$ and $F_{TT} = -z_*\phi''(T_*)$:
+
+\begin{equation}
+  \delta T \sim \sqrt{\frac{2\phi(T_*)}{z_*\phi''(T_*)}}\cdot(z_* - z)^{1/2}.
+  \label{eq:lagrange_sqrtbranch}
+\end{equation}
+
+\textbf{Any Lagrange equation with $\phi'' \neq 0$ at the critical point produces
+a square-root branch point.} The exponent $-3/2$ in the coefficient asymptotics
+(via the transfer theorem) is therefore \emph{universal} for this class of equations.
+
+\clearpage
+
+% ========== PART IV: AC RECOVERS SIR AND DOI-PELITI ==========
+\section{Part IV: Analytic Combinatorics Recovers Both Results}
+\label{sec:acrecovery}
+
+\subsection{AC Derivation of the SIR Final-Size Distribution}
+
+\subsubsection{The Epidemic as a Labelled Tree}
+
+In the large-$N$ limit, each infectious individual independently infects a
+Poisson$(R_0)$ number of others before recovering. Because each new infection
+is of a (hitherto) susceptible individual chosen uniformly at random from a
+large pool, infections are approximately independent --- this is the
+\emph{branching process approximation}.
+
+The epidemic is therefore a \textbf{Galton--Watson tree} with Poisson$(R_0)$
+offspring. The total number of infected individuals (epidemic size) is the
+\textbf{total progeny} of this tree.
+
+The symbolic description is: an epidemic tree $\mathcal{T}$ consists of a
+labelled root followed by a labelled set of sub-epidemics (one per infection):
+
+\begin{equation}
+  \mathcal{T} = \bullet \times \mathrm{SET}(\mathcal{T}) \quad\text{(weighted by Poisson)}.
+  \label{eq:sir_grammar}
+\end{equation}
+
+In EGF language, with the Poisson weight $e^{R_0(T-1)}$:
+
+\begin{equation}
+  T(z) = z\,e^{R_0(T(z) - 1)}.
+  \label{eq:sir_lagrange2}
+\end{equation}
+
+This is the Lagrange equation \eqref{eq:lagrange_eq} with $\phi(T) = e^{R_0(T-1)}$.
+
+\subsubsection{Applying Lagrange Inversion}
+
+With $\phi(T) = e^{R_0(T-1)}$:
+
+\[
+  [z^n]T = \frac{1}{n}[T^{n-1}]\,e^{R_0 n(T-1)}
+          = \frac{e^{-R_0 n}}{n}\cdot\frac{(R_0 n)^{n-1}}{(n-1)!}
+          = \frac{e^{-R_0 n}(R_0 n)^{n-1}}{n!}.
+\]
+
+This recovers the Borel distribution \eqref{eq:sir_finalsize} in one line.
+
+\subsubsection{Finding the Singularity via the Lagrange Conditions}
+
+Applying \eqref{eq:lagrange_singular} with $\phi(T) = e^{R_0(T-1)}$,
+$\phi'(T) = R_0 e^{R_0(T-1)}$:
+
+\begin{align}
+  1 &= z_* R_0 e^{R_0(T_*-1)} \label{eq:sir_crit1}\\
+  T_* &= z_* e^{R_0(T_*-1)}. \label{eq:sir_crit2}
+\end{align}
+
+Dividing: $T_* R_0 = 1$, giving $T_* = 1/R_0$. Substituting back:
+$z_* = (1/R_0)e^{R_0(1/R_0 - 1)} = (1/R_0)e^{1-1/R_0}$, confirming
+\eqref{eq:sir_singularity}.
+
+\subsubsection{The Singular Locus Is the SIR Orbit}
+
+At the critical point, take logarithms of \eqref{eq:sir_crit2}:
+
+\[
+  \ln T_* = \ln z_* + R_0(T_* - 1).
+\]
+
+Rearranging:
+
+\begin{equation}
+  \ln z_* = \ln T_* - R_0 T_* + R_0.
+  \label{eq:singular_locus}
+\end{equation}
+
+Now let $T_*$ vary continuously (treating the singularity as a function of
+the critical point). Setting $T = S/N$ (susceptible fraction):
+
+\begin{equation}
+  \ln z = \ln\frac{S}{N} - R_0\frac{S}{N} + \text{const}.
+  \label{eq:singular_locus_S}
+\end{equation}
+
+Compare with the SIR conservation law \eqref{eq:sir_conserved}: $I + S - (N/R_0)\ln S = C_0$,
+which rearranges to:
+
+\begin{equation}
+  \ln S - R_0\frac{S}{N} = \tilde{C}.
+\end{equation}
+
+\textbf{These are identical.} The singular locus of the GF $T(z)$ traces the
+SIR orbit in $(S/N, z)$ space.
+
+\begin{keybox}[AC Recovers the SIR Conserved Quantity]
+The SIR conservation law $I + S - (N/R_0)\ln S = C$ is not an input to the
+analytic combinatorics calculation. It emerges as the \textbf{singular locus
+of the epidemic-tree generating function} under the substitution $T = S/N$.
+The method of characteristics (Part I) and the Lagrange singularity condition
+(Part III) are two different derivations of the same algebraic curve.
+\end{keybox}
+
+\subsubsection{The Two Branches = Minor vs Major Epidemic}
+
+Near $z_*$, \eqref{eq:lagrange_sqrtbranch} gives two branches $T = T_* \pm C\sqrt{z_* - z}$:
+
+\begin{itemize}[leftmargin=2em]
+  \item \textbf{Small branch} ($T < T_* = 1/R_0$): the epidemic is small, dies out
+        before crossing the peak susceptible threshold. This is the \emph{minor outbreak}.
+  \item \textbf{Large branch} ($T > T_* = 1/R_0$): the epidemic crosses the peak
+        and infects $O(N)$ individuals. This is the \emph{major epidemic}.
+\end{itemize}
+
+The extinction probability $q$ (probability of minor outbreak) is the value of
+$T(1)$ on the small branch: it satisfies $q = e^{R_0(q-1)}$, the classic
+Galton--Watson extinction equation.
+
+\subsection{AC Derivation of the $A+A\to\emptyset$ Exponent}
+
+\subsubsection{Reduction to First Passage}
+
+In one spatial dimension, particles cannot cross each other. Label them $1, 2, \ldots$
+from left to right. Particle $k$ is annihilated when it meets particle $k+1$ (or $k-1$).
+In \emph{relative} coordinates, the pair $(k, k+1)$ is described by a single
+random walk $X_t = x_{k+1}(t) - x_k(t)$ on the positive integers, starting at
+some $d > 0$. The pair annihilates when $X_t$ first hits 0.
+
+The density $\rho(t)$ decays because pairs annihilate; the annihilation rate is
+the first-passage rate of the relative random walk to 0. Specifically:
+
+\begin{equation}
+  \rho(t) \sim P(\text{relative walk has not hit 0 by time } t)
+          = P_{\mathrm{surv}}(t).
+  \label{eq:rho_surv}
+\end{equation}
+
+\subsubsection{The First-Passage GF}
+
+A \textbf{first-passage path of length $n$} from $d > 0$ to 0 is a nearest-neighbour
+path that stays strictly positive for steps $1, \ldots, n-1$ and reaches 0 at step $n$.
+
+For the \emph{symmetric} random walk (equal left/right probabilities $p = 1/2$),
+the GF for first-passage paths starting at $d = 1$ satisfies the functional equation:
+
+\begin{equation}
+  F(z) = \frac{z}{2} + \frac{z}{2}\cdot F(z)^2,
+  \label{eq:firstpassage_eq}
+\end{equation}
+
+since each path either takes one step directly to 0 (weight $z/2$), or takes one
+step right, executes a complete excursion back to 1, and then completes a first
+passage from 1 to 0 (weight $(z/2)\cdot F(z)^2$).
+
+\begin{remark}
+Equation \eqref{eq:firstpassage_eq} is a Lagrange equation! With $p=1/2$ and
+$F = z\phi(F)$ it reads $F(z) = z \cdot \frac{1+F^2}{2}$, so $\phi(F) = (1+F^2)/2$.
+\end{remark}
+
+Solving the quadratic:
+
+\begin{equation}
+  F(z) = \frac{1 - \sqrt{1 - z^2}}{z}.
+  \label{eq:firstpassage_soln}
+\end{equation}
+
+\subsubsection{The Singularity}
+
+$F(z)$ has a square-root branch point at $z_* = 1$ (where $1 - z^2 = 0$). Near $z = 1$:
+
+\begin{equation}
+  F(z) \approx 1 - \sqrt{2(1-z)} + \mathcal{O}(1-z),
+  \label{eq:fp_branch}
+\end{equation}
+
+i.e.\ $F(z) \sim 1 - \sqrt{2}\cdot(1-z)^{1/2}$. With $\alpha = 1/2$, the transfer
+theorem \eqref{eq:transfer} gives:
+
+\begin{equation}
+  f_n = [z^n]F(z) \sim \frac{\sqrt{2}}{2}\cdot\frac{1}{\Gamma(-1/2)}\cdot n^{-3/2}
+      = \frac{1}{\sqrt{2\pi}}\cdot n^{-3/2}.
+  \label{eq:fp_asymp}
+\end{equation}
+
+(Using $\Gamma(-1/2) = -2\sqrt{\pi}$.)
+
+\subsubsection{Integrating to the Survival Probability}
+
+The survival probability is the complementary CDF of the first-passage distribution:
+
+\begin{equation}
+  P_{\mathrm{surv}}(t) = \sum_{n > t} f_n \sim \int_t^\infty \frac{dn}{\sqrt{2\pi}\, n^{3/2}}
+  = \sqrt{\frac{2}{\pi t}}.
+  \label{eq:surv_asymptotics}
+\end{equation}
+
+Therefore, from \eqref{eq:rho_surv}:
+
+\begin{equation}
+  \boxed{\rho(t) \sim \left(\frac{2}{\pi t}\right)^{1/2} \sim t^{-1/2},}
+  \label{eq:rho_ac}
+\end{equation}
+
+in exact agreement with the Doi--Peliti result \eqref{eq:rho_half}.
+
+\begin{keybox}[AC Recovers the Doi--Peliti Exponent]
+The exponent $-1/2$ comes from integrating the first-passage tail $f_n \sim n^{-3/2}$.
+The $n^{-3/2}$ comes from the transfer theorem applied to the square-root branch
+point of $F(z)$ at $z_* = 1$. The square-root branch point is forced by the
+Lagrange structure of the first-passage recursion. The chain is:
+\[
+  \text{Annihilation} \to \text{First-passage problem} \to
+  \text{Lagrange GF} \to \text{Square-root branch} \to
+  n^{-3/2} \to \rho(t) \sim t^{-1/2}.
+\]
+\end{keybox}
+
+\subsection{The Common Algebraic Root}
+
+Both derivations hinge on a \textbf{square-root branch point} in a GF satisfying a
+Lagrange equation. This is not a coincidence. The Lagrange equation encodes
+\emph{branching structure}; and branching structure appears in both settings because:
+
+\begin{itemize}[leftmargin=2em]
+  \item In the SIR, the epidemic is a Galton--Watson branching tree.
+  \item In the annihilation problem, the first-passage path is built from
+        excursions which are themselves branching trees (Motzkin paths / ballot paths).
+\end{itemize}
+
+In both cases, the \emph{critical point} is where the average branching number
+equals one: $R_0 = 1$ for SIR, and the random walk at criticality (equal left/right
+probabilities) for first passage. At this criticality, the Lagrange singularity
+sits on the boundary of the unit disk ($z_* = 1$), and the asymptotics are pure
+power laws without exponential factors.
+
+The Doi--Peliti calculation arrives at the same $t^{-1/2}$ via a completely
+different path: Gaussian integration over diffusion modes in momentum space.
+The Laplace-space correspondence
+
+\[
+  \int \frac{d^1k}{2\pi} \frac{1}{s + Dk^2} \sim s^{-1/2}
+  \quad\longleftrightarrow\quad
+  \sum_n n^{-3/2} e^{-sn} \sim s^{1/2}
+\]
+
+identifies the two computations as Fourier/Laplace duals. The combinatorial
+$n^{-3/2}$ and the field-theoretic $k^{-1}$ momentum integral are the same
+square root in different basis representations.
+
+\clearpage
+
+% ========== PART V: AC AND FEYNMAN DIAGRAMS ==========
+\section{Part V: Analytic Combinatorics and Feynman Diagrams}
+\label{sec:feynman}
+
+\begin{keybox}[The Thesis of This Section]
+The connection between AC and Feynman diagrams is not analogical.
+It is a literal identification of the same algebraic structures
+appearing simultaneously in combinatorics and quantum field theory.
+There are four distinct levels at which this identification holds,
+ranging from classical folklore to active research.
+We develop each in turn, with explicit examples, and close with
+an assessment of what is established and what remains open.
+\end{keybox}
+
+\subsection{Connection 1: The Exponential Formula and $\log Z$}
+\label{sec:expformula}
+
+\subsubsection{The Physics Statement}
+
+In any quantum field theory or statistical mechanics model, the partition
+function $Z$ receives contributions from all Feynman diagrams (connected or not).
+The \textbf{free energy} $F = -\log Z$ receives contributions only from
+\emph{connected} diagrams. This is used in every QFT textbook to discard
+disconnected vacuum bubbles.
+
+\subsubsection{The AC Statement}
+
+In analytic combinatorics, if $\mathcal{C}$ is a labelled class of
+\emph{connected} structures, and $\mathcal{A} = \mathrm{SET}(\mathcal{C})$
+is the class of all structures (each being a set of connected components), then:
+
+\begin{equation}
+  \hat{A}(z) = e^{\hat{C}(z)}, \qquad \hat{C}(z) = \log \hat{A}(z).
+  \label{eq:expformula}
+\end{equation}
+
+This is the \textbf{exponential formula}. It follows immediately from the
+EGF rule for the SET construction: $\mathrm{SET}(\mathcal{C})$ translates
+to $e^{\hat{C}(z)}$.
+
+\subsubsection{They Are the Same Identity}
+
+The statement ``$\log Z$ generates connected diagrams'' is
+\emph{exactly} \eqref{eq:expformula} with:
+\begin{align*}
+  \hat{A}(z) &\leftrightarrow Z \quad \text{(all diagrams, vacuum normalised)}, \\
+  \hat{C}(z) &\leftrightarrow \log Z \quad \text{(connected diagrams only)}, \\
+  z^n/n!     &\leftrightarrow g^n \quad \text{(perturbative expansion in coupling $g$)}.
+\end{align*}
+
+The \emph{symmetry factors} of Feynman diagrams --- those awkward denominators
+$1/|\mathrm{Aut}(\Gamma)|$ that appear in loop calculations --- are exactly the
+$1/n!$ overcounting factors in the EGF SET construction. They have a purely
+combinatorial origin: the automorphism group of a diagram is the symmetry group
+that acts on its legs and propagators, which is exactly the symmetry group
+counted by the EGF.
+
+\begin{example}[Symmetry Factor from the SET Construction]
+A diagram $\Gamma$ consisting of two identical one-loop bubbles (a ``figure-eight''
+vacuum graph) has $|\mathrm{Aut}(\Gamma)| = 8$ in $\phi^4$ theory. In EGF language:
+\[
+  \hat{C}_{\text{two-bubble}}(z) = \frac{1}{2!}\hat{C}_{\text{one-bubble}}(z)^2
+  = \frac{1}{2}\hat{C}_{\text{one-bubble}}(z)^2.
+\]
+The $1/2!$ is the SET factor for a set of two identical objects. More generally,
+for a vacuum graph consisting of $k$ copies of the same connected diagram $\gamma$:
+\[
+  \text{symmetry factor} = |\mathrm{Aut}(\gamma)|^k \cdot k!,
+\]
+where $k!$ is from the EGF SET construction and $|\mathrm{Aut}(\gamma)|^k$
+accounts for the internal symmetries of each copy.
+\end{example}
+
+\begin{resultbox}[Status]
+Completely classical. Appears in Flajolet \& Sedgewick \cite{flajolet2009}
+as a standard EGF application, and in every QFT textbook (e.g.\
+Zinn-Justin \cite{zinjustin2002}) as the cluster expansion / cumulant theorem.
+The explicit identification of symmetry factors with EGF overcounting is
+noted in Cvitanovi\'c, Lautrup \& Pearson (1978) and in Yeats \cite{yeats2017}.
+\end{resultbox}
+
+\subsection{Connection 2: Dyson--Schwinger Equations Are Lagrange Equations}
+\label{sec:dse_lagrange}
+
+\subsubsection{The Dyson--Schwinger Equation}
+
+In $\phi^3$ theory, the full (dressed) propagator $G(p^2)$ satisfies the
+Dyson--Schwinger equation:
+
+\begin{equation}
+  G = G_0 + G_0 \cdot \Sigma(G) \cdot G,
+  \label{eq:dse}
+\end{equation}
+
+where $G_0 = 1/(p^2 + m^2)$ is the bare propagator and $\Sigma(G)$ is the
+self-energy, which is itself a function of $G$ (all 1PI insertions).
+Rearranging:
+
+\begin{equation}
+  G = G_0\bigl[1 + \Sigma(G) \cdot G\bigr] \equiv G_0 \cdot \Phi(G).
+  \label{eq:dse_lagrange}
+\end{equation}
+
+This is exactly a \textbf{Lagrange equation} $T = z\phi(T)$ with:
+\[
+  T \leftrightarrow G, \quad z \leftrightarrow G_0, \quad \phi(T) = 1 + \Sigma(T)\cdot T.
+\]
+
+\subsubsection{Lagrange Inversion Generates the Perturbative Expansion}
+
+Applying \eqref{eq:lagrange_inversion}:
+\begin{equation}
+  [G_0^n]\, G = \frac{1}{n}\,[G^{n-1}]\,\Phi(G)^n.
+  \label{eq:dse_li}
+\end{equation}
+
+Each term $[G^{n-1}]\Phi(G)^n$ counts the number of Feynman diagrams with
+$n$ propagators, weighted by their amplitudes. The Lagrange inversion formula
+is therefore a \textbf{generating function for the perturbative expansion} of
+the dressed propagator.
+
+\subsubsection{The Singularity is the Landau Pole}
+
+By the Lagrange singularity conditions \eqref{eq:lagrange_singular}:
+\[
+  1 = G_0^* \Phi'(G^*), \qquad G^* = G_0^* \Phi(G^*).
+\]
+
+The singularity of $G$ (as a function of $G_0$ or equivalently of the coupling
+$\lambda$) is the \textbf{Landau pole}: the scale at which the perturbative
+expansion breaks down and non-perturbative effects take over. In AC terms, it
+is the branch point of the Lagrange GF. The type of singularity (square root,
+pole, essential) determines the non-perturbative physics.
+
+\begin{example}[Running Coupling in QED]
+In QED, the running coupling $\alpha(\mu^2)$ satisfies a Dyson--Schwinger-type
+equation that, in the leading-log approximation, reduces to:
+\[
+  \alpha(\mu^2) = \frac{\alpha_0}{1 - (\alpha_0/3\pi)\log(\mu^2/m^2)}.
+\]
+This has a simple pole at $\mu^2 = m^2 e^{3\pi/\alpha_0}$ --- the Landau pole.
+In Lagrange language, $\phi(T) = 1/(1-cT)$ produces a simple pole at
+$T_* = 1/c$, giving $z_* = 1/(ce)$ and $G \sim (G_0^* - G_0)^{-1}$ near
+the singularity. The transfer theorem then gives $[G_0^n]G \sim C \cdot (G_0^*)^{-n}$
+--- pure exponential growth in loop order, with no power-law correction.
+\end{example}
+
+\begin{resultbox}[Status]
+The identification of Dyson--Schwinger equations with fixed-point / Lagrange
+equations is known in the Connes--Kreimer community
+(Foissy \cite{foissy2007}, Yeats \cite{yeats2017}).
+The explicit phrasing in terms of the AC Lagrange inversion theorem
+with the IFT singularity condition and transfer theorem is not, as far as
+we are aware, stated cleanly in the literature. The two communities (AC and
+QFT) use different language for the same object.
+\end{resultbox}
+
+\subsection{Connection 3: The Connes--Kreimer Hopf Algebra}
+\label{sec:ck}
+
+This is the deepest and most surprising connection. It was a genuine
+mathematical discovery, not an observation, and it resolved a long-standing
+conceptual puzzle about the structure of renormalisation.
+
+\subsubsection{The Problem: Nested Subdivergences}
+
+In QFT, a Feynman diagram $\Gamma$ may contain divergent subdiagrams
+$\gamma \subset \Gamma$. To renormalise $\Gamma$, one must subtract the
+subdivergences \emph{before} subtracting the overall divergence. For
+deeply nested diagrams this leads to the complicated BPHZ forest formula
+(Bogoliubov--Parasiuk--Hepp--Zimmermann):
+
+\begin{equation}
+  R(\Gamma) = \Gamma + \sum_{\text{forests } \mathcal{F}} \prod_{\gamma \in \mathcal{F}}
+  (-C(\gamma)) \cdot \Gamma/\mathcal{F},
+  \label{eq:bphz}
+\end{equation}
+
+where $C(\gamma)$ is the counterterm for subdiagram $\gamma$ and
+$\Gamma/\mathcal{F}$ is the quotient graph. The sum is over all admissible
+forests of subdivergent subgraphs.
+
+\subsubsection{The Discovery: This Is a Hopf Algebra Antipode}
+
+Connes and Kreimer \cite{conneskreimer1998} showed that \eqref{eq:bphz}
+is exactly the \textbf{antipode} $S$ of a Hopf algebra $H_R$ generated
+by \emph{rooted trees}, where:
+
+\begin{itemize}[leftmargin=2em]
+  \item Each 1PI Feynman diagram $\Gamma$ maps to a rooted tree $t_\Gamma$
+        whose nodes are the divergent subgraphs and whose root is $\Gamma$ itself.
+  \item The \textbf{coproduct} $\Delta(t) = \sum_c P_c(t) \otimes R_c(t)$
+        (summing over admissible cuts $c$) decomposes the tree into a
+        subtree $P_c(t)$ (the subdivergence) and the quotient $R_c(t)$
+        (the remaining diagram after subtraction).
+  \item The \textbf{antipode} $S(t) = -t - \sum_{c \neq \emptyset} S(P_c(t))\cdot R_c(t)$
+        is the BPHZ counterterm.
+\end{itemize}
+
+\subsubsection{The AC Identification}
+
+In AC language:
+\begin{itemize}[leftmargin=2em]
+  \item The coproduct is an \textbf{admissible cut} of a rooted tree, which
+        is exactly the decomposition used in the Lagrange analysis of tree GFs
+        (the subtree above a cut corresponds to $P_c$; the base tree below
+        corresponds to $R_c$).
+  \item The antipode formula is the \textbf{M\"obius inversion} / inclusion--exclusion
+        that appears in the MSET and CYC constructions in AC.
+  \item The \textbf{beta function} (the RG flow equation $\mu\partial_\mu g = \beta(g)$)
+        is a \textbf{derivation} of the Hopf algebra $H_R$, and its perturbative
+        expansion is a GF of rooted trees in the AC sense.
+\end{itemize}
+
+\subsubsection{An Explicit Small Example}
+
+Consider the simplest non-trivial case: a one-loop self-energy subgraph $\gamma$
+inserted into a two-loop diagram $\Gamma$. The rooted tree is:
+
+\[
+  t_\Gamma = \begin{array}{c}
+    \Gamma \\
+    | \\
+    \gamma
+  \end{array}
+\]
+
+The coproduct (the only non-trivial admissible cut is at the edge $\Gamma\text{---}\gamma$):
+\[
+  \Delta(t_\Gamma) = t_\Gamma \otimes 1 + 1 \otimes t_\Gamma + \gamma \otimes (\Gamma/\gamma).
+\]
+
+The antipode:
+\[
+  S(t_\Gamma) = -t_\Gamma - S(\gamma)\cdot(\Gamma/\gamma) = -t_\Gamma + \gamma\cdot(\Gamma/\gamma).
+\]
+
+This is exactly the BPHZ formula: subtract the subdivergence $\gamma$ from
+$\Gamma/\gamma$, then subtract the result from $\Gamma$.
+
+In AC terms: the GF for the class of rooted trees of depth 2 is
+$T_2(z) = z \cdot T_1(z)$ where $T_1(z) = z/(1-z)$, and the admissible
+cut is a coefficient extraction in the composition.
+
+\subsubsection{The Riemann--Hilbert Connection}
+
+Connes and Kreimer further showed \cite{conneskreimer2000} that the
+Birkhoff decomposition of a loop $\gamma: S^1 \to G$ in the group $G$
+of characters of $H_R$ is the mathematical statement of renormalisation:
+the ``positive part'' of the decomposition is the renormalised amplitude
+and the ``negative part'' is the counterterm. This connects renormalisation
+to the \textbf{Riemann--Hilbert problem} --- a deep link between physics
+and classical complex analysis.
+
+\begin{resultbox}[Status]
+Rigorously established. Original papers: Connes \& Kreimer
+\cite{conneskreimer1998, conneskreimer2000}. The combinatorial structure
+of the Hopf algebra (without the physics) was known earlier from
+Grossman--Larson (1989) in the context of numerical analysis (Runge--Kutta
+methods). The book by Yeats \cite{yeats2017} is the most accessible
+treatment oriented toward combinatorialists. Manchon \cite{manchon2004}
+provides a concise mathematical survey.
+\end{resultbox}
+
+\subsection{Connection 4: Factorial Divergence, Borel Summation,\\
+and the Transfer Theorem}
+\label{sec:borel}
+
+\subsubsection{The Problem: Perturbation Theory Always Diverges}
+
+The number of Feynman diagrams at loop order $n$ grows as $n!$ for
+large $n$. This is a combinatorial fact: the number of ways to connect
+$2n$ legs in pairs (Wick contractions) is $(2n-1)!! \sim \sqrt{2}(2n/e)^n$,
+which grows faster than any exponential. Therefore the perturbative expansion:
+\[
+  Z(g) = \sum_{n=0}^\infty c_n g^n, \qquad c_n \sim K \cdot n! \cdot \alpha^{-n},
+\]
+has \emph{zero radius of convergence} for any $\alpha > 0$. This is not a
+defect of QFT; it is a fundamental feature.
+
+\subsubsection{The AC Explanation}
+
+The transfer theorem \eqref{eq:transfer} immediately explains this. If $Z(g)$
+has a singularity at $g_* = 1/\alpha$ of the form:
+
+\[
+  Z(g) \sim K(1 - g/g_*)^{-\beta}, \qquad \beta \in \N,
+\]
+
+then:
+\[
+  c_n = [g^n]Z(g) \sim \frac{K}{\Gamma(\beta)}\cdot n^{\beta-1} \cdot g_*^{-n}.
+\]
+
+For a simple pole ($\beta = 1$): $c_n \sim K \cdot g_*^{-n}$, exponential growth.
+For the partition function of $\phi^4$ theory, the singularity at finite $g_*$
+is associated with a \textbf{instanton} (a non-perturbative saddle point), and:
+\[
+  c_n \sim K \cdot n! \cdot g_*^{-n}.
+\]
+
+The $n!$ growth corresponds to an \textbf{essential singularity} in the
+Borel plane, not a branch point or pole in $g$-space. In the Borel transform
+$\hat{Z}(t) = \sum_n (c_n/n!) t^n$, the $n!$ growth means the series converges
+(radius of convergence $|t| < g_*$), and $\hat{Z}(t)$ has a singularity at
+$t = g_*$. The Borel sum $Z(g) = \int_0^\infty e^{-t/g}\hat{Z}(t)\diff t$
+is obstructed by this singularity.
+
+\begin{keybox}[The Transfer Theorem in the Borel Plane]
+The type of singularity of $\hat{Z}(t)$ at $t = g_*$ determines the
+non-perturbative physics:
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Simple pole} at $t = g_*$: $\hat{Z}(t) \sim (t-g_*)^{-1}$.
+        Borel sum ambiguous; imaginary part $\sim e^{-g_*/g}$ is the
+        instanton contribution.
+  \item \textbf{Branch point} at $t = g_*$: $\hat{Z}(t) \sim (t-g_*)^\alpha$.
+        Transfer theorem gives $c_n \sim n^{-\alpha-1} n! g_*^{-n}$. The
+        $n!$ growth is present but with a power-law correction. These are
+        \textbf{renormalons} (IR or UV), associated with factorial growth
+        from perturbation theory that is not controlled by instantons.
+\end{itemize}
+\end{keybox}
+
+\subsubsection{Resurgence: The GF of All Corrections}
+
+The modern framework of \textbf{resurgence} (\'Ecalle \cite{ecalle1981},
+developed for physics by Dunne--\"Unsal \cite{dunne2014}) promotes this to
+a full AC-style theory. The \textbf{trans-series}:
+\[
+  Z(g) \sim \sum_{k=0}^\infty e^{-k S_I/g} \sum_{n=0}^\infty c_n^{(k)} g^n
+\]
+where $S_I$ is the instanton action, packages the perturbative expansion
+around each non-perturbative sector into a separate GF. The Borel--\'Ecalle
+summation procedure is the analytic continuation of the GF past its
+singularity, and the ``Stokes phenomena'' (ambiguity in the analytic
+continuation) cancel between different sectors --- a non-trivial identity
+that is the resurgence statement.
+
+In AC language: the full trans-series is a GF with a \emph{multi-sheeted
+Riemann surface} as its domain, and resurgence is the statement that the
+GF has a consistent analytic structure across all sheets.
+
+\begin{example}[Airy Function as a Trans-Series]
+The Airy equation $y'' = zy$ has a formal divergent solution:
+\[
+  \mathrm{Ai}(z) \sim \frac{e^{-2z^{3/2}/3}}{2\sqrt{\pi}z^{1/4}}
+  \sum_{n=0}^\infty \frac{(-1)^n \Gamma(3n+1/2)}{54^n n! \Gamma(n+1/2)} z^{-3n/2}.
+\]
+The $\Gamma(3n+1/2)/n!$ coefficients grow as $\sim (3n)!/(n!)^2 \sim n!\cdot C^n$,
+showing factorial divergence. The AC viewpoint: $\mathrm{Ai}(z)$ is a Lagrange-type
+GF evaluated at the saddle point of a cubic integral, with a square-root branch
+point in the Borel plane at $t = 2/3$. The two Airy solutions $\mathrm{Ai}$
+and $\mathrm{Bi}$ are the two branches of this GF, and resurgence explains
+how they are related via the Stokes phenomenon.
+\end{example}
+
+\begin{resultbox}[Status]
+The factorial growth / Borel singularity connection is well-known in the
+resurgence literature \cite{ecalle1981, dunne2014} but phrased differently
+from AC. The AC transfer theorem is not cited in the resurgence literature.
+The two communities (resurgence and AC) work with the same Borel transform
+but have not explicitly bridged their frameworks. This appears to be a
+genuine gap in the literature.
+\end{resultbox}
+
+\subsection{The Status Map: What Is Established and What Is New}
+\label{sec:statusmap}
+
+The following table summarises the state of the art for each connection.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabular}{p{4.5cm}p{3cm}p{5cm}}
+\toprule
+\textbf{Connection} & \textbf{Status} & \textbf{Key References} \\
+\midrule
+$e^{C(z)} = Z$; symmetry factors from EGF & Classical folklore & Flajolet--Sedgewick \cite{flajolet2009}, Zinn-Justin \cite{zinjustin2002} \\
+\midrule
+Dyson--Schwinger = Lagrange equation & Known implicitly & Foissy \cite{foissy2007}, Yeats \cite{yeats2017} \\
+Lagrange inversion generates loop expansion & Not stated explicitly & -- \\
+Landau pole = Lagrange branch point & Not stated explicitly & -- \\
+\midrule
+Connes--Kreimer: BPHZ = Hopf antipode & Rigorously proved & Connes--Kreimer \cite{conneskreimer1998, conneskreimer2000} \\
+Beta function = derivation of $H_R$ & Rigorously proved & Connes--Kreimer \cite{conneskreimer2000} \\
+Renormalisation = Riemann--Hilbert problem & Rigorously proved & Connes--Kreimer \cite{conneskreimer2000} \\
+\midrule
+Factorial growth $\Leftrightarrow$ Borel singularity & Known (separately) & \'Ecalle \cite{ecalle1981}, Dunne--\"Unsal \cite{dunne2014} \\
+Borel singularity = AC transfer theorem & Not bridged & -- \\
+Trans-series = multi-sheet GF & Implicit in resurgence & \'Ecalle \cite{ecalle1981} \\
+\midrule
+SIR orbit = singular locus of epidemic GF & Follows from Kendall \cite{kendall1956} & Not stated explicitly \\
+Doi--Peliti saddle = AC branch point & Not in literature & -- \\
+SIR / Doi--Peliti / AC triangle & Not synthesised & This document \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{The Grand Summary: One Table}
+
+All four connections can be summarised as a dictionary between AC and QFT:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{ll}
+\toprule
+\textbf{Analytic Combinatorics} & \textbf{Quantum Field Theory} \\
+\midrule
+EGF of connected structures $\hat{C}(z)$ & Free energy $F = -\log Z$ \\
+$e^{\hat{C}(z)}$ exponential formula & $Z = e^{\text{connected diagrams}}$ \\
+Symmetry factor $= 1/|\mathrm{Aut}|$ & EGF overcounting $1/k!$ in SET \\
+Lagrange equation $T = z\phi(T)$ & Dyson--Schwinger equation \\
+Lagrange inversion coefficients & Feynman diagram enumeration \\
+Branch point of Lagrange GF & Landau pole / non-pert.\ scale \\
+Rooted tree Hopf algebra coproduct & BPHZ subdivergence subtraction \\
+Hopf antipode & Renormalisation counterterms \\
+M\"obius inversion on forests & Forest formula (BPHZ) \\
+GF singularity type & Universality class / RG fixed point \\
+Borel transform singularity & Instanton / renormalon \\
+Transfer theorem: $n^{-\alpha-1} \cdot A^n$ & Perturbative coefficient growth \\
+Multi-sheet Riemann surface & Trans-series / resurgence \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{keybox}[Why This Matters]
+The table above is not merely a curiosity. It suggests that the
+\emph{combinatorial structure} of a QFT --- the grammar by which Feynman diagrams
+are built --- is the primary object, and the analytic structure (propagators,
+amplitudes, renormalisation) is a \emph{representation} of that combinatorial
+object. This is the philosophy behind the Connes--Kreimer programme, and it
+has led to concrete new results: the Birkhoff decomposition of renormalisation,
+the connection to the Riemann--Hilbert problem, and new methods for computing
+multi-loop amplitudes.
+
+For the stochastic processes studied in this document (SIR, $A+A\to\emptyset$),
+the same philosophy applies: the epidemic tree, the first-passage excursion,
+and the Doi--Peliti path integral are different representations of the same
+combinatorial grammar, and their common singularity structure is the physical
+content.
+\end{keybox}
+
+\clearpage
+
+% ========== APPENDIX ==========
+\appendix
+
+\section{Table of Key Results}
+\label{app:table}
+
+\subsection{Generating Function Identities}
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+Object & GF & Notes \\
+\midrule
+Catalan numbers $C_n = \binom{2n}{n}/(n+1)$ & $C(z) = (1-\sqrt{1-4z})/2z$ & Binary trees \\
+Borel distribution & $T(z) = ze^{R_0(T-1)}$ & SIR final size (Lagrange) \\
+First-passage (1D) & $F(z) = (1-\sqrt{1-z^2})/z$ & Ballot paths \\
+Poisson PGF & $g(s) = e^{\lambda(s-1)}$ & Galton--Watson offspring \\
+Geometric GF & $1/(1-z)$ & Sequences of atoms \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Transfer Theorem Reference}
+
+\begin{center}
+\begin{tabular}{llll}
+\toprule
+Singularity & Local form near $z_*$ & $[z^n]f$ behaviour & Example \\
+\midrule
+Simple pole & $(1-z/z_*)^{-1}$ & $\sim z_*^{-n}$ & Fibonacci \\
+$k$-th pole & $(1-z/z_*)^{-k}$ & $\sim n^{k-1}z_*^{-n}$ & Path lengths \\
+Sq.\ root + & $(1-z/z_*)^{1/2}$ & $\sim n^{-3/2}z_*^{-n}$ & SIR, A+A \\
+Sq.\ root $-$ & $(1-z/z_*)^{-1/2}$ & $\sim n^{-1/2}z_*^{-n}$ & Simple RW \\
+Log & $-\log(1-z/z_*)$ & $\sim n^{-1}z_*^{-n}$ & Cycles \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Doi--Peliti Reaction Dictionary}
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+Reaction & Rate & Liouvillian $\mathcal{H}$ \\
+\midrule
+$A \to \emptyset$ & $\delta$ & $\delta(1-\ad)a$ \\
+$\emptyset \to A$ & $\sigma$ & $\sigma(\ad - 1)$ \\
+$A \to 2A$ & $\lambda$ & $\lambda(\ad{}^2 - \ad)a$ \\
+$2A \to \emptyset$ & $\mu$ & $\mu(1 - \ad{}^2)a^2$ \\
+$2A \to A$ & $\kappa$ & $\kappa(\ad - \ad{}^2)a^2$ \\
+$A + B \to \emptyset$ & $\nu$ & $\nu(1 - \ad{}_A\ad{}_B)a_Ab_B$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The general rule: reaction $kA \to \ell A$ at rate $r$ gives
+$\mathcal{H} = r(\ad{}^\ell - \ad{}^k)a^k$.
+
+\subsection{Critical Dimensions for Reaction--Diffusion}
+
+\begin{center}
+\begin{tabular}{llll}
+\toprule
+Reaction & Upper $d_c$ & Exponent $\alpha$ ($d<d_c$) & Mean-field ($d>d_c$) \\
+\midrule
+$A + A \to \emptyset$ & 2 & $d/2$ & 1 \\
+$A + A \to A$ & 2 & $d/2$ & 1 \\
+$A + B \to \emptyset$ & 4 & $d/4$ & 1/2 \\
+$3A \to \emptyset$ & 1 & $d/2$ & 1 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{The Weyl Algebra and the GF Isomorphism}
+
+The \textbf{Weyl algebra} $W_1$ is the unital associative algebra generated by $p$
+and $q$ with relation $[p, q] = 1$ (or equivalently, $pq - qp = 1$). Under the
+representation $p = \partial_z$, $q = z$ (multiplication), $W_1$ acts on $\C[[z]]$.
+This is the unique irreducible representation of $W_1$ on a space of formal
+power series (Stone--von Neumann theorem in the algebraic sense).
+
+Doi's identification: $a \equiv \partial_z$, $\ad \equiv z$ gives an isomorphism:
+\begin{itemize}[leftmargin=2em]
+  \item Fock space $\mathcal{F} \cong \C[[z]]$ as $W_1$-modules.
+  \item The state $|\psi\rangle = \sum_n P_n |n\rangle$ corresponds to $G(z) = \sum_n P_n z^n$.
+  \item The Liouvillian $\mathcal{H}(a, \ad)$ corresponds to $\mathcal{H}(\partial_z, z)$.
+  \item The evolution equation $\partial_t|\psi\rangle = \mathcal{H}|\psi\rangle$
+        becomes the GF PDE $\partial_t G = \mathcal{H}(\partial_z, z)G$.
+\end{itemize}
+
+\subsection{The Hopf Algebra Connection}
+
+The coproduct of $W_1$ (describing how two particles interact) is:
+
+\[
+  \Delta(a) = a \otimes 1 + 1 \otimes a, \qquad
+  \Delta(\ad) = \ad \otimes 1 + 1 \otimes \ad.
+\]
+
+The combinatorial counterpart: the coproduct of the Connes--Kreimer Hopf algebra
+of rooted trees decomposes a tree into subtree/quotient pairs, which is precisely
+the admissible cut operation. Renormalisation (the antipode of the Hopf algebra)
+corresponds to the inclusion--exclusion in Flajolet's symbolic method for the
+MSET and CYC constructions. This is why the Feynman diagram expansion of the
+Doi--Peliti theory and the AC generating function equations are algebraically
+the same object at different levels of abstraction.
+
+\section{Literature Guide}
+\label{app:lit}
+
+\subsection{Stochastic SIR}
+
+\begin{itemize}[leftmargin=2em]
+  \item \textbf{Kermack \& McKendrick (1927)} \cite{kermack1927}: the original
+        deterministic SIR paper. Derives the epidemic threshold and conservation law.
+
+  \item \textbf{Whittle (1955)} \cite{whittle1955}: first use of the PGF for
+        the stochastic SIR. Derives the minor-outbreak probability.
+
+  \item \textbf{Kendall (1956)} \cite{kendall1956}: explicit identification of the
+        characteristic equations of the PGF PDE with the deterministic SIR.
+
+  \item \textbf{Chalub \& Souza (2011)} \cite{chalub2011}: modern PDE formulation.
+        Proves that the SIR ODEs are the characteristics and derives large-population
+        limits rigorously.
+\end{itemize}
+
+\subsection{Doi--Peliti}
+
+\begin{itemize}[leftmargin=2em]
+  \item \textbf{Doi (1976a,b)} \cite{doi1976a,doi1976b}: two papers introducing the
+        second-quantisation formalism for reaction--diffusion master equations.
+
+  \item \textbf{Peliti (1985)} \cite{peliti1985}: coherent-state path integral
+        for the Doi formalism. Introduces the $\phi, \tilde\phi$ field doubling.
+
+  \item \textbf{Lee (1994)} \cite{lee1994}: RG calculation for $kA\to\emptyset$.
+        Proves that the density exponent is exact.
+
+  \item \textbf{T\"auber, Howard \& Vollmayr-Lee (2005)} \cite{tauber2005}: the
+        comprehensive review. Covers $kA\to\ell A$, $A+B\to\emptyset$, disorder,
+        and absorbing-state transitions. Best entry point.
+
+  \item \textbf{T\"auber (2014)} \cite{tauber2014}: textbook treatment, Chapter 9
+        on reaction--diffusion.
+\end{itemize}
+
+\subsection{Analytic Combinatorics}
+
+\begin{itemize}[leftmargin=2em]
+  \item \textbf{Flajolet \& Sedgewick (2009)} \cite{flajolet2009}: the canonical
+        reference. Parts A--B cover the symbolic method; Part C covers singularity
+        analysis and transfer theorems. Freely available online.
+
+  \item \textbf{Wilf (2006)} \cite{wilf2006}: \emph{generatingfunctionology}, a
+        more accessible introduction to generating functions in combinatorics.
+
+  \item \textbf{Pemantle \& Wilson (2013)} \cite{pemantle2013}: multivariate
+        analytic combinatorics; extends the singularity approach to GFs in multiple
+        variables.
+\end{itemize}
+
+\subsection{AC, Feynman Diagrams, and Renormalisation}
+
+\begin{itemize}[leftmargin=2em]
+  \item \textbf{Connes \& Kreimer (1998)} \cite{conneskreimer1998}: the discovery
+        that the BPHZ forest formula is the antipode of a Hopf algebra of rooted
+        trees. The paper that started the programme. Dense but repays careful reading.
+
+  \item \textbf{Connes \& Kreimer (2000)} \cite{conneskreimer2000}: the
+        Riemann--Hilbert problem formulation of renormalisation. Shows the beta
+        function is a derivation of the Hopf algebra and that the Birkhoff
+        decomposition encodes counterterms.
+
+  \item \textbf{Yeats (2017)} \cite{yeats2017}: \emph{A Combinatorial Perspective
+        on Quantum Field Theory}. The best entry point for a mathematician.
+        Explicitly begins from perturbative expansions as generating functions,
+        introduces the Connes--Kreimer algebra, and works through Dyson--Schwinger
+        equations as combinatorial fixed-point equations. The table of contents
+        mirrors the structure of Section~\ref{sec:feynman} of this document.
+
+  \item \textbf{Foissy (2007)} \cite{foissy2007}: combinatorial Dyson--Schwinger
+        equations as systems of equations in the Hopf algebra of planar trees.
+        This is the closest existing work to the ``Lagrange equation = DSE''
+        identification in Section~\ref{sec:dse_lagrange}.
+
+  \item \textbf{Manchon (2004)} \cite{manchon2004}: a concise mathematical survey
+        of Hopf algebras in renormalisation, including the connection to
+        M\"obius inversion and the BPHZ formula.
+
+  \item \textbf{Kreimer (2000)}: \emph{Combinatorics of (perturbative) Quantum
+        Field Theory}, arXiv:hep-th/0010059. A readable overview of how Feynman
+        graphs map to rooted trees and how the Hopf algebra coproduct encodes
+        subdivergences.
+\end{itemize}
+
+\subsection{Resurgence and Borel Summation}
+
+\begin{itemize}[leftmargin=2em]
+  \item \textbf{\'Ecalle (1981)} \cite{ecalle1981}: the original mathematical
+        framework of resurgence and analysable functions. Very technical.
+        The three-volume work that introduced trans-series.
+
+  \item \textbf{Dunne \& \"Unsal (2014)} \cite{dunne2014}: the clearest modern
+        physics treatment of resurgence with explicit QFT examples. Introduces
+        the connection between IR renormalons (Borel singularities) and
+        non-perturbative contributions.
+
+  \item \textbf{Zinn-Justin (2002)} \cite{zinjustin2002}: standard QFT textbook
+        with good treatment of the large-order behaviour of perturbation theory,
+        instantons, and Borel summation. Chapter 37--40 are directly relevant.
+\end{itemize}
+
+\clearpage
+\bibliographystyle{unsrt}
+\begin{thebibliography}{99}
+
+\bibitem{kermack1927}
+W.\ O.\ Kermack and A.\ G.\ McKendrick,
+\newblock A contribution to the mathematical theory of epidemics,
+\newblock \emph{Proc.\ R.\ Soc.\ London A}, 115:700--721, 1927.
+
+\bibitem{whittle1955}
+P.\ Whittle,
+\newblock The outcome of a stochastic epidemic---a note on Bailey's paper,
+\newblock \emph{Biometrika}, 42:116--122, 1955.
+
+\bibitem{kendall1956}
+D.\ G.\ Kendall,
+\newblock Deterministic and stochastic epidemics in closed populations,
+\newblock \emph{Proc.\ Third Berkeley Symp.\ Math.\ Statist.\ Probab.},
+  4:149--165, 1956.
+
+\bibitem{chalub2011}
+F.\ A.\ C.\ C.\ Chalub and M.\ O.\ Souza,
+\newblock The {SIR} epidemic model from a {PDE} point of view,
+\newblock \emph{Math.\ Comput.\ Modelling}, 53(7--8):1568--1574, 2011.
+
+\bibitem{doi1976a}
+M.\ Doi,
+\newblock Stochastic theory of diffusion-controlled reaction,
+\newblock \emph{J.\ Phys.\ A: Math.\ Gen.}, 9:1465--1477, 1976.
+
+\bibitem{doi1976b}
+M.\ Doi,
+\newblock Second quantization representation for classical many-particle system,
+\newblock \emph{J.\ Phys.\ A: Math.\ Gen.}, 9:1479--1495, 1976.
+
+\bibitem{peliti1985}
+L.\ Peliti,
+\newblock Path integral approach to birth-death processes on a lattice,
+\newblock \emph{J.\ Phys.\ (Paris)}, 46:1469--1483, 1985.
+
+\bibitem{lee1994}
+B.\ P.\ Lee,
+\newblock Renormalization group calculation for the reaction $kA\to\emptyset$,
+\newblock \emph{J.\ Phys.\ A: Math.\ Gen.}, 27:2633--2652, 1994.
+
+\bibitem{tauber2005}
+U.\ C.\ T\"auber, M.\ Howard, and B.\ P.\ Vollmayr-Lee,
+\newblock Applications of field-theoretic renormalization group methods to
+  reaction--diffusion problems,
+\newblock \emph{J.\ Phys.\ A: Math.\ Gen.}, 38:R79--R185, 2005.
+\newblock arXiv:cond-mat/0501678.
+
+\bibitem{tauber2014}
+U.\ C.\ T\"auber,
+\newblock \emph{Critical Dynamics},
+\newblock Cambridge University Press, 2014.
+\newblock Chapter 9: Reaction--Diffusion Systems.
+
+\bibitem{flajolet2009}
+P.\ Flajolet and R.\ Sedgewick,
+\newblock \emph{Analytic Combinatorics},
+\newblock Cambridge University Press, 2009.
+\newblock Available at \url{http://algo.inria.fr/flajolet/Publications/book.pdf}.
+
+\bibitem{wilf2006}
+H.\ S.\ Wilf,
+\newblock \emph{generatingfunctionology},
+\newblock 3rd ed., A.\ K.\ Peters, 2006.
+\newblock Available at \url{https://www.math.upenn.edu/~wilf/gfologyLinked2.pdf}.
+
+\bibitem{pemantle2013}
+R.\ Pemantle and M.\ C.\ Wilson,
+\newblock \emph{Analytic Combinatorics in Several Variables},
+\newblock Cambridge University Press, 2013.
+
+\bibitem{conneskreimer1998}
+A.\ Connes and D.\ Kreimer,
+\newblock Hopf algebras, renormalization and noncommutative geometry,
+\newblock \emph{Commun.\ Math.\ Phys.}, 199:203--242, 1998.
+\newblock arXiv:hep-th/9808042.
+
+\bibitem{conneskreimer2000}
+A.\ Connes and D.\ Kreimer,
+\newblock Renormalization in quantum field theory and the {Riemann}--{Hilbert}
+  problem {I}: the {Hopf} algebra structure of graphs and the main theorem,
+\newblock \emph{Commun.\ Math.\ Phys.}, 210:249--273, 2000.
+\newblock arXiv:hep-th/9912092.
+
+\bibitem{yeats2017}
+K.\ Yeats,
+\newblock \emph{A Combinatorial Perspective on Quantum Field Theory},
+\newblock SpringerBriefs in Mathematical Physics 15, Springer, 2017.
+
+\bibitem{foissy2007}
+L.\ Foissy,
+\newblock Fa\`a di Bruno subalgebras of the {Hopf} algebra of planar trees
+  from combinatorial {Dyson}--{Schwinger} equations,
+\newblock \emph{Adv.\ Math.}, 218(1):136--162, 2008.
+\newblock arXiv:0707.1204.
+
+\bibitem{manchon2004}
+D.\ Manchon,
+\newblock Hopf algebras in renormalisation,
+\newblock In \emph{Handbook of Algebra}, vol.\ 5, pp.\ 365--427,
+  Elsevier, 2008.
+\newblock arXiv:math/0408405.
+
+\bibitem{ecalle1981}
+J.\ \'Ecalle,
+\newblock \emph{Les Fonctions R\'esurgentes}, Vols.\ 1--3,
+\newblock Publ.\ Math.\ d'Orsay, 1981.
+
+\bibitem{dunne2014}
+G.\ V.\ Dunne and M.\ \"Unsal,
+\newblock Uniform {WKB}, multi-instantons, and resurgent trans-series,
+\newblock \emph{Phys.\ Rev.\ D}, 89:105009, 2014.
+\newblock arXiv:1401.5202.
+
+\bibitem{zinjustin2002}
+J.\ Zinn-Justin,
+\newblock \emph{Quantum Field Theory and Critical Phenomena},
+\newblock 4th ed., Oxford University Press, 2002.
+
+\end{thebibliography}
+
+\end{document}
