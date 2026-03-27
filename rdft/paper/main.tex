@@ -128,10 +128,14 @@ $[G_0^n]\, G \sim n^{-p/q - 1}$ (Theorem~\ref{thm:transfer}).
 gives $d_c = 4$ and a square-root branch point, reproducing all scaling
 exponents from Bordeu et al.~\cite{bordeu2019} (Table~\ref{tab:brw}).
 
-\item \textbf{Spectral dimension.} The substitution $d \to d_s$ extends
-all results to arbitrary graphs. Theory matches simulation on Sierpinski
-carpets ($d_s \approx 1.86$), random trees ($d_s = 4/3$), and preferential
-attachment networks ($d_s \geq 4$).
+\item \textbf{Open-source implementation.} The complete pipeline is
+implemented in the Python package \texttt{rdft}, which takes a
+stoichiometry matrix as input and produces the Liouvillian, all
+amputated vertices, Feynman diagrams with symmetry factors, graph
+polynomials, DSE singularity classification, and scaling exponents ---
+both symbolically and numerically. We validate against 14 CRNs from
+the literature and apply it to a novel biological system (prion
+propagation).
 \end{enumerate}
 
 \noindent
