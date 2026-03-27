@@ -181,6 +181,74 @@ class ReactionNetwork:
         return '\n'.join(lines)
 
     # ------------------------------------------------------------------ #
+    #  Generic constructor from stoichiometry matrix                        #
+    # ------------------------------------------------------------------ #
+
+    @classmethod
+    def from_stoichiometry(cls, S, species_names: Optional[List[str]] = None,
+                            rates: Optional[List[sp.Expr]] = None,
+                            name: str = 'Custom CRN') -> 'ReactionNetwork':
+        """
+        Build a ReactionNetwork from a raw stoichiometry matrix.
+
+        Parameters
+        ----------
+        S : list of [k_1, ..., k_m, l_1, ..., l_m] rows, or list of (k, l) tuples.
+            Each row is one reaction.
+            For single-species: S = [[k, l], [k, l], ...]
+            For multi-species with m species: each row has 2m entries
+            [k_1, ..., k_m, l_1, ..., l_m]
+        species_names : list of species name strings (default: A, B, C, ...)
+        rates : list of rate symbols (default: auto-generated r_0, r_1, ...)
+        name : network name
+
+        Examples
+        --------
+        Pair annihilation 2A→∅:
+            ReactionNetwork.from_stoichiometry([[2, 0]])
+
+        Gribov process (A→2A, A→∅, 2A→A):
+            ReactionNetwork.from_stoichiometry([[1,2], [1,0], [2,1]])
+
+        Two-species A+B→∅:
+            ReactionNetwork.from_stoichiometry([[1,1,0,0]])
+            # k_A=1, k_B=1, l_A=0, l_B=0
+        """
+        S_list = [list(row) for row in S]
+        n_rxn = len(S_list)
+        row_len = len(S_list[0])
+
+        # Determine number of species
+        if row_len % 2 != 0:
+            raise ValueError(f"Row length {row_len} must be even (k_1,...,k_m,l_1,...,l_m)")
+        n_species = row_len // 2
+
+        # Species
+        if species_names is None:
+            species_names = [chr(65 + i) for i in range(n_species)]  # A, B, C, ...
+        species_list = [Species(name) for name in species_names]
+
+        # Rates
+        if rates is None:
+            if n_rxn == 1:
+                rates = [sp.Symbol('lambda', positive=True)]
+            else:
+                rates = [sp.Symbol(f'r_{i}', positive=True) for i in range(n_rxn)]
+
+        # Build reactions
+        reactions = []
+        for r, row in enumerate(S_list):
+            k_vec = row[:n_species]
+            l_vec = row[n_species:]
+
+            reactants = {species_list[i]: k_vec[i] for i in range(n_species) if k_vec[i] > 0}
+            products  = {species_list[i]: l_vec[i] for i in range(n_species) if l_vec[i] > 0}
+
+            reactions.append(Reaction(reactants, products, rate=rates[r]))
+
+        return cls(species_list, reactions, name=name)
+
+    # ------------------------------------------------------------------ #
     #  Standard networks from the literature                               #
     # ------------------------------------------------------------------ #
 

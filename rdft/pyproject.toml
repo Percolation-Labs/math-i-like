@@ -1,13 +1,13 @@
 [build-system]
-requires = ["setuptools>=68.0", "wheel"]
-build-backend = "setuptools.backends._legacy:_Backend"
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "rdft"
 version = "0.1.0"
 description = "Reaction-Diffusion Field Theory: from stoichiometry to critical exponents via analytic combinatorics"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 license = {text = "MIT"}
 authors = [
     {name = "Saoirse Amarteifio"},
@@ -18,7 +18,11 @@ dependencies = [
     "scipy>=1.7",
     "networkx>=2.6",
     "matplotlib>=3.4",
+    "typer>=0.9",
 ]
+
+[project.scripts]
+rdft = "rdft.cli:main"
 
 [project.optional-dependencies]
 dev = [

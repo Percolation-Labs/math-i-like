@@ -27,3 +27,4 @@ __version__ = '0.1.0'
 from .pipeline import analyze, brw_worked_example
 from .core.reaction_network import ReactionNetwork, Species, Reaction
 from .core.generators import Liouvillian
+from .simulate import run_brw, run_ensemble

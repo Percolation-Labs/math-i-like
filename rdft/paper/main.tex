@@ -578,7 +578,7 @@ vertex: $d_c = 4$.
 
 For a graph $\mathcal{G}$ with spectral dimension $d_s$, Weyl's law
 becomes $N(\lambda) \sim \lambda^{d_s/2}$, giving $P_{\text{return}} \sim t^{-d_s/2}$
-and $V(t) \sim t^{d_s/2}$. The substitution $d \to d_s$ in
+and $V(t) \sim t^{d_s/2}$~\cite{burioni2005}. The substitution $d \to d_s$ in
 \eqref{eq:brw_combined} is \emph{exact} because Steps~1--2 (the Lagrange
 singularity) are independent of $d$ --- the DSE kernel $\phi(G)$ depends
 only on the vertex structure, not on the spatial dimension.
@@ -659,7 +659,7 @@ Process & $\phi(G)$ & $d_c$ & Sing.\ type & Exponent & Source \\
 \midrule
 $2A \to \emptyset$ & $1 - 2\lambda G - \lambda G^2$ & 2 & $\sqrt{}$-branch & $\rho \sim t^{-d/2}$ & Lee (1994) \\
 $2A \to A$ & same class & 2 & $\sqrt{}$-branch & $\rho \sim t^{-d/2}$ & Lee (1994) \\
-$A{+}B \to \emptyset$ & two-species & 4 & $\sqrt{}$-branch & $\rho \sim t^{-d/4}$ & Lee--Cardy (1995) \\
+$A{+}B \to \emptyset$ & two-species & 4 & $\sqrt{}$-branch & $\rho \sim t^{-d/4}$ & \cite{leecardy1995} \\
 BRW (Gribov) & $1+(\beta{-}\chi)G - \chi G^2$ & 4 & $\sqrt{}$-branch & $\langle a^p\rangle \sim t^{(pd-2)/2}$ & Bordeu+ (2019) \\
 \bottomrule
 \end{tabular}
@@ -681,13 +681,13 @@ Amarteifio~\cite{amarteifio2019} Tables~3.8--3.9).
 
 The spectral dimension substitution $d \to d_s$ extends the predictions to:
 \begin{itemize}[leftmargin=2em]
-\item \textbf{Sierpinski carpet} ($d_s \approx 1.86$): $\alpha_2 = (2 \times 1.86 - 2)/2 = 0.86$.
+\item \textbf{Sierpinski carpet} ($d_s \approx 1.86$~\cite{watanabe1985}): $\alpha_2 = (2 \times 1.86 - 2)/2 = 0.86$.
 Simulation: $0.81(5)$. \checkmark
 
-\item \textbf{Random tree} ($d_s = 4/3$): $\alpha_2 = (2 \times 4/3 - 2)/2 = 1/3$.
+\item \textbf{Random tree} ($d_s = 4/3$~\cite{destri2002}): $\alpha_2 = (2 \times 4/3 - 2)/2 = 1/3$.
 Simulation: $0.35(7)$. \checkmark
 
-\item \textbf{Preferential attachment} ($d_s \geq 4$): mean-field,
+\item \textbf{Preferential attachment}~\cite{barabasi1999} ($d_s \geq 4$): mean-field,
 $\alpha_2 = 2 \times 2 - 1 = 3$. Simulation: $2.8(2)$. \checkmark
 \end{itemize}
 
@@ -774,8 +774,8 @@ Lagrange inversion coefficients & Feynman diagram enumeration \\
 Branch point of Lagrange GF & Landau pole / non-perturbative scale \\
 GF singularity type ($\sqrt{}$-branch) & Universality class (RG fixed point) \\
 Transfer theorem: $n^{-\alpha-1} \cdot z_*^{-n}$ & Perturbative coefficient growth \\
-Rooted tree Hopf algebra coproduct & BPHZ subdivergence subtraction \\
-Hopf antipode & Renormalization counterterms \\
+Rooted tree Hopf algebra coproduct~\cite{conneskreimer1998} & BPHZ subdivergence subtraction \\
+Hopf antipode~\cite{conneskreimer2000} & Renormalization counterterms \\
 Borel transform singularity & Instanton / renormalon \\
 \bottomrule
 \end{tabular}
@@ -1360,7 +1360,9 @@ fewer edge. The degree of divergence of the contracted graph is:
 
 \subsection{The parametric integral}
 
-Using the general formula (thesis Eq.~2.99) with $n_e = 1$ for all edges:
+Using the general parametric form~\cite{bogner2010,panzer2015} (thesis Eq.~2.99)
+with $n_e = 1$ for all edges and the Schwinger
+representation~\cite{schwinger1951}:
 \begin{equation}
 \mathcal{I}(G) = \Omega_d \cdot \Gamma\bigl(-\sigma_d(G')\bigr)
 \int \dd\alpha_2 \; \frac{1}{(\Psi')^{d/2}}
@@ -1369,7 +1371,7 @@ Using the general formula (thesis Eq.~2.99) with $n_e = 1$ for all edges:
 \end{equation}
 
 Substituting the polynomials \eqref{eq:psi_prime}--\eqref{eq:phi_prime}
-and using Cheng--Wu ($\alpha_2 = 1$ normalisation):
+and using the Cheng--Wu theorem~\cite{chengwu1987} ($\alpha_2 = 1$ normalisation):
 \begin{align}
 \mathcal{I}(G)
 &= \frac{\Gamma(1-d/2)}{(2\pi)^{d/2}}
@@ -1468,7 +1470,7 @@ function in the AC sense.
 
 \subsection{The Matrix-Tree Theorem}
 
-\begin{theorem}[Kirchhoff 1847]
+\begin{theorem}[Kirchhoff 1847~\cite{kirchhoff1847}]
 For a connected graph $G$ with $n$ vertices and edge weights $\alpha_e$:
 \begin{equation}
 K(\alpha) = \sum_{T \in \mathcal{T}(G)} \prod_{e \in T} \alpha_e
