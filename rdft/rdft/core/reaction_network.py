@@ -383,3 +383,178 @@ class ReactionNetwork:
              Reaction({A: 2}, {},     rate=μ, name='2A→∅')],
             name='Contact Process'
         )
+
+    # ------------------------------------------------------------------ #
+    #  Extended CRN library for testing the AC pipeline                    #
+    # ------------------------------------------------------------------ #
+
+    @classmethod
+    def triplet_annihilation(cls, rate=None) -> 'ReactionNetwork':
+        """
+        3A → ∅ with rate λ.
+        d_c = 2/(3-1) = 1. Mean-field in all physical dimensions d ≥ 1.
+        Density decay: n(t) ~ t^{-1/2} (mean-field) for d ≥ 1.
+        Below d_c (fractals): n(t) ~ t^{-d/2}.
+        Ref: Lee, J. Phys. A 27, 2633 (1994).
+        """
+        A = Species('A')
+        λ = rate or sp.Symbol('lambda', positive=True)
+        return cls([A], [Reaction({A: 3}, {}, rate=λ, name='3A→∅')],
+                   name='Triplet Annihilation 3A→∅')
+
+    @classmethod
+    def k_particle_annihilation(cls, k: int = 2, rate=None) -> 'ReactionNetwork':
+        """
+        kA → ∅ with rate λ.
+        d_c = 2/(k-1). For d < d_c: n(t) ~ t^{-d/2} (exact to all orders).
+        Ref: Lee, J. Phys. A 27, 2633 (1994).
+        """
+        A = Species('A')
+        λ = rate or sp.Symbol('lambda', positive=True)
+        return cls([A], [Reaction({A: k}, {}, rate=λ, name=f'{k}A→∅')],
+                   name=f'{k}-Particle Annihilation {k}A→∅')
+
+    @classmethod
+    def barw_even(cls, branch_rate=None, annihil_rate=None) -> 'ReactionNetwork':
+        """
+        Branching-Annihilating Random Walk with even parity conservation:
+            A → 3A (rate σ), 2A → ∅ (rate λ)
+        Net offspring change is +2 (even), so parity of particle number is conserved.
+        Universality class: Parity-Conserving (PC), NOT directed percolation.
+        d_c = 2 (formally), but ε-expansion fails to reach the PC fixed point.
+        Exponents in d=1 (numerical only): β ≈ 0.92, ν_⊥ ≈ 1.83, z ≈ 1.77.
+        Ref: Cardy & Täuber, PRL 77, 4780 (1996).
+        """
+        A = Species('A')
+        σ = branch_rate  or sp.Symbol('sigma',  positive=True)
+        λ = annihil_rate or sp.Symbol('lambda', positive=True)
+        return cls(
+            [A],
+            [Reaction({A: 1}, {A: 3}, rate=σ, name='A→3A'),
+             Reaction({A: 2}, {},     rate=λ, name='2A→∅')],
+            name='BARW-even (PC class)'
+        )
+
+    @classmethod
+    def barw_odd(cls, branch_rate=None, annihil_rate=None) -> 'ReactionNetwork':
+        """
+        Branching-Annihilating Random Walk with odd offspring (DP class):
+            A → 2A (rate σ), 2A → ∅ (rate λ)
+        Net offspring change is +1 (odd), parity NOT conserved.
+        Universality class: Directed Percolation (DP).
+        d_c = 4. Same as contact process.
+        Ref: Cardy & Täuber, J. Stat. Phys. 90, 1 (1998).
+        """
+        A = Species('A')
+        σ = branch_rate  or sp.Symbol('sigma',  positive=True)
+        λ = annihil_rate or sp.Symbol('lambda', positive=True)
+        return cls(
+            [A],
+            [Reaction({A: 1}, {A: 2}, rate=σ, name='A→2A'),
+             Reaction({A: 2}, {},     rate=λ, name='2A→∅')],
+            name='BARW-odd (DP class)'
+        )
+
+    @classmethod
+    def pcpd(cls, branch_rate=None, annihil_rate=None) -> 'ReactionNetwork':
+        """
+        Pair Contact Process with Diffusion (PCPD):
+            2A → 3A (rate σ), 2A → ∅ (rate λ)
+        Both reactions require a PAIR to meet. Controversial universality class
+        — debated for 20+ years. Not clearly DP or PC.
+        Numerical exponents d=1: β ≈ 0.58-0.64 (conflicting studies).
+        Ref: Hinrichsen, PRE 63, 016109 (2001).
+        """
+        A = Species('A')
+        σ = branch_rate  or sp.Symbol('sigma',  positive=True)
+        λ = annihil_rate or sp.Symbol('lambda', positive=True)
+        return cls(
+            [A],
+            [Reaction({A: 2}, {A: 3}, rate=σ, name='2A→3A'),
+             Reaction({A: 2}, {},     rate=λ, name='2A→∅')],
+            name='PCPD'
+        )
+
+    @classmethod
+    def schlogl_second(cls, branch_rate=None, death_rate=None) -> 'ReactionNetwork':
+        """
+        Second Schlögl model: 2A → 3A (rate σ), A → ∅ (rate μ).
+        Universality class: Directed Percolation (DP). d_c = 4.
+        Different CRN from Gribov but same universality class.
+        Ref: Schlögl, Z. Phys. 253, 147 (1972); Grassberger, Z. Phys. B 47, 365 (1982).
+        """
+        A = Species('A')
+        σ = branch_rate or sp.Symbol('sigma', positive=True)
+        μ = death_rate  or sp.Symbol('mu',    positive=True)
+        return cls(
+            [A],
+            [Reaction({A: 2}, {A: 3}, rate=σ, name='2A→3A'),
+             Reaction({A: 1}, {},     rate=μ, name='A→∅')],
+            name='Schlögl II (DP class)'
+        )
+
+    @classmethod
+    def schlogl_first(cls) -> 'ReactionNetwork':
+        """
+        First Schlögl model (simplified, with particle reservoir):
+            ∅ → A (rate α), A → ∅ (rate δ),
+            2A → 3A (rate σ), 3A → 2A (rate λ)
+        At the critical point: Ising universality class. d_c = 4.
+        Ref: Schlögl, Z. Phys. 253, 147 (1972).
+        """
+        A = Species('A')
+        α = sp.Symbol('alpha',  positive=True)
+        δ = sp.Symbol('delta',  positive=True)
+        σ = sp.Symbol('sigma',  positive=True)
+        λ = sp.Symbol('lambda', positive=True)
+        return cls(
+            [A],
+            [Reaction({},     {A: 1}, rate=α, name='∅→A'),
+             Reaction({A: 1}, {},     rate=δ, name='A→∅'),
+             Reaction({A: 2}, {A: 3}, rate=σ, name='2A→3A'),
+             Reaction({A: 3}, {A: 2}, rate=λ, name='3A→2A')],
+            name='Schlögl I (Ising class)'
+        )
+
+    @classmethod
+    def lotka_volterra(cls) -> 'ReactionNetwork':
+        """
+        Lotka-Volterra predator-prey:
+            A → 2A (prey reproduction, rate σ)
+            A + B → 2B (predation, rate λ)
+            B → ∅ (predator death, rate μ)
+        Prey extinction transition: DP universality class, d_c = 4.
+        Ref: Mobilia, Georgiev, Täuber, J. Stat. Phys. 128, 447 (2007).
+        """
+        A = Species('A')  # prey
+        B = Species('B', sp.Symbol('D_B', positive=True))  # predator
+        σ = sp.Symbol('sigma',  positive=True)
+        λ = sp.Symbol('lambda', positive=True)
+        μ = sp.Symbol('mu',     positive=True)
+        return cls(
+            [A, B],
+            [Reaction({A: 1}, {A: 2},         rate=σ, name='A→2A'),
+             Reaction({A: 1, B: 1}, {B: 2},   rate=λ, name='A+B→2B'),
+             Reaction({B: 1}, {},              rate=μ, name='B→∅')],
+            name='Lotka-Volterra'
+        )
+
+    @classmethod
+    def reversible_annihilation(cls, forward_rate=None,
+                                 backward_rate=None) -> 'ReactionNetwork':
+        """
+        Reversible pair annihilation: 2A → C (rate λ), C → 2A (rate σ).
+        Relaxation to equilibrium: δn(t) ~ t^{-d/2}, same exponent as
+        irreversible 2A → ∅. d_c = 2.
+        Ref: Rey & Cardy, J. Phys. A 32, 1585 (1999).
+        """
+        A = Species('A')
+        C = Species('C', sp.Symbol('D_C', positive=True))
+        λ = forward_rate  or sp.Symbol('lambda', positive=True)
+        σ = backward_rate or sp.Symbol('sigma',  positive=True)
+        return cls(
+            [A, C],
+            [Reaction({A: 2}, {C: 1},   rate=λ, name='2A→C'),
+             Reaction({C: 1}, {A: 2},   rate=σ, name='C→2A')],
+            name='Reversible 2A⇌C'
+        )

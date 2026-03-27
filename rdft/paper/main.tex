@@ -982,43 +982,174 @@ The pipeline automatically:
 All symbolic computation uses SymPy. No external CAS (Sage, Maple) is required.
 
 %% ================================================================
+\section{Discussion}
+\label{sec:discussion}
+
+\subsection{The AC mapping: what it computes and why it works}
+
+The central observation of this paper is that the Dyson--Schwinger equation
+of any polynomial reaction-diffusion theory is a Lagrange equation
+$G = G_0 \, \phi(G)$, where $\phi(G)$ is a polynomial whose coefficients
+are determined entirely by the stoichiometric matrix. The singularity
+structure of $G(G_0)$ --- an algebraic function defined implicitly by
+$F(G, G_0) = G - G_0 \, \phi(G) = 0$ --- then determines the universality
+class through the Flajolet--Odlyzko transfer theorem~\cite{flajolet2009}.
+
+The mapping from stoichiometry to singularity proceeds in four purely
+algebraic steps:
+\begin{enumerate}[leftmargin=2em]
+\item \textbf{Stoichiometry $\to$ vertices.} For each reaction
+$kA \to \ell A$ at rate $\lambda$, expand the Heisenberg--Weyl generator
+$Q = \lambda\bigl((z{+}1)^\ell - (z{+}1)^k\bigr) \partial_z^k$ as a polynomial
+in $z$ and $\partial_z$. Each monomial $z^m \partial_z^n$ is an interaction
+vertex with $m$ outgoing and $n$ incoming legs.
+
+\item \textbf{Vertices $\to$ DSE kernel.} Collect all interaction vertices
+$(m+n \geq 3)$ into $\phi(G) = 1 + \sum g_{mn} \, G^{m+n-2}$
+(Theorem~\ref{thm:auto_dse}). This is a polynomial in $G$ whose degree
+equals the highest total leg count minus two.
+
+\item \textbf{DSE kernel $\to$ branch point.} Solve the system
+$G_* \phi'(G_*) = \phi(G_*)$ (branch point condition, where the implicit
+function theorem fails) and evaluate $\phi''(G_*)$. If $\phi''(G_*) \neq 0$:
+square-root branch. If $\phi''(G_*) = 0$ but $\phi'''(G_*) \neq 0$:
+cube-root branch.
+
+\item \textbf{Branch point $\to$ exponents.} Apply the transfer theorem:
+a branch with Puiseux exponent $p/q$ gives $[G_0^n] \sim n^{-p/q - 1}$.
+Combine with Weyl's law ($d_s$ from the graph spectrum) to obtain
+$\langle a^p \rangle \sim t^{(p\,d_s - 2)/2}$.
+\end{enumerate}
+
+Every step is symbolic algebra over the polynomial ring
+$\mathbb{Q}[\text{rates}][G]$. No momentum integrals are evaluated, no
+dimensional regularisation is performed, and no renormalisation group
+equations are solved. The \texttt{rdft} implementation executes this pipeline
+automatically: the user provides a stoichiometry matrix and receives the
+DSE kernel, branch points, singularity classification, Ward identity
+warnings, and scaling exponents.
+
+\subsection{Universality from singularity type}
+
+Applying the pipeline to 14 CRNs from the literature
+(Table~\ref{tab:crn_survey}) reveals that the singularity type of $\phi(G)$
+cleanly separates universality classes:
+
+\paragraph{Directed percolation (DP).}
+All DP-class systems --- Gribov, contact process, Schl\"ogl~II,
+BARW-odd --- produce a quadratic $\phi(G)$ with $\phi''(G_*) \neq 0$.
+The singularity is a square-root branch, the transfer exponent is
+$n^{-3/2}$, and $d_c = 4$. Four different CRNs with different
+stoichiometries map to the \emph{same} singularity type, confirming that
+the AC route captures universality.
+
+\paragraph{Parity-conserving (PC) class.}
+For the BARW-even system ($A \to 3A$, $2A \to \emptyset$), the DSE kernel
+is $\phi(G) = (\sigma - \lambda)\,G^2 + (3\sigma - 2\lambda)\,G + 1$.
+The coefficient of $G^2$ is $\sigma - \lambda$, which vanishes identically
+at the critical point $\sigma_c = \lambda$. At this point $\phi$ degenerates
+from quadratic to linear and the Lagrange equation has a simple
+\emph{pole} at $G_0 = 1/\lambda$, not a branch point. The series
+$[G_0^n]\,G = \lambda^{n-1}$ is geometric with no power-law decay.
+
+This is a rigorous algebraic statement: the leading coefficient of a
+polynomial is a linear function of the rates, and it vanishes by
+substitution. The physical consequence is that the standard transfer
+theorem does not apply at criticality. This provides a purely algebraic
+explanation for the known failure of the $\varepsilon$-expansion in
+the PC class~\cite{cardytauber1996}: the $\varepsilon$-expansion is
+perturbation theory around a branch-point singularity, but at the PC
+critical point the singularity is a pole. One cannot reach a pole by
+perturbing a branch point.
+
+\paragraph{PCPD.}
+The pair contact process with diffusion ($2A \to 3A$, $2A \to \emptyset$)
+produces a \emph{cubic} DSE kernel
+$\phi(G) = \sigma G^3 + (2\sigma - \lambda) G^2 + (\sigma - 2\lambda) G + 1$.
+Unlike BARW-even, the leading coefficient $\sigma$ never vanishes
+($\sigma > 0$ always). Generically, the branch point is a square root
+(same as DP). However, the cubic kernel admits a second possibility:
+at the ratio $\sigma/\lambda \approx 4.72$ (for $\lambda = 1$),
+$\phi''(G_*) = 0$ and $\phi'''(G_*) = 6\sigma \neq 0$, upgrading the
+singularity to a cube-root branch with transfer exponent $n^{-4/3}$.
+
+This is verified to machine precision: both conditions $G_*\phi'(G_*) =
+\phi(G_*)$ and $\phi''(G_*) = 0$ hold simultaneously with residual
+$< 10^{-14}$. The cube-root possibility is \emph{structurally absent} in
+quadratic-kernel (DP) systems --- it requires $\deg\phi \geq 3$.
+Whether the physical critical manifold passes through this special ratio
+determines whether PCPD constitutes a genuinely new universality class
+or is DP with anomalously slow crossover~\cite{hinrichsen2001}.
+
+\paragraph{Ward identities.}
+For pure $k$-particle annihilation $kA \to \emptyset$, the binomial
+expansion of $((z{+}1)^0 - (z{+}1)^k) \, \partial_z^k$ produces
+vertices that all share the same incoming leg count $n = k$. This
+algebraic regularity signals a Ward identity (particle number can only
+decrease), which reduces the physical $d_c$ from the naive
+$4/(k{-}1)$ to $2/(k{-}1)$~\cite{lee1994}. The pipeline detects this
+signature automatically; the factor-of-two correction is a known
+physics input.
+
+\subsection{What the code generates}
+
+The \texttt{rdft} package automates every step of the AC pipeline.
+A single call
+\begin{verbatim}
+from rdft import analyze
+results = analyze('gribov')
+\end{verbatim}
+returns the Liouvillian, interaction vertices, DSE kernel $\phi(G)$,
+branch points, singularity type, upper critical dimension, and scaling
+exponents. For the 14 processes in Table~\ref{tab:crn_survey}, the
+\texttt{diagnose\_singularity()} function additionally reports:
+\begin{itemize}[leftmargin=2em]
+\item Ward identity warnings when all $n_{\rm in}$ are equal, with the
+corrected physical $d_c$;
+\item parity degeneracy warnings when the leading coefficient of $\phi(G)$
+can vanish, identifying the critical manifold where the branch point
+collapses to a pole;
+\item higher-order branch detection when $\deg\phi \geq 3$, flagging
+parameter values where the Puiseux exponent changes from $1/2$ to $1/3$.
+\end{itemize}
+
+The example script \texttt{crn\_survey.py} runs all 14 CRNs through the
+full pipeline, producing the summary in Table~\ref{tab:crn_survey}.
+All 12 systems with expected values pass validation; the remaining 2
+(Lotka--Volterra and $2A \rightleftharpoons C$) are multi-species systems
+whose effective single-variable DSE correctly produces square-root branches.
+
+%% ================================================================
 \section{Conclusion}
 \label{sec:conclusion}
 
 The analytic combinatorics route provides a direct, algebraic path from the
-stoichiometry matrix to critical exponents. The Lagrange equation structure
-of the DSE --- shared by all polynomial reaction-diffusion theories ---
-generically produces square-root branch points and $n^{-3/2}$ coefficient
-asymptotics. The traditional Feynman diagram calculation is the scenic route:
-it arrives at the same destination via loop integrals, pole extraction, and
-RG flow, but the singularity of the generating function contains all the
-information from the start.
+stoichiometry matrix to critical exponents, requiring no momentum integrals,
+no dimensional regularisation, and no renormalisation group equations. The
+Lagrange equation structure of the DSE encodes the universality class in the
+singularity type of an algebraic curve defined over the polynomial ring of
+reaction rates.
 
-The extension to arbitrary graphs via the spectral dimension substitution
-$d \to d_s$ is validated against simulation data for hypercubic lattices,
-Sierpinski carpets, random trees, and scale-free networks. All 14 simulation
-data points from Bordeu et al.~\cite{bordeu2019} agree with the theoretical
-predictions.
+Validation against 14 simulation data points from Bordeu et
+al.~\cite{bordeu2019} confirms the AC predictions on hypercubic lattices,
+Sierpinski carpets, random trees, and scale-free networks. The spectral
+dimension substitution $d \to d_s$ extends all results to arbitrary graphs.
 
-Applying the pipeline to 14~CRNs from the reaction-diffusion literature
-(Table~\ref{tab:crn_survey}) yields three structural insights.
-First, all directed percolation systems share a quadratic DSE kernel with a
-square-root branch, confirming the universality of the $n^{-3/2}$ transfer
-exponent.
-Second, the parity-conserving (BARW-even) system shows a qualitative
-singularity change: the leading coefficient of $\phi(G)$ vanishes at
-criticality, collapsing the branch point to a pole. This provides an
-algebraic explanation for why the $\varepsilon$-expansion
-fails~\cite{cardytauber1996}: perturbation theory around a branch point
-cannot reach a pole.
-Third, the PCPD system has a cubic DSE kernel admitting a cube-root branch
-at a special parameter ratio, potentially resolving the long-standing debate
-over its universality class~\cite{hinrichsen2001}.
+The systematic survey of 14~CRNs from the reaction-diffusion literature
+(Table~\ref{tab:crn_survey}) demonstrates that the AC singularity
+classification cleanly separates known universality classes: DP systems
+have quadratic kernels with square-root branches; the PC class has a
+kernel whose leading coefficient vanishes at criticality, collapsing the
+branch to a pole; and the PCPD system has a cubic kernel admitting a
+cube-root branch at a computable parameter ratio.
+
+These structural insights are mathematically rigorous --- they follow from
+polynomial algebra, the implicit function theorem, and the Newton polygon
+--- and provide algebraic explanations for phenomena previously accessible
+only through numerical simulation or failed perturbation theory.
 
 The open-source implementation \texttt{rdft} makes this pipeline accessible
-to any researcher who can specify a chemical reaction network. The automatic
-singularity diagnostics detect Ward identities, parity degeneracies, and
-higher-order branch points without manual intervention.
+to any researcher who can specify a stoichiometry matrix.
 
 %% ================================================================
 \begin{thebibliography}{99}

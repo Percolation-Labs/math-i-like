@@ -243,6 +243,169 @@ def dse_summary(liouvillian) -> str:
 
 
 # ================================================================== #
+#  Singularity diagnostics                                             #
+# ================================================================== #
+
+def diagnose_singularity(vertices: Dict[Tuple[int, int], sp.Expr],
+                          rate_symbols: Dict[str, sp.Symbol] = None) -> Dict:
+    """
+    Full diagnostic of the DSE singularity structure, including
+    detection of degenerate cases (pole, Ward identity, parity).
+
+    This goes beyond dse_summary() by:
+    1. Detecting when phi(G) degenerates (leading coefficient vanishes)
+    2. Identifying Ward identity constraints
+    3. Classifying the singularity type with clear physical interpretation
+
+    Parameters
+    ----------
+    vertices : dict from (m_out, n_in) → coupling, from Liouvillian.vertices
+    rate_symbols : optional dict of rate symbol names for parametric analysis
+
+    Returns
+    -------
+    dict with keys:
+        'phi': the DSE kernel phi(G)
+        'degree': degree of phi in G
+        'd_c': upper critical dimension (naive, before Ward identity)
+        'singularity_class': one of 'branch_point', 'pole', 'degenerate'
+        'singularity_type': 'square_root', 'cube_root', 'simple_pole', etc.
+        'transfer_exponent': n^{this} in [G₀^n] asymptotics
+        'diagnosis': human-readable explanation
+        'warnings': list of issues (Ward identity, parity, etc.)
+    """
+    G = Symbol('G')
+    classified = classify_vertices(vertices)
+    phi = combinatorial_dse_kernel(vertices, G)
+    d_c = upper_critical_dimension(vertices)
+
+    result = {
+        'phi': phi,
+        'd_c': d_c,
+        'warnings': [],
+    }
+
+    # Degree analysis
+    try:
+        poly = sp.Poly(phi, G)
+        degree = poly.degree()
+        coeffs = {i: c for i, c in enumerate(reversed(poly.all_coeffs()))}
+    except Exception:
+        degree = None
+        coeffs = {}
+    result['degree'] = degree
+
+    # Check for Ward identity signature:
+    # Pure annihilation kA→∅ produces vertices from binomial expansion of
+    # ((z+1)^0 - (z+1)^k). The most relevant vertex (smallest m+n) has
+    # legs m+n = k+1, but the Ward identity makes it effectively cancel.
+    # Signature: ALL vertices have n_in = k (same annihilation order).
+    interaction = classified['interaction']
+    if interaction:
+        n_values = set(n for m, n, g in interaction)
+        if len(n_values) == 1:
+            k = n_values.pop()
+            # All incoming legs are k → pure k-particle annihilation
+            # Physical d_c = 2/(k-1), not 4/(smallest m+n - 2)
+            phys_d_c = Rational(2, k - 1) if k > 1 else sp.oo
+            if phys_d_c != d_c:
+                result['warnings'].append(
+                    f'Ward identity: all vertices have n_in={k} '
+                    f'(pure {k}-particle annihilation). '
+                    f'Physical d_c = {phys_d_c}, not naive d_c = {d_c}.'
+                )
+                result['d_c_physical'] = phys_d_c
+
+    # Check if leading coefficient can vanish (parity conservation signature)
+    if degree is not None and degree >= 2:
+        leading_coeff = coeffs.get(degree, sp.S.Zero)
+        free_symbols = leading_coeff.free_symbols
+
+        if leading_coeff == 0:
+            # Already degenerate
+            result['warnings'].append(
+                'Leading coefficient of phi(G) is zero. '
+                'phi degenerates to lower degree.'
+            )
+        elif free_symbols:
+            # Check if leading coeff can vanish for some parameter values
+            from sympy import solve
+            for sym in free_symbols:
+                zeros = solve(leading_coeff, sym)
+                if zeros:
+                    result['warnings'].append(
+                        f'Leading G^{degree} coefficient ({leading_coeff}) '
+                        f'vanishes at {sym}={zeros}. '
+                        f'At this point phi degenerates: '
+                        f'branch point → pole (parity conservation signature).'
+                    )
+                    result['degeneration_condition'] = {str(sym): zeros}
+                    break
+
+    # Classify singularity type
+    if degree is None or degree == 0:
+        result['singularity_class'] = 'trivial'
+        result['singularity_type'] = 'no_interaction'
+        result['transfer_exponent'] = None
+        result['diagnosis'] = 'No interaction vertices. No critical behavior.'
+
+    elif degree == 1:
+        # Linear phi → pole
+        result['singularity_class'] = 'pole'
+        result['singularity_type'] = 'simple_pole'
+        result['transfer_exponent'] = 0  # [G₀^n] ~ constant
+        result['diagnosis'] = (
+            'phi(G) is linear → Lagrange equation has a SIMPLE POLE, '
+            'not a branch point. [G₀^n] ~ const (no power-law decay). '
+            'Standard transfer theorem does not apply. '
+            'This indicates strong-coupling behavior that cannot be '
+            'captured by perturbative methods (RG ε-expansion fails).'
+        )
+
+    elif degree >= 2:
+        # Check if phi''(G*) can vanish at the branch point
+        phi_pp = sp.diff(phi, G, 2)
+        phi_ppp = sp.diff(phi, G, 3)
+
+        if degree == 2:
+            # Quadratic phi: always square-root (phi'' = 2*leading_coeff ≠ 0)
+            result['singularity_class'] = 'branch_point'
+            result['singularity_type'] = 'square_root'
+            result['transfer_exponent'] = Rational(-3, 2)
+            result['diagnosis'] = (
+                'phi(G) is quadratic → generically square-root branch point. '
+                '[G₀^n] ~ n^{-3/2}. This is the DP/BRW universality class.'
+            )
+
+        elif degree >= 3:
+            # Cubic or higher: may have cube-root at special parameter values
+            result['singularity_class'] = 'branch_point'
+            result['singularity_type'] = 'square_root (generic)'
+            result['transfer_exponent'] = Rational(-3, 2)
+
+            # Check if phi'' can vanish at a branch point
+            # phi''(G) is degree d-2, so it has roots
+            # If a root of phi'' coincides with a branch point, we get cube-root
+            if phi_ppp != 0:
+                result['diagnosis'] = (
+                    f'phi(G) is degree {degree} → generically square-root branch. '
+                    f'[G₀^n] ~ n^{{-3/2}}. '
+                    f'However, at special parameter values where phi\'\'(G*)=0, '
+                    f'the singularity upgrades to cube-root: [G₀^n] ~ n^{{-4/3}}. '
+                    f'The degree-{degree} kernel gives a richer singularity '
+                    f'structure than degree-2 (DP) systems.'
+                )
+                result['cube_root_possible'] = True
+            else:
+                result['diagnosis'] = (
+                    f'phi(G) is degree {degree} → square-root branch. '
+                    f'[G₀^n] ~ n^{{-3/2}}.'
+                )
+
+    return result
+
+
+# ================================================================== #
 #  Weighted Lagrange equation: the genuine AC route                    #
 # ================================================================== #
 

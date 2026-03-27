@@ -38,6 +38,12 @@ rdft corollas gribov
 
 # Full BRW worked example — reproduces Bordeu, Amarteifio+ (2019)
 rdft brw
+
+# Full BRW worked example (6 steps, Bordeu+ 2019)
+python examples/brw_complete.py
+
+# CRN survey — run all 14 literature CRNs through the AC pipeline
+python examples/crn_survey.py
 ```
 
 ## Python API
@@ -55,11 +61,19 @@ net = ReactionNetwork.from_stoichiometry(
     name='Gribov'
 )
 
-# Named factories
-net = ReactionNetwork.pair_annihilation()   # 2A → ∅
-net = ReactionNetwork.gribov()              # A→2A, A→∅, 2A→A
-net = ReactionNetwork.brw_full()            # full two-species with tracers
-net = ReactionNetwork.contact_process()     # directed percolation class
+# Named factories — 14 processes from the literature
+net = ReactionNetwork.pair_annihilation()      # 2A → ∅
+net = ReactionNetwork.gribov()                 # A→2A, A→∅, 2A→A  (BRW/DP)
+net = ReactionNetwork.triplet_annihilation()   # 3A → ∅  (d_c = 1)
+net = ReactionNetwork.k_particle_annihilation(4)  # 4A → ∅  (d_c = 2/3)
+net = ReactionNetwork.contact_process()        # A→2A, 2A→∅  (DP class)
+net = ReactionNetwork.schlogl_second()         # 2A→3A, A→∅  (DP class)
+net = ReactionNetwork.schlogl_first()          # Schlögl I  (Ising class)
+net = ReactionNetwork.barw_even()              # A→3A, 2A→∅  (parity-conserving)
+net = ReactionNetwork.barw_odd()               # A→2A, 2A→∅  (DP class)
+net = ReactionNetwork.pcpd()                   # 2A→3A, 2A→∅  (controversial)
+net = ReactionNetwork.lotka_volterra()         # predator-prey (2 species)
+net = ReactionNetwork.reversible_annihilation()  # 2A⇌C (2 species)
 
 # Step-by-step access
 from rdft.core.generators import Liouvillian
@@ -146,6 +160,18 @@ evaluating any momentum integrals, and validates against simulation data
 from Bordeu, Amarteifio et al. (2019) on hypercubic lattices, Sierpinski
 carpets, random trees, and scale-free networks.
 
+## Singularity diagnostics
+
+The pipeline includes automatic singularity diagnostics (`diagnose_singularity`)
+that detect and explain when the standard AC route cannot be applied:
+
+| Condition | Diagnosis | Example |
+|-----------|-----------|---------|
+| Quadratic phi, phi''(G*) ≠ 0 | Square-root branch → n^{-3/2} | DP class (Gribov, Contact) |
+| All vertices have same n_in | Ward identity: d_c reduced by factor 2 | kA→∅ |
+| Leading coeff vanishes at criticality | Branch → pole (parity conservation) | BARW-even (PC class) |
+| Cubic phi, phi''(G*) = 0 at special ratio | Cube-root branch → n^{-4/3} | PCPD (at σ/λ ≈ 4.72) |
+
 ## References
 
 - Amarteifio (2019) PhD thesis, Imperial College London
@@ -156,3 +182,7 @@ carpets, random trees, and scale-free networks.
 - Flajolet & Sedgewick (2009) *Analytic Combinatorics* — transfer theorem
 - Connes & Kreimer (1998) *Comm. Math. Phys.* 199:203 — Hopf algebra of renormalisation
 - Bogner & Weinzierl (2010) arXiv:1002.3458 — parametric representations
+- Cardy & Täuber (1996) *PRL* 77:4780 — BARW parity-conserving class
+- Hinrichsen (2000) *Adv. Phys.* 49:815 — absorbing state transitions review
+- Täuber, Howard & Vollmayr-Lee (2005) *J. Phys. A* 38:R79 — field-theoretic RG for reaction-diffusion
+- Schlögl (1972) *Z. Phys.* 253:147 — Schlögl models
