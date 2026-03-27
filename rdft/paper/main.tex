@@ -1675,6 +1675,76 @@ B-propagator carries no loop momentum.}
 \label{fig:species_loops}
 \end{figure}
 
+\subsection{Three-Vertex (Triangle) Diagrams}
+
+At one loop with 3 vertices ($V=3$, $E_{\mathrm{int}} = 3$), the internal
+edges form a \textbf{triangle}. The code generates 10 A-only triangle
+diagrams, all with $\mathfrak{s}(G) = 3$ (cyclic $\mathbb{Z}_3$ rotation
+of the three vertices). Compare thesis Example~2.5.17.
+
+\begin{center}
+\begin{tikzpicture}[>=Stealth, scale=1.0]
+  % Triangle diagram
+  \fill (0, 1.0) circle (3pt) node[above=3pt] {$v_0$};
+  \fill (-1.0, -0.5) circle (3pt) node[below left=2pt] {$v_1$};
+  \fill ( 1.0, -0.5) circle (3pt) node[below right=2pt] {$v_2$};
+  % Internal edges (triangle)
+  \draw[->, thick, blue!70!black] (0,1.0) -- (-0.9,-0.4)
+    node[midway, left, font=\footnotesize] {$\alpha_0$};
+  \draw[->, thick, blue!70!black] (-1.0,-0.5) -- (0.9,-0.5)
+    node[midway, below, font=\footnotesize] {$\alpha_1$};
+  \draw[->, thick, blue!70!black] (1.0,-0.5) -- (0.1,0.9)
+    node[midway, right, font=\footnotesize] {$\alpha_2$};
+  % External legs
+  \draw[<-, thin, dashed, gray] (0,1.0) -- (0,1.8);
+  \draw[->, thin, dashed, gray] (-1.0,-0.5) -- (-1.7,-0.9);
+  \draw[->, thin, dashed, gray] (1.0,-0.5) -- (1.7,-0.9);
+\end{tikzpicture}
+\end{center}
+
+\noindent Graph polynomials (thesis Eq.~2.106):
+\begin{align}
+K &= \alpha_0\alpha_1 + \alpha_0\alpha_2 + \alpha_1\alpha_2
+\qquad\text{(3 spanning trees, each a pair of edges)} \\
+\Psi &= \alpha_0 + \alpha_1 + \alpha_2
+\qquad\text{(complement: degree $L = 1$)}
+\end{align}
+
+\noindent Symmetry factor: $\mathfrak{s}(G) = 3$ (cyclic rotation
+$v_0 \to v_1 \to v_2 \to v_0$ permutes all three edges).
+This differs from the 2-vertex bubble ($\mathfrak{s} = 2$) because the
+triangle has a larger automorphism group ($\mathbb{Z}_3$ vs $\mathbb{Z}_2$).
+
+\begin{table}[H]
+\centering
+\caption{Three-vertex one-loop A-sector diagrams (10 total, representative
+selection). All have triangle topology with $\mathfrak{s}(G) = 3$ and
+$\Psi = \alpha_0 + \alpha_1 + \alpha_2$.
+At vanishing external momentum, these also evaluate to the same integral
+class as the 2-vertex diagrams (thesis Eq.~2.108).}
+\label{tab:triangle}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{lllccc}
+\toprule
+$v_0$ & $v_1$ & $v_2$ & Ext.\ legs & $\mathfrak{s}$ & Coupling \\
+\midrule
+$\tilde\phi_A\phi_A^2$ & $\tilde\phi_A\phi_A^2$ & $\tilde\phi_A\phi_A^2$ &
+$(0, 3)$ & 3 & $-\chi^3$ \\
+$\tilde\phi_A\phi_A^2$ & $\tilde\phi_A^2\phi_A$ & $\tilde\phi_A^2\phi_A$ &
+$(2, 1)$ & 3 & $-\beta^2\chi$ \\
+$\tilde\phi_A^2\phi_A$ & $\tilde\phi_A^2\phi_A$ & $\tilde\phi_A^2\phi_A$ &
+$(3, 0)$ & 3 & $\beta^3$ \\
+$\tilde\phi_A^2\phi_A^2$ & $\tilde\phi_A^2\phi_A^2$ & $\tilde\phi_A^2\phi_A^2$ &
+$(3, 3)$ & 3 & $-\chi^3$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent The complete enumeration: 6 two-vertex diagrams ($\mathfrak{s}=2$)
++ 10 three-vertex diagrams ($\mathfrak{s}=3$) = \textbf{16 A-sector
+one-loop diagrams} for the Gribov process. With 20 mixed A/B diagrams,
+the full BRW has \textbf{36 one-loop 1PI diagrams} total.
+
 \subsection{Connection to AC}
 
 The Lagrange inversion coefficient $[g^n]\,G$ counts these diagrams:
