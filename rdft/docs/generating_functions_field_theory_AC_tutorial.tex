@@ -276,14 +276,12 @@ infectives. No probabilistic meaning is attached to $x$ or $y$ themselves.
 \subsubsection{Why This Helps}
 
 The shift operators in the master equation act as multiplication and differentiation
-on $G$. Specifically:
-\begin{align*}
-  \sum_{s,i} s\, P(s,i) x^s y^i &= x\,\partial_x G,\\
-  \sum_{s,i} (s+1) P(s+1, i-1) x^s y^i &= \partial_x G \cdot \frac{y}{1} \cdot \ldots
-\end{align*}
-
-After careful bookkeeping (multiplying each term in \eqref{eq:master_sir} by $x^s y^i$
-and summing), the master equation becomes a \textbf{single PDE}:
+on $G$. For example, $\sum_{s,i} s\, P(s,i) x^s y^i = x\,\partial_x G$.
+Multiplying each term in \eqref{eq:master_sir} by $x^s y^i$,
+summing over all states, and using the shift identities
+$\sum (s+1)P(s{+}1,i{-}1)x^s y^i = y\,\partial_x G$ and
+$\sum (i+1)P(s,i{+}1)x^s y^i = \partial_y G$,
+the master equation becomes a \textbf{single PDE}:
 
 \begin{equation}
   \partial_t G = \frac{\beta}{N}(y - x)\,\partial_x(x\,\partial_y G)
@@ -370,7 +368,7 @@ The singularity of $T(z)$ occurs where the implicit function theorem fails
 $\partial/\partial T[T - ze^{R_0(T-1)}] = 0$:
 
 \begin{equation}
-  T_* = \frac{1}{R_0}, \qquad z_* = \frac{1}{R_0} e^{1 - 1/R_0}.
+  T_* = \frac{1}{R_0}, \qquad z_* = \frac{e^{R_0 - 1}}{R_0}.
   \label{eq:sir_singularity}
 \end{equation}
 
@@ -400,7 +398,7 @@ the \textbf{pure power law} $P_n \sim C n^{-3/2}$.
 Quantity & Formula & Derivation \\
 \midrule
 Epidemic threshold & $R_0 = 1$ & $T_* = 1/R_0 \to 1$ \\
-GF singularity & $z_* = e^{1-1/R_0}/R_0$ & IFT failure \\
+GF singularity & $z_* = e^{R_0-1}/R_0$ & IFT failure \\
 Singularity type & Square-root branch & $F_{TT} \neq 0$ \\
 Final-size decay & $P_n \sim n^{-3/2}$ at $R_0=1$ & Transfer theorem \\
 Final-size GF & Borel distribution & Lagrange inversion \\
@@ -591,7 +589,7 @@ This follows from a Ward identity associated with the probability conservation
 constraint $H(1, a) = 0$ (see \cite{tauber2005} for the proof). The effective action is:
 
 \begin{equation}
-  S_\mathrm{eff} = \int d^dx\,dt\; \tilde\phi\,(-\partial_t + D\nabla^2)\phi,
+  S_\mathrm{eff} = \int d^dx\,dt\; \tilde\phi\,(\partial_t - D\nabla^2)\phi,
   \label{eq:action_free}
 \end{equation}
 
@@ -996,7 +994,7 @@ $\phi'(T) = R_0 e^{R_0(T-1)}$:
 \end{align}
 
 Dividing: $T_* R_0 = 1$, giving $T_* = 1/R_0$. Substituting back:
-$z_* = (1/R_0)e^{R_0(1/R_0 - 1)} = (1/R_0)e^{1-1/R_0}$, confirming
+$z_* = (1/R_0)/e^{R_0(1/R_0 - 1)} = (1/R_0)/e^{1-R_0} = e^{R_0-1}/R_0$, confirming
 \eqref{eq:sir_singularity}.
 
 \subsubsection{The Singular Locus Is the SIR Orbit}
@@ -1698,8 +1696,8 @@ Reaction & Upper $d_c$ & Exponent $\alpha$ ($d<d_c$) & Mean-field ($d>d_c$) \\
 \midrule
 $A + A \to \emptyset$ & 2 & $d/2$ & 1 \\
 $A + A \to A$ & 2 & $d/2$ & 1 \\
-$A + B \to \emptyset$ & 4 & $d/4$ & 1/2 \\
-$3A \to \emptyset$ & 1 & $d/2$ & 1 \\
+$A + B \to \emptyset$ & 4 & $d/4$ & 1 \\
+$3A \to \emptyset$ & 1 & $d/2$ & 1/2 \\
 \bottomrule
 \end{tabular}
 \end{center}
