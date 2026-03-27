@@ -540,6 +540,89 @@ class ReactionNetwork:
         )
 
     @classmethod
+    def prion_propagation(cls, minimal: bool = False) -> 'ReactionNetwork':
+        """
+        Prion/misfolding propagation: template-directed protein conversion.
+
+        Species:
+            H: healthy (correctly folded) protein
+            M: misfolded (prion) protein
+
+        Reactions:
+            H + M → 2M  (template-directed conversion, rate β)
+            ∅ → H       (healthy protein production, rate λ)
+            H → ∅       (healthy protein degradation, rate μ_H)
+            M → ∅       (misfolded protein clearance, rate μ_M)
+
+        If minimal=False, also includes:
+            H → M       (spontaneous misfolding, rate α) — very rare
+
+        The key autocatalytic step H + M → 2M makes this structurally
+        different from SIS epidemics (S + I → 2I): here the "susceptible"
+        pool (H) is replenished by de novo production, not by recovery.
+
+        The transition between healthy (M → 0) and diseased (M persists)
+        states is an absorbing-state phase transition whose universality
+        class has never been computed via field theory.
+
+        Biomedical relevance: prion diseases (CJD, BSE), and amyloid
+        propagation models for Alzheimer's and Parkinson's disease.
+        """
+        H = Species('H')
+        M = Species('M', sp.Symbol('D_M', positive=True))
+        β = sp.Symbol('beta',  positive=True)
+        λ = sp.Symbol('lambda', positive=True)
+        μ_H = sp.Symbol('mu_H', positive=True)
+        μ_M = sp.Symbol('mu_M', positive=True)
+
+        reactions = [
+            Reaction({H: 1, M: 1}, {M: 2},   rate=β,   name='H+M→2M'),
+            Reaction({},           {H: 1},    rate=λ,   name='∅→H'),
+            Reaction({H: 1},       {},        rate=μ_H, name='H→∅'),
+            Reaction({M: 1},       {},        rate=μ_M, name='M→∅'),
+        ]
+
+        if not minimal:
+            α = sp.Symbol('alpha', positive=True)
+            reactions.insert(0, Reaction({H: 1}, {M: 1}, rate=α, name='H→M'))
+
+        return cls(
+            [H, M], reactions,
+            name='Prion Propagation' + (' (minimal)' if minimal else '')
+        )
+
+    @classmethod
+    def michaelis_menten(cls) -> 'ReactionNetwork':
+        """
+        Michaelis-Menten enzyme kinetics on a lattice:
+            E + S → ES  (binding, rate k1)
+            ES → E + S  (unbinding, rate k_1)
+            ES → E + P  (catalysis, rate k2)
+
+        Species: E (enzyme), S (substrate), ES (complex), P (product).
+
+        The spatial version on a d-dimensional lattice has anomalous kinetics
+        in low dimensions (fractal kinetics, Kopelman 1988). No full
+        Doi-Peliti field theory or RG analysis exists for d > 1.
+
+        Ref: Olmeda & Rulands, PRE 110, 024404 (2024) — 1D only.
+        """
+        E  = Species('E')
+        S  = Species('S',  sp.Symbol('D_S', positive=True))
+        ES = Species('ES', sp.Symbol('D_ES', positive=True))
+        P  = Species('P',  sp.Symbol('D_P', positive=True))
+        k1  = sp.Symbol('k_1',  positive=True)
+        km1 = sp.Symbol('k_m1', positive=True)
+        k2  = sp.Symbol('k_2',  positive=True)
+        return cls(
+            [E, S, ES, P],
+            [Reaction({E: 1, S: 1}, {ES: 1},       rate=k1,  name='E+S→ES'),
+             Reaction({ES: 1},       {E: 1, S: 1},  rate=km1, name='ES→E+S'),
+             Reaction({ES: 1},       {E: 1, P: 1},  rate=k2,  name='ES→E+P')],
+            name='Michaelis-Menten'
+        )
+
+    @classmethod
     def reversible_annihilation(cls, forward_rate=None,
                                  backward_rate=None) -> 'ReactionNetwork':
         """

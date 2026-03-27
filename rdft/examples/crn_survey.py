@@ -414,6 +414,22 @@ def tier3_open_problems():
         numeric_rates={'sigma': 1, 'lambda': 1},
     )
 
+    # 3c. Prion propagation: H+M -> 2M, 0 -> H, H -> 0, M -> 0
+    # First field-theoretic analysis. AC predicts DP for mu_H > 0.
+    results['Prion'] = analyze_crn(
+        ReactionNetwork.prion_propagation(minimal=True),
+        expected={},
+        numeric_rates={'beta': 1, 'lambda': 1, 'mu_H': 0.5, 'mu_M': 0.5},
+    )
+
+    # 3d. Michaelis-Menten: E+S -> ES, ES -> E+S, ES -> E+P
+    # No full Doi-Peliti RG exists for d > 1.
+    results['Michaelis-Menten'] = analyze_crn(
+        ReactionNetwork.michaelis_menten(),
+        expected={},
+        numeric_rates={'k_1': 1, 'k_m1': 0.5, 'k_2': 1},
+    )
+
     return results
 
 
