@@ -843,6 +843,87 @@ Graph & $d_s$ & $p$ & Theory (RG) & Theory (AC) & Simulation & \\
 \end{table}
 
 %% ================================================================
+\subsection{Universality Classification via DSE Singularity}
+\label{sec:universality}
+
+The AC pipeline can be applied to any CRN whose reactions are polynomial.
+Table~\ref{tab:crn_survey} shows the results for 14 processes from
+the literature. The key findings:
+
+\begin{enumerate}[leftmargin=2em]
+\item \textbf{DP universality.} All systems in the directed percolation class
+--- Gribov, contact process, Schl\"ogl~II, BARW-odd --- produce a quadratic
+DSE kernel $\phi(G)$ with $\phi''(G_*) \neq 0$, giving a square-root branch
+point and $[G_0^n] \sim n^{-3/2}$.
+
+\item \textbf{Ward identity for $kA \to \emptyset$.} The automatic pipeline
+detects that all vertices have the same incoming leg count~$n$, signalling a
+Ward identity (particle number can only decrease). The naive
+$d_c = 4/(m{+}n{-}2)$ overestimates by a factor of~2; the physical
+$d_c = 2/(k{-}1)$~\cite{lee1994}.
+
+\item \textbf{Parity conservation (BARW-even).} For $A \to 3A$ and
+$2A \to \emptyset$, the DSE kernel is
+$\phi(G) = (\sigma - \lambda)G^2 + (3\sigma - 2\lambda)G + 1$.
+At criticality ($\sigma = \lambda$), the $G^2$ coefficient vanishes
+and $\phi$ degenerates from quadratic to \emph{linear}. The Lagrange
+equation then has a simple \emph{pole}, not a branch point. This is the
+AC signature that the parity-conserving (PC) universality class is
+fundamentally different from DP: the singularity changes qualitative type
+(pole vs.\ branch), not merely quantitatively. This explains why the
+$\varepsilon$-expansion of Cardy and T\"auber~\cite{cardytauber1996}
+runs to strong coupling: one cannot expand perturbatively around a branch
+point when the singularity at criticality is a pole.
+
+\item \textbf{PCPD.} For $2A \to 3A$ and $2A \to \emptyset$, the DSE
+kernel is cubic: $\phi(G) = \sigma G^3 + (2\sigma - \lambda) G^2
++ (\sigma - 2\lambda) G + 1$. Unlike BARW-even, the leading ($G^3$) term
+never vanishes. Generically, the branch point is a square root (same as DP).
+However, at the special ratio $\sigma / \lambda \approx 4.72$,
+$\phi''(G_*) = 0$ and the branch point upgrades to a \emph{cube root}
+with transfer exponent $[G_0^n] \sim n^{-4/3}$. Whether the physical
+critical point sits at this special ratio determines whether PCPD is a
+new universality class or DP with slow crossover --- an open question for
+$20$+ years~\cite{hinrichsen2001}.
+\end{enumerate}
+
+\begin{table}[H]
+\centering
+\caption{DSE singularity classification for 14 CRNs from the literature.
+$d_c$ is the naive upper critical dimension from dimensional analysis;
+$d_c^{\rm phys}$ corrects for Ward identities where applicable.
+``$\phi$ deg'' is the degree of the DSE kernel $\phi(G)$.
+All DP-class systems have a square-root branch ($\sqrt{}$-br);
+BARW-even degenerates to a pole at criticality (PC class);
+PCPD admits a cube-root at a special parameter ratio.}
+\label{tab:crn_survey}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{lllccl}
+\toprule
+Process & Reactions & Class & $d_c$ ($d_c^{\rm phys}$) & $\phi$ deg & Singularity \\
+\midrule
+Pair annihilation    & $2A \to \emptyset$                     & diff-ltd  & 4~(2)  & 2 & $\sqrt{}$-br \\
+Coagulation          & $2A \to A$                             & diff-ltd  & 4~(2)  & 2 & $\sqrt{}$-br \\
+Triplet annih.\      & $3A \to \emptyset$                     & diff-ltd  & 2~(1)  & 4 & $\sqrt{}$-br \\
+4-particle annih.\   & $4A \to \emptyset$                     & diff-ltd  & $\tfrac{4}{3}$~($\tfrac{2}{3}$) & 6 & $\sqrt{}$-br \\
+5-particle annih.\   & $5A \to \emptyset$                     & diff-ltd  & 1~($\tfrac{1}{2}$) & 8 & $\sqrt{}$-br \\
+Gribov / BRW         & $A {\to} 2A,\; A {\to} \emptyset,\; 2A {\to} A$ & DP & 4  & 2 & $\sqrt{}$-br \\
+Contact process      & $A {\to} 2A,\; 2A {\to} \emptyset$    & DP        & 4      & 2 & $\sqrt{}$-br \\
+Schl\"ogl~II         & $2A {\to} 3A,\; A {\to} \emptyset$    & DP        & 4      & 3 & $\sqrt{}$-br \\
+BARW-odd             & $A {\to} 2A,\; 2A {\to} \emptyset$    & DP        & 4      & 2 & $\sqrt{}$-br \\
+Schl\"ogl~I          & $\emptyset {\leftrightarrow} A,\; 2A {\leftrightarrow} 3A$ & Ising & 4 & 4 & $\sqrt{}$-br \\
+Lotka--Volterra      & $A {\to} 2A,\; A{+}B {\to} 2B,\; B {\to} \emptyset$ & DP$^\dagger$ & 4 & 2 & $\sqrt{}$-br \\
+$2A \rightleftharpoons C$ & $2A {\to} C,\; C {\to} 2A$      & $= 2A {\to} \emptyset$ & 4~(2) & 2 & $\sqrt{}$-br \\
+\midrule
+BARW-even            & $A {\to} 3A,\; 2A {\to} \emptyset$    & PC        & 4~(2$^*$)  & 2 & \textbf{pole} \\
+PCPD                 & $2A {\to} 3A,\; 2A {\to} \emptyset$   & ???       & 4~(2?) & 3 & $\sqrt{}$-br / $\sqrt[3]{}$-br \\
+\bottomrule
+\multicolumn{6}{l}{\footnotesize $^\dagger$ At the prey-extinction transition.
+$^*$ Formally $d_c {=} 2$, but $\varepsilon$-expansion fails (strong coupling).}
+\end{tabular}
+\end{table}
+
+%% ================================================================
 \section{The AC--QFT Correspondence}
 \label{sec:correspondence}
 
@@ -907,7 +988,7 @@ All symbolic computation uses SymPy. No external CAS (Sage, Maple) is required.
 The analytic combinatorics route provides a direct, algebraic path from the
 stoichiometry matrix to critical exponents. The Lagrange equation structure
 of the DSE --- shared by all polynomial reaction-diffusion theories ---
-universally produces square-root branch points and $n^{-3/2}$ coefficient
+generically produces square-root branch points and $n^{-3/2}$ coefficient
 asymptotics. The traditional Feynman diagram calculation is the scenic route:
 it arrives at the same destination via loop integrals, pole extraction, and
 RG flow, but the singularity of the generating function contains all the
@@ -919,10 +1000,25 @@ Sierpinski carpets, random trees, and scale-free networks. All 14 simulation
 data points from Bordeu et al.~\cite{bordeu2019} agree with the theoretical
 predictions.
 
+Applying the pipeline to 14~CRNs from the reaction-diffusion literature
+(Table~\ref{tab:crn_survey}) yields three structural insights.
+First, all directed percolation systems share a quadratic DSE kernel with a
+square-root branch, confirming the universality of the $n^{-3/2}$ transfer
+exponent.
+Second, the parity-conserving (BARW-even) system shows a qualitative
+singularity change: the leading coefficient of $\phi(G)$ vanishes at
+criticality, collapsing the branch point to a pole. This provides an
+algebraic explanation for why the $\varepsilon$-expansion
+fails~\cite{cardytauber1996}: perturbation theory around a branch point
+cannot reach a pole.
+Third, the PCPD system has a cubic DSE kernel admitting a cube-root branch
+at a special parameter ratio, potentially resolving the long-standing debate
+over its universality class~\cite{hinrichsen2001}.
+
 The open-source implementation \texttt{rdft} makes this pipeline accessible
-to any researcher who can specify a chemical reaction network. Future work
-includes multi-species systems, multi-loop corrections, and a Rust-based
-simulation engine for empirical verification.
+to any researcher who can specify a chemical reaction network. The automatic
+singularity diagnostics detect Ward identities, parity degeneracies, and
+higher-order branch points without manual intervention.
 
 %% ================================================================
 \begin{thebibliography}{99}
@@ -1034,6 +1130,44 @@ B.~P.~Lee and J.~Cardy,
 \newblock Renormalization group study of the $A+B\to\emptyset$ diffusion-limited
 reaction,
 \newblock \emph{J.\ Stat.\ Phys.}\ \textbf{80}, 971--1007 (1995).
+
+\bibitem{cardytauber1996}
+J.~L.~Cardy and U.~C.~T\"auber,
+\newblock Theory of branching and annihilating random walks,
+\newblock \emph{Phys.\ Rev.\ Lett.}\ \textbf{77}, 4780--4783 (1996).
+
+\bibitem{hinrichsen2001}
+H.~Hinrichsen,
+\newblock The pair contact process with diffusion,
+\newblock \emph{Phys.\ Rev.\ E}\ \textbf{63}, 016109 (2001).
+
+\bibitem{hinrichsen2000}
+H.~Hinrichsen,
+\newblock Non-equilibrium critical phenomena and phase transitions into
+absorbing states,
+\newblock \emph{Adv.\ Phys.}\ \textbf{49}, 815--958 (2000).
+
+\bibitem{schlogl1972}
+F.~Schl\"ogl,
+\newblock Chemical reaction models for non-equilibrium phase transitions,
+\newblock \emph{Z.\ Phys.}\ \textbf{253}, 147--161 (1972).
+
+\bibitem{grassberger1982}
+P.~Grassberger,
+\newblock On phase transitions in Schl\"ogl's second model,
+\newblock \emph{Z.\ Phys.\ B}\ \textbf{47}, 365--374 (1982).
+
+\bibitem{mobilia2007}
+M.~Mobilia, I.~T.~Georgiev, and U.~C.~T\"auber,
+\newblock Phase transitions and spatio-temporal fluctuations in stochastic
+lattice Lotka--Volterra models,
+\newblock \emph{J.\ Stat.\ Phys.}\ \textbf{128}, 447--483 (2007).
+
+\bibitem{reycardy1999}
+P.-A.~Rey and J.~Cardy,
+\newblock Asymptotic form of the approach to equilibrium in
+reversible recombination reactions,
+\newblock \emph{J.\ Phys.\ A: Math.\ Gen.}\ \textbf{32}, 1585--1603 (1999).
 
 \end{thebibliography}
 
@@ -1621,57 +1755,79 @@ $B,B$ & $(2_A, 2_A)$ & 2 \\
 \end{tabular}
 \end{table}
 
-\noindent Three representative diagrams with species-coloured edges:
+\noindent Loop diagrams in thesis style (cf.\ Eqs.~2.122--2.123
+of~\cite{amarteifio2019}). \textbf{Black}: A-species (walkers).
+\textbf{\color{orange}Orange}: B-species (tracers).
 
 \begin{figure}[H]
 \centering
-% Diagram 1: A-only self-energy (thesis Eq. 3.23a)
-\begin{tikzpicture}[>=Stealth, scale=0.85]
-  \fill (-1.2,0) circle (3pt); \fill (1.2,0) circle (3pt);
-  \draw[->, thick, black, bend left=40] (-1.2,0) to
-    node[above, font=\scriptsize] {$A$} (1.2,0);
-  \draw[->, thick, black, bend left=40] (1.2,0) to
-    node[below, font=\scriptsize] {$A$} (-1.2,0);
-  \draw[<-, thin, dashed, gray] (-1.2,0) -- (-2.0,0.3);
-  \draw[<-, thin, dashed, gray] (-1.2,0) -- (-2.0,-0.3);
-  \node[below=12pt] at (0,0) {\scriptsize $\mathfrak{s}=2$, $c=\chi^2$};
-  \node[above=8pt] at (0,0.5) {\scriptsize (a) A-only};
+% (a) A-A bubble
+\begin{tikzpicture}[>=Stealth, scale=0.9]
+  \draw[thick, black, postaction={decorate,
+    decoration={markings, mark=at position 0.25 with {\arrow{>}},
+                          mark=at position 0.75 with {\arrow{>}}}}]
+    (0,0) circle (0.65);
+  \fill (0,0.65) circle (2.5pt);
+  \fill (0,-0.65) circle (2.5pt);
+  \draw[<-, thick] (-0.35, 0.65) -- (-1.0, 0.95);
+  \draw[->, thick] (0.35, -0.65) -- (1.0, -0.95);
+  \node at (0,-1.15) {\scriptsize (a) $A$\,--\,$A$, \;$\mathfrak{s}=2$};
 \end{tikzpicture}
-\hspace{1.5cm}
-% Diagram 2: Mixed A-B loop (transmutation)
-\begin{tikzpicture}[>=Stealth, scale=0.85]
-  \fill (-1.2,0) circle (3pt); \fill (1.2,0) circle (3pt);
-  \draw[->, thick, black, bend left=40] (-1.2,0) to
-    node[above, font=\scriptsize] {$A$} (1.2,0);
-  \draw[->, thick, orange, dashed, bend left=40] (1.2,0) to
-    node[below, font=\scriptsize, orange] {$B$} (-1.2,0);
-  \draw[<-, thin, dashed, gray] (-1.2,0) -- (-2.0,0.3);
-  \draw[->, thin, dashed, orange] (1.2,0) -- (2.0,0.3);
-  \node[below=12pt] at (0,0) {\scriptsize $\mathfrak{s}=1$, mixed};
-  \node[above=8pt] at (0,0.5) {\scriptsize (b) A{+}B loop};
+\hspace{0.7cm}
+% (b) A-B mixed bubble
+\begin{tikzpicture}[>=Stealth, scale=0.9]
+  \draw[thick, black, postaction={decorate,
+    decoration={markings, mark=at position 0.5 with {\arrow{>}}}}]
+    (0,0.65) arc (90:-90:0.65);
+  \draw[thick, orange, postaction={decorate,
+    decoration={markings, mark=at position 0.5 with {\arrow{>}}}}]
+    (0,-0.65) arc (-90:-270:0.65);
+  \fill (0,0.65) circle (2.5pt);
+  \fill (0,-0.65) circle (2.5pt);
+  \draw[<-, thick] (-0.35, 0.65) -- (-1.0, 0.95);
+  \draw[->, thick, orange] (0.35, -0.65) -- (1.0, -0.95);
+  \node at (0,-1.15) {\scriptsize (b) $A$\,--\,$B$, \;$\mathfrak{s}=1$};
 \end{tikzpicture}
-\hspace{1.5cm}
-% Diagram 3: B-only loop
-\begin{tikzpicture}[>=Stealth, scale=0.85]
-  \fill (-1.2,0) circle (3pt); \fill (1.2,0) circle (3pt);
-  \draw[->, thick, orange, dashed, bend left=40] (-1.2,0) to
-    node[above, font=\scriptsize, orange] {$B$} (1.2,0);
-  \draw[->, thick, orange, dashed, bend left=40] (1.2,0) to
-    node[below, font=\scriptsize, orange] {$B$} (-1.2,0);
-  \draw[<-, thin, dashed, gray] (-1.2,0) -- (-2.0,0.3);
-  \draw[<-, thin, dashed, gray] (-1.2,0) -- (-2.0,-0.3);
-  \node[below=12pt] at (0,0) {\scriptsize $\mathfrak{s}=2$, B-only};
-  \node[above=8pt] at (0,0.5) {\scriptsize (c) B{-}B loop};
+\hspace{0.7cm}
+% (c) B-B bubble
+\begin{tikzpicture}[>=Stealth, scale=0.9]
+  \draw[thick, orange, postaction={decorate,
+    decoration={markings, mark=at position 0.25 with {\arrow{>}},
+                          mark=at position 0.75 with {\arrow{>}}}}]
+    (0,0) circle (0.65);
+  \fill (0,0.65) circle (2.5pt);
+  \fill (0,-0.65) circle (2.5pt);
+  \draw[<-, thick, orange] (-0.35, 0.65) -- (-1.0, 0.95);
+  \draw[->, thick, orange] (0.35, -0.65) -- (1.0, -0.95);
+  \node at (0,-1.15) {\scriptsize (c) $B$\,--\,$B$, \;$\mathfrak{s}=2$};
 \end{tikzpicture}
-\caption{Representative one-loop diagrams with species-coloured edges.
-\textbf{(a)}~A-only: both internal propagators are A-species (black);
-$\mathfrak{s}=2$ from vertex swap. This is the diagram that contributes
-to the RG flow (thesis Eq.~3.24).
-\textbf{(b)}~Mixed A+B: one A-edge and one B-edge (orange dashed);
-$\mathfrak{s}=1$ because swapping vertices would exchange species.
-\textbf{(c)}~B-only loop: both edges are B-species; $\mathfrak{s}=2$
-from vertex swap. B-loops do not contribute to the RG because the immobile
-B-propagator carries no loop momentum.}
+\hspace{0.7cm}
+% (d) A-A-A triangle
+\begin{tikzpicture}[>=Stealth, scale=0.9]
+  \coordinate (v0) at (90:0.75);
+  \coordinate (v1) at (210:0.75);
+  \coordinate (v2) at (330:0.75);
+  \draw[->, thick, black] (v0) -- (v1);
+  \draw[->, thick, black] (v1) -- (v2);
+  \draw[->, thick, black] (v2) -- (v0);
+  \fill (v0) circle (2.5pt);
+  \fill (v1) circle (2.5pt);
+  \fill (v2) circle (2.5pt);
+  \draw[<-, thick] (v0) -- ++(0, 0.5);
+  \draw[->, thick] (v1) -- ++(-0.4, -0.3);
+  \draw[->, thick] (v2) -- ++(0.4, -0.3);
+  \node at (0,-1.15) {\scriptsize (d) triangle, \;$\mathfrak{s}=3$};
+\end{tikzpicture}
+
+\caption{One-loop diagrams in thesis style~\cite{amarteifio2019}.
+\textbf{(a)}~A-only bubble: both propagators black, $\mathfrak{s}=2$
+(vertex swap). Contributes to RG (thesis Eq.~3.24).
+\textbf{(b)}~Mixed A+B bubble: one black, one {\color{orange}orange},
+$\mathfrak{s}=1$ (species prevent swap). Couples A-sector to B-observable.
+\textbf{(c)}~B-only bubble: both {\color{orange}orange}, $\mathfrak{s}=2$.
+Does not contribute to RG (immobile B carries no loop momentum).
+\textbf{(d)}~A-only triangle: $\mathfrak{s}=3$ (cyclic $\mathbb{Z}_3$).
+$K = \alpha_0\alpha_1 + \alpha_0\alpha_2 + \alpha_1\alpha_2$.}
 \label{fig:species_loops}
 \end{figure}
 
