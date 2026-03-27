@@ -326,26 +326,44 @@ class FeynmanGraph:
 
     def symmetry_factor(self) -> int:
         """
-        Compute |Aut(G)| via canonical isomorphism.
+        Compute |Aut(G)| for the internal subgraph as a directed multigraph.
 
-        This is the denominator in the EGF expansion:
-            EGF contribution = amplitude / |Aut(G)|
+        An automorphism is a pair (vertex_perm, edge_perm) that preserves
+        the directed incidence structure. This is the denominator in the
+        EGF expansion: each diagram contributes amplitude / |Aut(G)|.
 
-        For Feynman graphs with labelled vertices (from the half-edge
-        pairing), |Aut(G)| = 1 for most cases. We compute it here by
-        checking all permutations of unlabelled edges.
+        The EGF exponential formula (Flajolet-Sedgewick Ch. II) states that
+        the symmetry factor 1/|Aut(G)| is exactly the overcounting from the
+        SET construction — this is Connection 1 of the AC-QFT correspondence.
+
+        For directed multigraphs, |Aut| = (vertex automorphisms) × (edge
+        permutations within each group of identical parallel edges).
 
         Returns |Aut(G)| as an integer.
         """
-        import networkx as nx
-        G = nx.MultiGraph()
-        G.add_nodes_from(range(self.n_vertices))
-        for src, tgt, _ in self.edges:
-            G.add_edge(src, tgt)
-        # Use networkx automorphism group size
-        # (Approximation: treat as simple graph for now)
-        matcher = nx.algorithms.isomorphism.GraphMatcher(G, G)
-        count = sum(1 for _ in matcher.isomorphisms_iter())
+        from itertools import permutations
+        from collections import Counter
+
+        int_edges = [(s, t) for s, t, ext in self.edges if not ext]
+        n_v = self.n_vertices_int
+
+        if n_v == 0 or not int_edges:
+            return 1
+
+        count = 0
+        for v_perm in permutations(range(n_v)):
+            # Apply vertex permutation to edges
+            mapped = sorted([(v_perm[s], v_perm[t]) for s, t in int_edges])
+            if mapped == sorted(int_edges):
+                # Compatible vertex perm — count edge permutations
+                # Each group of k identical parallel edges contributes k!
+                edge_groups = Counter(int_edges)
+                edge_auts = 1
+                for k in edge_groups.values():
+                    for i in range(2, k + 1):
+                        edge_auts *= i
+                count += edge_auts
+
         return count
 
     def degree_of_divergence(self, d: sp.Expr = None) -> sp.Expr:

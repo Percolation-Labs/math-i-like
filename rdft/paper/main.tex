@@ -708,6 +708,25 @@ $\langle a^p \rangle \sim t^{(pd_s-2)/2}$ &
 \end{tabular}
 \end{center}
 
+\subsection{Symmetry Factors from the EGF}
+
+The symmetry factor $1/|\mathrm{Aut}(G)|$ of a Feynman diagram is computed
+by AC via the \textbf{exponential formula}~\cite{flajolet2009}. In
+the EGF, the SET construction $\mathrm{SET}(\mathcal{C}) = e^{\hat{C}(z)}$
+divides by $k!$ for each set of $k$ identical objects. For Feynman diagrams,
+this is exactly the automorphism group:
+\begin{itemize}[leftmargin=2em]
+\item $k$ identical parallel edges between the same vertices contribute
+      $k!$ to $|\mathrm{Aut}|$ (edge permutations).
+\item Vertex permutations that preserve the directed incidence structure
+      multiply this further.
+\end{itemize}
+For the one-loop BRW self-energy: $|\mathrm{Aut}| = 2$ (swapping the two
+vertices permutes the two antiparallel edges). For the sunset:
+$|\mathrm{Aut}| = 6 = 3!$ (permuting 3 identical parallel edges).
+The code computes $|\mathrm{Aut}|$ by enumerating vertex permutations
+and edge group permutations of the directed multigraph.
+
 \subsection{Results for Standard Processes}
 
 \begin{center}
