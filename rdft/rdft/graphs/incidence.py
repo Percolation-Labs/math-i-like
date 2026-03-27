@@ -62,13 +62,18 @@ class FeynmanGraph:
                  n_internal_vertices: int,
                  edges: List[Tuple[int, int, bool]],
                  edge_symbols: Optional[List[sp.Symbol]] = None,
-                 alpha_symbols: Optional[List[sp.Symbol]] = None):
+                 alpha_symbols: Optional[List[sp.Symbol]] = None,
+                 edge_species: Optional[List[str]] = None):
 
         self.n_vertices_int = n_internal_vertices
         self.n_vertices = n_internal_vertices + 1   # +1 for v_∞
         self.v_inf = n_internal_vertices             # index of v_∞
 
         self.edges = edges   # (from, to, is_external)
+
+        # Species label per edge (for multi-species theories)
+        # Default: all edges are species 'A' (single-species)
+        self.edge_species = edge_species or ['A'] * len(edges)
         self.n_edges = len(edges)
 
         self.n_internal_edges = sum(1 for _, _, ext in edges if not ext)
@@ -326,38 +331,50 @@ class FeynmanGraph:
 
     def symmetry_factor(self) -> int:
         """
-        Compute |Aut(G)| for the internal subgraph as a directed multigraph.
+        Compute |Aut(G)| for the internal subgraph as a directed,
+        species-labelled multigraph.
 
-        An automorphism is a pair (vertex_perm, edge_perm) that preserves
-        the directed incidence structure. This is the denominator in the
-        EGF expansion: each diagram contributes amplitude / |Aut(G)|.
+        An automorphism must preserve:
+        1. Edge direction (source → target)
+        2. Edge species label (A-propagator ≠ B-propagator)
+
+        For single-species theories (all edges same species), this reduces
+        to the standard directed multigraph automorphism count.
+
+        For multi-species: only edges with the SAME species AND direction
+        can be permuted. This prevents swapping an A-propagator with a
+        B-propagator.
 
         The EGF exponential formula (Flajolet-Sedgewick Ch. II) states that
-        the symmetry factor 1/|Aut(G)| is exactly the overcounting from the
-        SET construction — this is Connection 1 of the AC-QFT correspondence.
-
-        For directed multigraphs, |Aut| = (vertex automorphisms) × (edge
-        permutations within each group of identical parallel edges).
+        1/|Aut(G)| is exactly the overcounting from the SET construction —
+        Connection 1 of the AC-QFT correspondence.
 
         Returns |Aut(G)| as an integer.
         """
         from itertools import permutations
         from collections import Counter
 
-        int_edges = [(s, t) for s, t, ext in self.edges if not ext]
+        # Build labelled edges: (source, target, species)
+        int_edges_labelled = []
+        for i, (s, t, ext) in enumerate(self.edges):
+            if not ext:
+                sp_label = self.edge_species[i] if i < len(self.edge_species) else 'A'
+                int_edges_labelled.append((s, t, sp_label))
+
         n_v = self.n_vertices_int
 
-        if n_v == 0 or not int_edges:
+        if n_v == 0 or not int_edges_labelled:
             return 1
 
         count = 0
         for v_perm in permutations(range(n_v)):
-            # Apply vertex permutation to edges
-            mapped = sorted([(v_perm[s], v_perm[t]) for s, t in int_edges])
-            if mapped == sorted(int_edges):
+            # Apply vertex permutation (species labels stay with edges)
+            mapped = sorted([(v_perm[s], v_perm[t], sp)
+                           for s, t, sp in int_edges_labelled])
+            if mapped == sorted(int_edges_labelled):
                 # Compatible vertex perm — count edge permutations
-                # Each group of k identical parallel edges contributes k!
-                edge_groups = Counter(int_edges)
+                # Only edges with same (source, target, species) can be permuted
+                edge_groups = Counter(int_edges_labelled)
                 edge_auts = 1
                 for k in edge_groups.values():
                     for i in range(2, k + 1):

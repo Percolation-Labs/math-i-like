@@ -724,8 +724,24 @@ this is exactly the automorphism group:
 For the one-loop BRW self-energy: $|\mathrm{Aut}| = 2$ (swapping the two
 vertices permutes the two antiparallel edges). For the sunset:
 $|\mathrm{Aut}| = 6 = 3!$ (permuting 3 identical parallel edges).
+
+For \textbf{multi-species} theories, an automorphism must also preserve
+the species label on each edge: an A-propagator cannot be swapped with a
+B-propagator. For a mixed A-B loop: $|\mathrm{Aut}| = 1$ (no non-trivial
+automorphism). For a sunset with two A-edges and one B-edge:
+$|\mathrm{Aut}| = 2$ (only the two A-edges can be permuted).
+
+The shuffle product~\cite{amarteifio2019} provides an alternative enumeration:
+it generates all possible half-edge pairings between amputated vertices,
+and the number of distinct pairings that produce the same graph topology
+is $N!/|\mathrm{Aut}(G)|$ where $N$ is the total number of contractions.
+The symmetry factor emerges as a counting ratio --- this is exactly the
+content of the EGF exponential formula, which states that the $1/k!$
+overcounting in the SET construction accounts for the automorphism
+group~\cite{flajolet2009,yeats2017}.
+
 The code computes $|\mathrm{Aut}|$ by enumerating vertex permutations
-and edge group permutations of the directed multigraph.
+and species-preserving edge permutations of the directed multigraph.
 
 \subsection{Results for Standard Processes}
 
