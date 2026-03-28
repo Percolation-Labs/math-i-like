@@ -52,8 +52,28 @@ The 2-loop correction restores the branch point that degenerates
 to a pole at 1-loop. This is the first perturbative access to the
 parity-conserving universality class.
 
+## Stability eigenvalue analysis
+
+At the DP fixed point (σ=λ=g*/2), the parity-breaking direction δ=σ-λ has:
+- 1-loop: Ω = 0 (marginal, Cardy-Täuber 1996)
+- 2-loop: Ω = c₂·ε² where c₂ depends on Groups A, B, C contributions
+
+Coupling derivatives at δ=0:
+- Group A: d[6(λ+δ)λ²]/dδ = 6λ² (integral pole A_bridge ≈ 2.93)
+- Group B: d[4λ²(λ+δ)]/dδ = 4λ² (integral poles A_B1≈3.02, A_B2≈2.44)
+- Group C: d[36λ²(λ+δ)²]/dδ = 72λ³ (same integrals as DP, pole ≈ 34)
+
+CAVEAT: quartic vertices are irrelevant at d_c=4 (dimension -2), so
+Groups A, B are suppressed. Group C contributes but its δ-derivative
+at δ=0 is 72λ³ (odd power → changes sign convention interpretation).
+
+Sign of Ω determines the physics:
+- Ω > 0: PC unstable → non-perturbative (consistent with known difficulty)
+- Ω < 0: PC stable → exponents = DP + O(ε²) corrections
+
 ## Next steps
-- [ ] Extract the actual PC critical exponents from the 2-loop β-function
-- [ ] Determine the fixed point σ* = λ + O(ε)
-- [ ] Compute ν_⊥, z, β for the PC class and compare with numerical values
-  (β ≈ 0.92, ν_⊥ ≈ 1.83, z ≈ 1.77 from simulations in d=1)
+- [ ] Track signs through the full 2-coupling β-function
+- [ ] Match against 1-loop DP β (already verified, gives the sign convention)
+- [ ] Determine sign of Ω
+- [ ] If stable: compute ν_⊥, z, β for PC class
+- [ ] Compare with numerical: β ≈ 0.92, ν_⊥ ≈ 1.83, z ≈ 1.77 (d=1)
