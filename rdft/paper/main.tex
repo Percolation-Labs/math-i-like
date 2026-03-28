@@ -1287,6 +1287,99 @@ prediction. This regime is biologically relevant for proteins like
 collagen (half-life $\sim$years) or crystallin (lifetime of the organism),
 where the healthy protein pool is effectively conserved.
 
+\subsection{Beyond polynomial kernels: percolation on scale-free networks}
+\label{sec:networks}
+
+The AC framework extends naturally beyond reaction-diffusion systems to
+any problem governed by a Lagrange equation. A striking application is
+percolation on random networks with power-law degree distributions
+$P(k) \sim k^{-\gamma}$.
+
+The component size generating function on a configuration model
+network~\cite{newman2001} satisfies the Lagrange equation
+\begin{equation}
+H_1(x) = x \, G_1\bigl(H_1(x)\bigr),
+\label{eq:network_lagrange}
+\end{equation}
+where $G_1(x) = G_0'(x)/G_0'(1)$ is the excess degree generating function,
+with $G_0(x) = \sum_k P(k)\,x^k$ the degree GF. This is formally identical
+to the DSE $G = G_0\,\phi(G)$ with the kernel $\phi = G_1$.
+
+For Poisson degree distributions (Erd\H{o}s--R\'enyi graphs), $G_1$ is
+entire: $G_1(x) = e^{c(x-1)}$. The Lagrange equation has a standard
+square-root branch point at $c = 1$, giving the cluster size distribution
+$P(s) \sim s^{-5/2}$~\cite{flajolet2009}. This is the same mean-field
+exponent $\tau = 5/2$ that all polynomial DSE kernels produce --- the
+connection is not a coincidence but an identity: the Newton polygon gives
+a Puiseux exponent of $1/2$ for any analytic kernel.
+
+For power-law degree distributions with $3 < \gamma < 4$, $G_1(x)$ has
+a \emph{fractional power singularity} at $x = 1$:
+\begin{equation}
+G_1(x) \sim A + B\,(1 - x)^{\gamma - 3} + \cdots
+\label{eq:g1_singular}
+\end{equation}
+This is \emph{not} a polynomial --- it is a branch cut in the Lagrange
+kernel itself. The Newton polygon of the shifted implicit function
+$F(\delta H, \delta x) = \delta H - x_* B\,\delta H^{\gamma-3} - \delta x\,G_1(H_*)$
+has a dominant edge with slope $-(\gamma - 2)$, giving the Puiseux
+exponent
+\begin{equation}
+\frac{p}{q} = \frac{1}{\gamma - 2},
+\label{eq:puiseux_network}
+\end{equation}
+which varies \emph{continuously} with $\gamma$. The transfer theorem then
+gives the cluster size distribution
+\begin{equation}
+P(s) \sim s^{-\tau}, \qquad
+\tau = \frac{2\gamma - 3}{\gamma - 2},
+\label{eq:tau_gamma}
+\end{equation}
+recovering the result of Cohen, ben-Avraham, and
+Havlin~\cite{cohen2002} from a unified AC
+framework. Table~\ref{tab:network_tau} shows the continuously varying
+exponent.
+
+\begin{table}[H]
+\centering
+\caption{Cluster size exponent $\tau$ on scale-free networks: AC derivation
+from the Puiseux exponent of the network Lagrange equation. For $\gamma > 4$,
+$G_1$ is analytic and the standard square-root result $\tau = 5/2$ is
+recovered. For $3 < \gamma < 4$, the fractional singularity of $G_1$
+propagates through the Lagrange composition to give a continuously
+varying exponent.}
+\label{tab:network_tau}
+\renewcommand{\arraystretch}{1.1}
+\begin{tabular}{cccc}
+\toprule
+$\gamma$ & Puiseux $1/(\gamma{-}2)$ & $\tau = (2\gamma{-}3)/(\gamma{-}2)$ & Singularity of $G_1$ \\
+\midrule
+3.2 & 0.833 & 2.833 & $(1{-}x)^{0.2}$ \\
+3.5 & 0.667 & 2.667 & $(1{-}x)^{0.5}$ \\
+3.7 & 0.588 & 2.588 & $(1{-}x)^{0.7}$ \\
+4.0 & 0.500 & 2.500 & $(1{-}x)^{1.0}$ (marginal) \\
+$>4$ & 0.500 & 2.500 & analytic (standard $\sqrt{}$) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The physical content is clear: on networks where degree fluctuations are
+large (small $\gamma$), the most-connected hubs create anomalously large
+clusters, shifting the Puiseux exponent away from the mean-field value.
+The AC framework captures this in a single mechanism: the singularity of
+the Lagrange kernel $G_1$ propagates through the implicit function to
+modify the branch point type. This unifies the reaction-diffusion
+classification (polynomial kernel $\to$ square root $\to$ $\tau = 5/2$)
+with the network percolation classification (fractional kernel $\to$
+fractional Puiseux $\to$ continuously varying $\tau$) under a single
+principle: \emph{the Puiseux exponent of the Lagrange equation determines
+the universality class.}
+
+This has direct applications to epidemic spreading on social networks
+($\gamma \approx 3$--$4$, anomalous outbreak sizes), financial contagion
+on interbank networks, and neural avalanche distributions in cortical
+networks (see companion paper~\cite{amarteifio2026cognitive}).
+
 %% ================================================================
 \section{Conclusion}
 \label{sec:conclusion}
@@ -1316,8 +1409,17 @@ polynomial algebra, the implicit function theorem, and the Newton polygon
 --- and provide algebraic explanations for phenomena previously accessible
 only through numerical simulation or failed perturbation theory.
 
+The extension to network percolation (\S\ref{sec:networks}) demonstrates
+that the same AC principle --- singularity type of the Lagrange equation
+determines the universality class --- applies beyond reaction-diffusion
+systems. On scale-free networks, the non-polynomial kernel $G_1$ produces
+a continuously varying Puiseux exponent $1/(\gamma{-}2)$, unifying
+network percolation with reaction-diffusion universality under a single
+framework.
+
 The open-source implementation \texttt{rdft} makes this pipeline accessible
-to any researcher who can specify a stoichiometry matrix.
+to any researcher who can specify a stoichiometry matrix or a network
+degree distribution.
 
 %% ================================================================
 \begin{thebibliography}{99}
@@ -1467,6 +1569,22 @@ P.-A.~Rey and J.~Cardy,
 \newblock Asymptotic form of the approach to equilibrium in
 reversible recombination reactions,
 \newblock \emph{J.\ Phys.\ A: Math.\ Gen.}\ \textbf{32}, 1585--1603 (1999).
+
+\bibitem{newman2001}
+M.~E.~J.~Newman, S.~H.~Strogatz, and D.~J.~Watts,
+\newblock Random graphs with arbitrary degree distributions and their
+applications,
+\newblock \emph{Phys.\ Rev.\ E}\ \textbf{64}, 026118 (2001).
+
+\bibitem{cohen2002}
+R.~Cohen, D.~ben-Avraham, and S.~Havlin,
+\newblock Percolation critical exponents in scale-free networks,
+\newblock \emph{Phys.\ Rev.\ E}\ \textbf{66}, 036113 (2002).
+
+\bibitem{amarteifio2026cognitive}
+S.~Amarteifio,
+\newblock \emph{Criticality in Cognitive Systems: Analytic Combinatorics
+of Neural Avalanches and Associative Memory} (2026). In preparation.
 
 \end{thebibliography}
 
