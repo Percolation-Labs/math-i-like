@@ -347,20 +347,29 @@ but do not affect the \emph{qualitative} structure of the phase
 transition (which is determined by the singularity type of the
 Lagrange equation, i.e.\ the bridge/bridgeless classification).
 
-\item \textbf{The causal structure of non-equilibrium theories.}
+\item \textbf{Causal structure is combinatorial} (not a limitation).
 In non-equilibrium systems (reaction-diffusion, directed
-percolation), propagators are retarded: $G_0 = 1/(-i\omega + Dk^2)$
-with causality enforced by the $i\omega$ prescription.  The
-frequency contour integral produces combinatorial $\delta$-function
-constraints (the ``causal fingerprint'' of each diagram) that
-determine which Wick contractions contribute.
+percolation), propagators are retarded: $G_0 = 1/(-i\omega + Dk^2)$.
+Each internal edge is directed from a $\phit$ leg to a $\phi$ leg.
+The frequency contour integral is nonzero if and only if the directed
+graph of internal edges has \emph{no directed cycle} --- i.e., it is
+a \textbf{DAG} (directed acyclic graph).
 
-This causal structure is a physics input from the action, not a
-graph-theoretic property.  AC handles the spatial/parametric part
-of the integral; the causal part must be specified separately.
-In practice, for DP, the rapidity-reversal symmetry
-$\phit(x,t) \leftrightarrow -\phi(x,-t)$ constrains the causal
-structure and halves the number of independent diagrams.
+Checking whether a directed graph is a DAG is a topological sort:
+$O(V{+}E)$ combinatorics.  The direction of each edge is determined
+by the Doi--Peliti construction (which legs are creators $\phit$
+vs annihilators $\phi$), which comes directly from the stoichiometry.
+Therefore \textbf{causality is handled entirely within AC}:
+\begin{enumerate}
+\item Enumerate Wick contractions (directed matchings of $\phit$
+  legs to $\phi$ legs).
+\item Build the directed graph.
+\item Check if it is a DAG (topological sort).
+\item Discard if not (causal coefficient $= 0$).
+\end{enumerate}
+The rapidity-reversal symmetry $\phit(x,t) \leftrightarrow
+-\phi(x,-t)$ is a further combinatorial constraint that halves
+the number of independent diagrams.
 
 \item \textbf{Non-perturbative effects.}
 The Lagrange series $T = z\,\phi(T)$ is Borel summable: its
@@ -409,7 +418,7 @@ $\int \mathcal{K}^{-d/2}$, bridge graph & yes & yes ($\Gamma$/Beta) \\
 $\int \mathcal{K}^{-d/2}$, bridgeless & yes & numerical \\
 BPHZ subtraction & yes & yes (Hopf antipode) \\
 $\varepsilon$-expansion & yes & yes (Laurent) \\
-Causal structure & no & --- \\
+Causal filter (DAG check) & yes & yes (topological sort) \\
 Non-perturbative physics & no & --- \\
 \bottomrule
 \end{tabular}
@@ -422,8 +431,11 @@ by momentum routing.  For bridge graphs, this organisation yields
 exact closed forms.  For bridgeless graphs, it yields determined
 integrals.  The BPHZ subtraction is algebraic in all cases.
 
-The single thing AC does not bypass is the transcendental period
-of a non-factorisable graph --- but neither does any other method.
+AC does not bypass two things: the transcendental period of a
+non-factorisable graph (but neither does any other method), and
+non-perturbative physics beyond the algebraic singularity (but for
+reaction-diffusion systems, the critical exponents \emph{are} the
+singularity, so this is rarely a limitation in practice).
 
 
 %% ================================================================
