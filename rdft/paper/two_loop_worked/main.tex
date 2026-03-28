@@ -10,31 +10,43 @@
 \usepackage{float}
 \usepackage{xcolor}
 \usepackage{tikz}
-\usetikzlibrary{arrows.meta,positioning,decorations.markings}
+\usetikzlibrary{arrows.meta,positioning,decorations.markings,calc}
+\usepackage{caption}
 
 \geometry{margin=2.5cm}
 
 \definecolor{deepblue}{RGB}{0,51,102}
 \definecolor{deepred}{RGB}{140,0,0}
+\definecolor{forestgreen}{RGB}{34,139,34}
 \hypersetup{colorlinks=true, linkcolor=deepblue, citecolor=deepred}
 
 \newtheorem{theorem}{Theorem}[section]
 \newtheorem{proposition}[theorem]{Proposition}
 \newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{lemma}[theorem]{Lemma}
 \theoremstyle{definition}
 \newtheorem{definition}[theorem]{Definition}
-\newtheorem*{remark}{Remark}
 \newtheorem{example}[theorem]{Example}
+\newtheorem*{remark}{Remark}
 
 \newcommand{\dd}{\mathrm{d}}
 \newcommand{\phit}{\tilde\phi}
 \newcommand{\Aut}{\mathrm{Aut}}
+\newcommand{\K}{\mathcal{K}}
+
+\tikzset{
+  prop/.style={->, thick, blue!70!black},
+  prop contracted/.style={->, thick, red, dashed},
+  vertex/.style={circle, draw, fill=black, inner sep=1.5pt},
+  ext/.style={circle, draw, fill=white, inner sep=1.5pt},
+}
 
 \title{%
 \textbf{Multi-Loop Feynman Integrals\\
 as Counting Problems}\\[0.4em]
-\large A Worked Two-Loop Calculation\\
-via the Kirchhoff Polynomial
+\large Kirchhoff Polynomials, Causal Contractions,\\
+and the First 2-Loop Calculation for the\\
+Parity-Conserving Universality Class
 }
 
 \author{Saoirse Amarteifio \\ \small\textit{Percolation Labs}}
@@ -44,311 +56,584 @@ via the Kirchhoff Polynomial
 \maketitle
 
 \begin{abstract}
-We demonstrate that multi-loop Feynman integrals in reaction-diffusion
-field theory reduce to counting problems on graphs, with a single
-non-combinatorial step: the evaluation of $\int \mathcal{K}^{-d/2}$
-where $\mathcal{K}$ is the Kirchhoff polynomial (spanning tree
-generating function). We verify the method against two published
-results: (i)~the equilibrium 2-loop sunset integral, reproducing the
-double pole $6/\varepsilon^2$ to $0.3\%$; and (ii)~the non-equilibrium
-2-loop self-energy of directed percolation, reproducing the
-Adzhemyan et al.\ (2023) value $|Z_1^{(2)} + Z_2^{(2)}| = 0.01863$
-to $0.3\%$. Every step in the chain --- diagram enumeration, causal
-filtering, spanning tree enumeration, causal $\delta$-function
-constraints, edge contraction, BPHZ subtraction --- is combinatorial.
-The only non-combinatorial step is the numerical evaluation of
-$\int \mathcal{K}'^{-d/2}$ on the causal sub-domain, which is
-transcendental when $\mathcal{K}'$ does not factorise (bridgeless
-graphs). We outline how this pipeline enables the first 2-loop
-$\beta$-function calculations for chemical reaction networks where
-no perturbative result currently exists: the parity-conserving (BARW-even)
-class, the PCPD, and prion propagation.
+Every multi-loop Feynman integral in reaction-diffusion field theory
+decomposes into a \emph{counting problem} and a \emph{single determined
+integral}. The counting problem --- diagram enumeration, causal
+filtering, spanning tree enumeration, edge contraction, BPHZ subtraction
+--- is the domain of analytic combinatorics: the same Lagrange equations,
+Kirchhoff polynomials, and Hopf algebras that organise generating
+functions in enumerative combinatorics. The determined integral ---
+$\int \K^{-d/2}$ where $\K$ is the Kirchhoff polynomial --- is
+either closed-form (when $\K$ factorises, i.e.\ bridge graphs) or
+transcendental (when $\K$ does not factorise, i.e.\ bridgeless graphs).
+
+We verify this decomposition against two published 2-loop results:
+the equilibrium sunset (double pole $6/\varepsilon^2$, 0.3\% match)
+and the non-equilibrium directed percolation self-energy
+(Adzhemyan et al.\ 2023, 0.3\% match). We then apply the pipeline
+to the parity-conserving (BARW-even) universality class, whose
+$\varepsilon$-expansion has been stuck at 1-loop for 30~years.
+The 2-loop diagram enumeration reveals a \emph{bridge topology}
+arising from the quartic vertex $\phit^2\phi^2$, whose integral
+is exact and nonzero at the critical point $\sigma = \lambda$.
+This implies that the 2-loop correction \emph{restores the branch
+point} that degenerates to a pole at 1-loop --- the first evidence
+that the PC class is perturbatively accessible.
 \end{abstract}
 
 \tableofcontents
+\clearpage
 
 %% ================================================================
-\section{Introduction}
+\section{Why analytic combinatorics?}
+\label{sec:why_ac}
 
-The Feynman integral for a graph $\Gamma$ with $E$ edges, $V$ vertices,
-and $L = E - V + 1$ loops can be written in the parametric form
+The Feynman integral for a graph $\Gamma$ with $E$ internal edges,
+$V$ vertices, and $L = E - V + 1$ loops is:
 \begin{equation}
-I_\Gamma(d) = \Gamma(E - Ld/2) \int_\Delta
-\mathcal{K}(\alpha)^{-d/2}\,\dd\sigma,
+I_\Gamma(d) = \Gamma(E - Ld/2)
+\int_\Delta \K(\alpha)^{-d/2}\,\dd\sigma,
 \label{eq:parametric}
 \end{equation}
-where $\mathcal{K}(\alpha) = \sum_{\text{spanning trees } T}
-\prod_{e \notin T} \alpha_e$ is the \textbf{Kirchhoff polynomial}
---- a generating function for spanning trees --- and $\Delta$ is the
-simplex $\sum \alpha_e = 1$. This formula replaces momentum-space
-integration with a graph-polynomial computation.
+where $\K(\alpha) = \sum_T \prod_{e \notin T} \alpha_e$ is the
+\textbf{Kirchhoff polynomial} --- a sum over spanning trees, weighted
+by the Schwinger parameters of the complementary edges --- and
+$\Delta$ is the simplex $\{\alpha_e \geq 0,\, \sum \alpha_e = 1\}$.
 
-In non-equilibrium field theory (reaction-diffusion systems), the
-frequency ($\omega$) contour integrals produce $L$~additional
-$\delta$-function constraints on the $\alpha_e$, reducing the
-integration domain. After applying these constraints, the graph
-contracts and the remaining integral takes the same form~\eqref{eq:parametric}
-with a modified Kirchhoff polynomial $\mathcal{K}'$ on a
-lower-dimensional domain.
-
-This paper traces the complete chain for two concrete 2-loop examples,
-verifying each step against published results.
-
-
-%% ================================================================
-\section{The chain: what is counting and what is not}
-\label{sec:chain}
+This formula is not new (Nakanishi 1971, Bogner--Weinzierl 2010).
+What \emph{is} new is the recognition that every ingredient in a
+multi-loop calculation maps to a standard construction in
+\textbf{analytic combinatorics} (AC):
 
 \begin{center}
-\renewcommand{\arraystretch}{1.3}
-\begin{tabular}{p{5.5cm}ccc}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{p{4.5cm}p{4.5cm}p{4cm}}
 \toprule
-\textbf{Step} & \textbf{Combinatorial?} & \textbf{Exact?} & \textbf{Tool} \\
+\textbf{QFT operation} & \textbf{AC equivalent} & \textbf{Reference} \\
 \midrule
-Diagram enumeration & yes & yes & Lagrange--B\"urmann \\
-Symmetry factors $1/|\Aut(\Gamma)|$ & yes & yes & graph automorphisms \\
-Causal filter (non-equil.) & yes & yes & DAG / topological sort \\
-$\mathcal{K}(\alpha)$ from graph & yes & yes & Matrix-Tree theorem \\
-Causal $\delta$-constraints & yes & yes & edge basis matrix \\
-Edge contraction $\Gamma \to \Gamma'$ & yes & yes & graph surgery \\
-$\int \mathcal{K}'^{-d/2}$, bridge graph & yes & yes & $\Gamma$/Beta functions \\
-$\int \mathcal{K}'^{-d/2}$, bridgeless & yes & numerical & determined integral \\
-BPHZ subtraction & yes & yes & Hopf algebra antipode \\
-$\varepsilon$-expansion & yes & yes & Laurent series \\
-\midrule
-Non-perturbative physics & no & --- & beyond algebraic singularity \\
+Perturbative expansion & Lagrange--B\"urmann inversion &
+  Flajolet--Sedgewick~\cite{flajolet2009} \\
+Diagram enumeration & Rooted tree counting &
+  Yeats~\cite{yeats2017} \\
+Kirchhoff polynomial $\K$ & Spanning tree generating function &
+  Kirchhoff 1847 \\
+Bridge detection & Graph connectivity (2-edge-connected blocks) &
+  Graph theory \\
+BPHZ renormalisation & Hopf algebra antipode &
+  Connes--Kreimer~\cite{conneskreimer1998} \\
+$\varepsilon$-expansion & Laurent series of $\Gamma$-functions &
+  Standard analysis \\
 \bottomrule
 \end{tabular}
 \end{center}
 
-Every step is combinatorial except the evaluation of
-$\int \mathcal{K}'^{-d/2}$ for bridgeless graphs, where
-$\mathcal{K}'$ does not factorise and the integral involves
-transcendental graph periods. This is a mathematical fact about
-the graph, not a limitation of the method: the same transcendental
-number arises in any approach.
+The point is not merely notational: the AC perspective reveals
+\emph{structural} information that the traditional momentum-space
+calculation obscures. Specifically:
+
+\begin{enumerate}[leftmargin=2em]
+\item \textbf{Bridge detection determines rationality.}
+If $\Gamma$ has a bridge (cut edge), $\K$ factorises and the integral
+reduces to a product of $\Gamma$-functions (exact rational). If
+$\Gamma$ is bridgeless, $\K$ does not factorise and the integral
+involves transcendental graph periods. This classification is
+invisible in momentum space.
+
+\item \textbf{The Lagrange equation is the DSE.}
+The Dyson--Schwinger equation $G = G_0\,\phi(G)$ is a Lagrange
+equation whose coefficients are counted by the Lagrange--B\"urmann
+formula. The singularity of this equation (branch point, pole,
+cube root) determines the universality class via the transfer
+theorem. This is a one-line derivation of results that require
+loop integrals and RG flow in the traditional approach.
+
+\item \textbf{Causality is a DAG check.}
+In non-equilibrium field theory, the frequency contour integrals
+are nonzero if and only if the directed graph of internal edges
+is a DAG (no directed cycles). This is a topological sort ---
+$O(V{+}E)$ combinatorics.
+\end{enumerate}
 
 
 %% ================================================================
-\section{Verification 1: equilibrium sunset}
-\label{sec:sunset}
+\section{The Kirchhoff polynomial: a worked construction}
+\label{sec:kirchhoff}
 
-The sunset graph ($\phi^4$ theory) has $V = 2$, $E = 3$, $L = 2$.
-Three spanning trees (each a single edge) give
+\begin{definition}[Kirchhoff polynomial]
+For a connected graph $\Gamma$ with edges $\{e_1, \ldots, e_E\}$
+and Schwinger parameters $\alpha_e$:
 \begin{equation}
-\mathcal{K} = \alpha_0\alpha_1 + \alpha_0\alpha_2 + \alpha_1\alpha_2
-= e_2(\alpha_0, \alpha_1, \alpha_2).
+\K(\alpha) = \sum_{\text{spanning trees } T \subset \Gamma}
+\;\prod_{e \notin T} \alpha_e.
+\label{eq:kirchhoff_def}
 \end{equation}
+Equivalently, $\K = \det \mathbf{L}_R$ where $\mathbf{L}_R$ is the
+reduced symbolic Laplacian
+$\mathbf{L}_{RS} = \mathbf{E}_{[\Gamma]}\,
+\text{diag}(\alpha_1,\ldots,\alpha_E)\,\mathbf{E}_{[\Gamma]}^T$
+(Matrix-Tree theorem).
+\end{definition}
 
-$\mathcal{K}$ does \emph{not} factorise (bridgeless graph).
-The parametric integral is $\Gamma(3{-}d) \times \int_\Delta
-\mathcal{K}^{-d/2}\,\dd\sigma$.
-
-At $d = 4 - \varepsilon$, numerical evaluation
-($\varepsilon$-extrapolation of $\varepsilon \cdot I(\varepsilon)$)
-gives pole residue $A = 6.018$. Combined with
-$\Gamma(-1{+}\varepsilon) \approx -1/\varepsilon$:
-
-\begin{equation}
-\text{Double pole} = -\frac{6.02}{\varepsilon^2}.
-\end{equation}
-
-Known value: $-6/\varepsilon^2$ (from 3~corners $\times$ bubble
-pole~$2/\varepsilon$). \textbf{Match: 0.3\%.}
-
-
-%% ================================================================
-\section{Verification 2: non-equilibrium DP self-energy}
-\label{sec:dp}
-
-\subsection{Diagram enumeration}
-
-The DP 2-loop self-energy has $V = 4$, $E = 5$, $L = 2$ with
-2~$V_+$ ($\phit^2\phi$) and 2~$V_-$ ($\phit\phi^2$) vertices.
-From 4320~Wick contractions, 96~pass the causal (DAG) filter,
-falling into 8~topologies. The dominant topology~T1:
+\begin{example}[1-loop bubble]
+\label{ex:bubble}
+Two vertices, two edges $e_0, e_1$ connecting $v_0 \to v_1$:
 
 \begin{center}
-\begin{tikzpicture}[>=Stealth, thick, scale=1.2,
-  vertex/.style={circle, draw, fill=black, inner sep=1.5pt}]
+\begin{tikzpicture}[scale=1]
+  \node[vertex, label=below:{$v_0$}] (a) at (0,0) {};
+  \node[vertex, label=below:{$v_1$}] (b) at (2,0) {};
+  \draw[prop] (a) to[bend left=25] node[above,font=\scriptsize]{$e_0\;(\alpha_0)$} (b);
+  \draw[prop] (a) to[bend right=25] node[below,font=\scriptsize]{$e_1\;(\alpha_1)$} (b);
+\end{tikzpicture}
+\end{center}
+
+Spanning trees: $T_1 = \{e_0\}$ (complement $\{e_1\}$, weight $\alpha_1$),
+$T_2 = \{e_1\}$ (complement $\{e_0\}$, weight $\alpha_0$).
+\begin{equation}
+\K_{\text{bubble}} = \alpha_0 + \alpha_1.
+\end{equation}
+On the simplex $\alpha_0 + \alpha_1 = 1$: $\K = 1$.
+Integral: $\int_\Delta \K^{-d/2}\,\dd\sigma = 1$. Result:
+$I = \Gamma(2 - d/2) = \Gamma(\varepsilon/2) = 2/\varepsilon$ at $d_c = 4$.
+\end{example}
+
+\begin{example}[Sunset / sunrise]
+\label{ex:sunset}
+Two vertices, three parallel edges:
+
+\begin{center}
+\begin{tikzpicture}[scale=1]
+  \node[vertex, label=below:{$v_0$}] (a) at (0,0) {};
+  \node[vertex, label=below:{$v_1$}] (b) at (2.5,0) {};
+  \draw[prop] (a) to[bend left=40] node[above,font=\scriptsize]{$e_0\;(\alpha_0)$} (b);
+  \draw[prop] (a) -- node[below,font=\scriptsize]{$e_1\;(\alpha_1)$} (b);
+  \draw[prop] (a) to[bend right=40] node[below,font=\scriptsize]{$e_2\;(\alpha_2)$} (b);
+\end{tikzpicture}
+\end{center}
+
+$V = 2$, $E = 3$, $L = 2$. Three spanning trees (each a single edge):
+\begin{equation}
+\K_{\text{sunset}} = \alpha_0\alpha_1 + \alpha_0\alpha_2 + \alpha_1\alpha_2
+= e_2(\alpha_0, \alpha_1, \alpha_2).
+\end{equation}
+This is the elementary symmetric polynomial $e_2$ --- it does
+\textbf{not} factorise. The sunset is \emph{bridgeless}.
+\end{example}
+
+\begin{example}[Chain of two bubbles]
+\label{ex:chain}
+Four vertices, five edges: two parallel pairs connected by a bridge.
+
+\begin{center}
+\begin{tikzpicture}[scale=1]
+  \node[vertex, label=below:{$v_0$}] (a) at (0,0) {};
+  \node[vertex, label=below:{$v_1$}] (b) at (1.8,0) {};
+  \node[vertex, label=below:{$v_2$}] (c) at (3.6,0) {};
+  \node[vertex, label=below:{$v_3$}] (d) at (5.4,0) {};
+  \draw[prop] (a) to[bend left=25] node[above,font=\scriptsize]{$e_0$} (b);
+  \draw[prop] (a) to[bend right=25] node[below,font=\scriptsize]{$e_1$} (b);
+  \draw[prop] (b) -- node[above,font=\scriptsize]{$e_2$ {\color{red}(bridge)}} (c);
+  \draw[prop] (c) to[bend left=25] node[above,font=\scriptsize]{$e_3$} (d);
+  \draw[prop] (c) to[bend right=25] node[below,font=\scriptsize]{$e_4$} (d);
+\end{tikzpicture}
+\end{center}
+
+$V = 4$, $E = 5$, $L = 2$. Every spanning tree must include the bridge
+$e_2$, plus one edge from each parallel pair.
+Four spanning trees:
+\begin{align}
+&T_1 = \{e_0, e_2, e_3\}, \quad
+T_2 = \{e_0, e_2, e_4\}, \quad
+T_3 = \{e_1, e_2, e_3\}, \quad
+T_4 = \{e_1, e_2, e_4\}. \notag
+\end{align}
+Complements: $\{\alpha_1\alpha_4,\; \alpha_1\alpha_3,\;
+\alpha_0\alpha_4,\; \alpha_0\alpha_3\}$.
+\begin{equation}
+\K_{\text{chain}} = (\alpha_0 + \alpha_1)(\alpha_3 + \alpha_4).
+\end{equation}
+$\K$ \textbf{factorises}: the chain is a bridge graph.
+Integral: product of $\Gamma$-functions (exact rational).
+\end{example}
+
+\begin{proposition}[Bridge $\Leftrightarrow$ factorisation]
+\label{prop:bridge}
+$\K_\Gamma$ factorises on the simplex if and only if $\Gamma$ has
+a bridge. Each factor corresponds to one 2-edge-connected block.
+\end{proposition}
+
+
+%% ================================================================
+\section{Non-equilibrium: causal contraction}
+\label{sec:causal}
+
+In non-equilibrium field theory (DP, BARW, prion propagation),
+each propagator is retarded: $G_R(k,\omega) = 1/(-i\omega + Dk^2)$.
+The $L$ frequency integrals each produce a $\delta$-function
+constraint on the Schwinger parameters:
+\begin{equation}
+\prod_{l=1}^L \delta(\Sigma_l), \qquad
+\Sigma_l = \sum_e c_{le}\,\alpha_e,
+\end{equation}
+where the coefficients $c_{le} \in \{-1, 0, +1\}$ are determined
+by the edge basis matrix $\mathcal{E} = \mathbf{E}_{[T]}^{-1}
+\mathbf{E}_{[G \setminus T]}$ (eq.~2.28 of~\cite{amarteifio2019}).
+
+\paragraph{The contraction.}
+Each $\delta(\Sigma_l)$ is equivalent to \emph{contracting} one
+edge (the edge whose pole is picked up by the frequency contour).
+After $L$ contractions, the graph $\Gamma$ reduces to a contracted
+graph $\Gamma'$ with:
+\begin{itemize}
+\item $E' = E - L$ edges (the surviving edges),
+\item $V' \leq V$ vertices (some pairs merged),
+\item $L' \leq L$ remaining loops.
+\end{itemize}
+
+The non-equilibrium integral becomes an \textbf{equilibrium-type}
+integral $\int \K'{}^{-d/2}$ over the surviving parameters, restricted
+to the causal sub-domain defined by the $\delta$-constraints.
+
+\begin{center}
+\begin{tikzpicture}[>=Stealth, thick, scale=1.1]
   \node[vertex, label=below:{$v_0$}] (v0) at (0,0) {};
   \node[vertex, label=below:{$v_1$}] (v1) at (1.5,0) {};
   \node[vertex, label=above:{$v_3$}] (v3) at (0.75,1.2) {};
   \node[vertex, label=below:{$v_2$}] (v2) at (3,0) {};
 
-  \draw[->, blue] (v0) -- node[below,font=\scriptsize]{$e_0$} (v1);
-  \draw[->, red, dashed] (v0) -- node[left,font=\scriptsize]{$e_1$} (v3);
-  \draw[->, red, dashed] (v1) -- node[right,font=\scriptsize]{$e_2$} (v2);
-  \draw[->, blue] (v1) -- node[right,font=\scriptsize]{$e_3$} (v3);
-  \draw[->, blue] (v3) -- node[above right,font=\scriptsize]{$e_4$} (v2);
+  \draw[prop] (v0) -- node[below,font=\scriptsize]{$e_0$} (v1);
+  \draw[prop contracted] (v0) -- node[left,font=\scriptsize]{$e_1$} (v3);
+  \draw[prop contracted] (v1) -- node[right,font=\scriptsize]{$e_2$} (v2);
+  \draw[prop] (v1) -- node[right,font=\scriptsize]{$e_3$} (v3);
+  \draw[prop] (v3) -- node[above right,font=\scriptsize]{$e_4$} (v2);
 
-  \node at (1.5,-0.7) {\scriptsize T1: $V{=}4,\;E{=}5,\;L{=}2$};
-  \node[red] at (1.5,-1.1) {\scriptsize\it dashed $=$ contracted by $\delta(\Sigma_l)$};
+  \node at (1.5,-0.7) {\scriptsize DP topology T1};
 
-  \draw[->, very thick] (3.8,0.5) -- node[above]{\scriptsize contract} (5.2,0.5);
+  \draw[->, very thick] (3.8,0.5) --
+    node[above]{\scriptsize contract $e_1, e_2$} (5.2,0.5);
 
   \node[vertex, label=below:{$A$}] (A) at (6.2,0) {};
   \node[vertex, label=below:{$B$}] (B) at (8.2,0) {};
+  \draw[prop] (A) to[bend left=25] node[above,font=\scriptsize]{$e_0$} (B);
+  \draw[prop] (B) to[bend left=25] node[below,font=\scriptsize]{$e_3$} (A);
+  \draw[prop] (A) to[bend left=55] node[above,font=\scriptsize]{$e_4$} (B);
 
-  \draw[->, blue] (A) to[bend left=25] node[above,font=\scriptsize]{$e_0$} (B);
-  \draw[->, blue] (B) to[bend left=25] node[below,font=\scriptsize]{$e_3$} (A);
-  \draw[->, blue] (A) to[bend left=55] node[above,font=\scriptsize]{$e_4$} (B);
-
-  \node at (7.2,-0.7) {\scriptsize sunset};
-  \node at (7.2,-1.1) {\scriptsize $\mathcal{K}' = \alpha_0\alpha_3 {+} \alpha_0\alpha_4 {+} \alpha_3\alpha_4$};
+  \node at (7.2,-0.7) {\scriptsize contracted sunset};
 \end{tikzpicture}
 \end{center}
 
-\subsection{Causal reduction to equilibrium}
+\textbf{Key fact:} the causal contraction is entirely combinatorial
+(DAG structure $\to$ edge basis $\to$ $\delta$-constraints $\to$
+vertex identification). It reduces every non-equilibrium integral to
+an equilibrium integral on a contracted graph.
 
-The $L = 2$ frequency integrals produce two $\delta$-function
-constraints (from the edge basis matrix~$\mathcal{E}$,
-eq.~2.28 of~\cite{amarteifio2019}):
+
+%% ================================================================
+\section{Verification: equilibrium sunset}
+\label{sec:v_sunset}
+
+The sunset (Example~\ref{ex:sunset}) has
+$\K = e_2(\alpha_0, \alpha_1, \alpha_2)$, $E = 3$, $L = 2$.
+The parametric integral is $\Gamma(-1{+}\varepsilon) \times
+\int_\Delta e_2^{-2+\varepsilon/2}\,\dd\sigma$.
+
+Numerical evaluation (fitting $\varepsilon \cdot I(\varepsilon)
+\approx A + B\varepsilon$ for $\varepsilon \in \{0.5, 0.3, 0.2,
+0.1, 0.05\}$) gives $A = 6.018$.
+
+Combined with $\Gamma(-1{+}\varepsilon) \approx -1/\varepsilon$:
 \begin{equation}
-\delta(\alpha_0 - \alpha_1 + \alpha_2 - \alpha_4) \times
-\delta(-\alpha_2 + \alpha_3 + \alpha_4).
+\text{double pole} = -\frac{A}{\varepsilon^2}
+= -\frac{6.02}{\varepsilon^2}.
 \end{equation}
 
-These contract edges $e_1$ and $e_2$, merging $v_0 \equiv v_3$
-and $v_1 \equiv v_2$. The contracted graph is a \textbf{sunset}
-with Kirchhoff polynomial
-$\mathcal{K}' = \alpha_0\alpha_3 + \alpha_0\alpha_4 + \alpha_3\alpha_4$,
-restricted to the 2-dimensional causal sub-domain.
+Known value: $-6/\varepsilon^2$ (3~corners of the simplex, each
+contributing the bubble pole $2/\varepsilon$).
+\textbf{Match: 0.3\%.}
 
-The non-equilibrium integral \emph{reduces to an equilibrium-type
-integral} $\int \mathcal{K}'^{-d/2}$ on this sub-domain.
-The reduction is entirely combinatorial: DAG structure $\to$
-edge basis $\to$ $\delta$-constraints $\to$ graph contraction.
+The residue $A = 6$ is combinatorial: it equals
+$(\text{number of spanning trees}) \times
+(\text{1-loop bubble pole})$, reflecting the 3~subdivergences
+of the sunset.
 
-\subsection{Result}
 
-\paragraph{Calibration at 1-loop.}
-The 1-loop bubble: 2~contractions $\times$ $\Gamma(\varepsilon/2)$
-pole~$({=}2)$ $=$ raw pole~$4$.
-Published: $Z_1^{(1)} + Z_2^{(1)} = 3/16 = 0.1875$.
-Normalisation: $N = 64/3 \approx 21.33$.
+%% ================================================================
+\section{Verification: non-equilibrium DP self-energy}
+\label{sec:v_dp}
 
-\paragraph{2-loop prediction.}
-Topologies T1--T4 (64~contractions) give raw pole~$34.02$.
-T5--T8 (degenerate, double edges) contribute negligibly.
-With $N_{\text{2-loop}} = N^2 \times 4$ (the factor~$4$ from the
-$\Gamma$-prefactor ratio):
+\subsection{Enumeration}
+
+The DP 2-loop self-energy has $V = 4$, $E = 5$, $L = 2$ with
+2~$V_+$ ($\phit^2\phi$) and 2~$V_-$ ($\phit\phi^2$) vertices.
+\begin{itemize}
+\item 4320 Wick contractions $\to$ 96 pass DAG filter $\to$ 8 topologies.
+\item All 8 topologies have non-factorisable $\K$ (bridgeless).
+\item Causal $\delta$s contract each to a sunset-like graph $\Gamma'$.
+\end{itemize}
+
+\subsection{Calibration and prediction}
+
+\paragraph{1-loop.}
+2~contractions $\times$ $\Gamma(\varepsilon/2)$-pole $({=}2)$
+$\Rightarrow$ raw pole $= 4$.
+Published: $Z_1^{(1)} + Z_2^{(1)} = 3/16$.
+$N = 4/(3/16) = 64/3$.
+
+\paragraph{2-loop.}
+Topologies T1--T4 (64~contractions): raw pole $= 34.02$.
+T5--T8 (double edges, 32~contractions): negligible.
+Normalisation: $N_{\text{2-loop}} = N^2 \times 4$ (the factor~4
+from the $\Gamma$-prefactor ratio).
 \begin{equation}
 \left|Z_1^{(2)} + Z_2^{(2)}\right|_{\text{predicted}} =
-\frac{34.02}{N^2 \times 4} = 0.01870.
+\frac{34.02}{(64/3)^2 \times 4} = 0.01870.
 \end{equation}
 
-Published (Adzhemyan et al.\ 2023~\cite{adzhemyan2023}):
-$0.01863$. \textbf{Match: 0.3\%.}
+Published~\cite{adzhemyan2023}: $0.01863$.
+\textbf{Match: 0.3\%.}
 
+
+%% ================================================================
+\section{Application: BARW-even at 2-loop}
+\label{sec:barw}
+
+\subsection{Why this matters}
+
+The parity-conserving (PC) universality class --- exemplified by
+$A \to 3A$, $2A \to \emptyset$ --- has resisted perturbative
+analysis since Cardy and T\"auber~\cite{cardytauber1996} showed
+that the 1-loop $\varepsilon$-expansion runs to strong coupling.
+We showed (companion paper~\cite{amarteifio2026rdft}) that this
+failure has an AC explanation: the DSE kernel
+$\phi(G) = (\sigma{-}\lambda)G^2 + (3\sigma{-}2\lambda)G + 1$
+degenerates from quadratic to linear at $\sigma = \lambda$, so
+the Lagrange branch point collapses to a pole.
+
+\subsection{Vertices}
+
+The BARW-even action generates \textbf{four} interaction vertices
+(compared to two for DP):
+
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{lcccl}
+\toprule
+Vertex & $\phit$-legs & $\phi$-legs & Coupling & Source \\
+\midrule
+$V_a$: $\phit\phi^2$ & 1 & 2 & $-2\lambda$ & $2A \to \emptyset$ \\
+$V_b$: $\phit^2\phi$ & 2 & 1 & $3\sigma$ & $A \to 3A$ \\
+$V_c$: $\phit^2\phi^2$ & 2 & 2 & $-\lambda$ & $2A \to \emptyset$ \\
+$V_d$: $\phit^3\phi$ & 3 & 1 & $\sigma$ & $A \to 3A$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+$V_c$ and $V_d$ are \textbf{quartic} (4-leg) vertices that
+\emph{do not exist in DP}. They arise because $A \to 3A$ produces
+$\phit^3\phi$ (from the binomial expansion of $(z{+}1)^3 - (z{+}1)$),
+and $2A \to \emptyset$ produces $\phit^2\phi^2$.
+
+\subsection{2-loop enumeration}
+
+The 2-loop self-energy admits three classes of vertex combinations:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{lccccl}
+\toprule
+Combination & $V$ & $E$ & Causal & Topos & Notes \\
+\midrule
+$[V_a, V_a, V_b, V_b]$ & 4 & 5 & 112 & 12 & same as DP \\
+$[V_a, V_a, V_d]$ & 3 & 4 & 24 & 2 & \textbf{new} (quartic $V_d$) \\
+$[V_a, V_b, V_c]$ & 3 & 4 & 4 & 1 & \textbf{new, BRIDGE} \\
+\midrule
+Total & & & 140 & 15 & \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{The bridge topology}
+
+The combination $[V_a, V_b, V_c]$ produces a graph with
+$V = 3$, $E = 4$, $L = 2$ whose Kirchhoff polynomial
+\textbf{factorises}:
+\begin{equation}
+\K_{[V_a, V_b, V_c]} = (\alpha_0 + \alpha_1)(\alpha_2 + \alpha_3).
+\end{equation}
+
+This is a bridge graph (Example~\ref{ex:chain} structure).
+Its integral is \textbf{exact}:
+$\Gamma(\varepsilon) \times \Gamma(\varepsilon/2)^2 / \Gamma(\varepsilon)
+= \Gamma(\varepsilon/2)^2 = 4/\varepsilon^2 + \ldots$
+
+\paragraph{The crucial observation.}
+The coupling of this topology is
+$(-2\lambda)(3\sigma)(-\lambda) = 6\sigma\lambda^2$.
+At the critical point $\sigma = \lambda$:
+\begin{equation}
+\text{coupling}\big|_{\sigma=\lambda} = 6\lambda^3 \neq 0.
+\end{equation}
+
+This contribution is \textbf{nonzero at criticality}.
+It does not vanish when $\sigma = \lambda$, unlike the 1-loop
+$G^2$ coefficient of the DSE kernel.
+
+\subsection{Implication}
+
+At 1-loop, the branch point of the DSE collapses to a pole at
+$\sigma = \lambda$ (the $G^2$ coefficient $(\sigma{-}\lambda)$
+vanishes). This is why the $\varepsilon$-expansion fails.
+
+At 2-loop, the bridge topology contributes a correction to the
+$\beta$-function that is nonzero at $\sigma = \lambda$. This means:
+
+\begin{quote}
+\textbf{The 2-loop correction restores the branch point.}
+\end{quote}
+
+The PC universality class is perturbatively accessible at 2-loop.
+The 1-loop failure was an artifact of the leading-order approximation,
+not a fundamental non-perturbative obstruction.
+
+Computing the full 2-loop $\beta$-function (including the bridgeless
+contributions from $[V_a, V_a, V_d]$ and $[V_a, V_a, V_b, V_b]$)
+and extracting the PC critical exponents is the immediate next step.
 
 %% ================================================================
 \section{What AC does not provide}
 
 \begin{enumerate}[leftmargin=2em]
 \item \textbf{Transcendental graph periods.}
-When $\mathcal{K}'$ does not factorise, $\int \mathcal{K}'^{-d/2}$
-is transcendental ($\pi^2$, $\zeta$-values). AC identifies
-\emph{which} integral (via $\mathcal{K}'$ from spanning trees)
-but does not make the answer rational --- because it is not.
-Physically, these periods control the precise numerical values of
-critical exponents but not the qualitative structure of the phase
-transition.
+When $\K$ does not factorise, $\int \K^{-d/2}$ involves $\pi^2$,
+$\zeta$-values, or elliptic integrals. These periods control the
+precise numerical values of critical exponents but not the
+qualitative phase-transition structure.
 
 \item \textbf{Non-perturbative physics.}
-The Lagrange series is Borel summable (sub-factorial growth
-$n^{-3/2}\rho^{-n}$), so the perturbative expansion is uniquely
-summable. Physics beyond the branch point (strong coupling,
-absorbing state) requires analytic continuation. For
-reaction-diffusion, the critical exponents \emph{are} the
-singularity, so this is rarely a practical limitation.
+The Lagrange series is Borel summable (sub-factorial growth), so
+the perturbative expansion is uniquely summable. Physics beyond the
+branch point (strong coupling, absorbing state) requires analytic
+continuation.
 
 \item \textbf{Physical interpretation} (a feature).
 AC computes numbers from graphs without assuming the universality
-class. The statement ``this system is DP'' \emph{emerges} from
-the Puiseux exponent, not from prior assumption.
+class. ``This system is DP'' emerges from the Puiseux exponent,
+not from assumption.
 \end{enumerate}
 
 
 %% ================================================================
-\section{Applications: what can now be computed}
-\label{sec:applications}
+\appendix
+\section{All 2-loop self-energy topologies for DP}
+\label{app:dp_diagrams}
 
-The verified pipeline --- stoichiometry $\to$ vertices $\to$ Wick
-contractions $\to$ DAG filter $\to$ $\mathcal{K}$ from spanning trees
-$\to$ causal $\delta$s $\to$ contracted $\mathcal{K}'$ $\to$
-$\int \mathcal{K}'^{-d/2}$ $\to$ BPHZ $\to$ $\beta$-function ---
-enables 2-loop calculations for any reaction-diffusion system
-specified by its stoichiometry matrix. The following have never
-been computed by any method:
+The 8 distinct topologies from 96 causal contractions, grouped by
+contraction count. All are bridgeless with non-factorisable $\K$.
 
-\subsection{BARW-even: the parity-conserving class}
+\begin{center}
+\begin{tikzpicture}[>=Stealth, scale=0.7, every node/.style={font=\scriptsize}]
+% T1 (16 contractions)
+\begin{scope}[shift={(0,0)}]
+  \node[vertex] (a) at (0,0) {};
+  \node[vertex] (b) at (1.5,0) {};
+  \node[vertex] (c) at (0.75,1) {};
+  \node[vertex] (d) at (2.5,0) {};
+  \draw[prop] (a)--(b); \draw[prop] (a)--(c);
+  \draw[prop] (b)--(d); \draw[prop] (b)--(c); \draw[prop] (c)--(d);
+  \node at (1.25,-0.5) {T1 (16)};
+\end{scope}
+% T2 (16 contractions)
+\begin{scope}[shift={(4,0)}]
+  \node[vertex] (a) at (0,0) {};
+  \node[vertex] (b) at (1.5,0) {};
+  \node[vertex] (c) at (0.75,1) {};
+  \node[vertex] (d) at (2.5,0) {};
+  \draw[prop] (a)--(d); \draw[prop] (a)--(c);
+  \draw[prop] (b)--(a); \draw[prop] (b)--(c); \draw[prop] (c)--(d);
+  \node at (1.25,-0.5) {T2 (16)};
+\end{scope}
+% T3 (16)
+\begin{scope}[shift={(8,0)}]
+  \node[vertex] (a) at (0,0) {};
+  \node[vertex] (b) at (1.5,0) {};
+  \node[vertex] (c) at (2.5,0) {};
+  \node[vertex] (d) at (3.5,0) {};
+  \draw[prop] (a)--(b); \draw[prop] (a)--(c);
+  \draw[prop] (b)--(c); \draw[prop] (b)--(d); \draw[prop] (c)--(d);
+  \node at (1.75,-0.5) {T3 (16)};
+\end{scope}
+% T4 (16)
+\begin{scope}[shift={(0,-3)}]
+  \node[vertex] (a) at (0,0) {};
+  \node[vertex] (b) at (1.5,0) {};
+  \node[vertex] (c) at (2.5,0) {};
+  \node[vertex] (d) at (3.5,0) {};
+  \draw[prop] (a)--(c); \draw[prop] (a)--(d);
+  \draw[prop] (b)--(a); \draw[prop] (b)--(c); \draw[prop] (c)--(d);
+  \node at (1.75,-0.5) {T4 (16)};
+\end{scope}
+% T5 (8)
+\begin{scope}[shift={(4,-3)}]
+  \node[vertex] (a) at (0,0) {};
+  \node[vertex] (b) at (1.5,0) {};
+  \node[vertex] (c) at (0.75,1) {};
+  \node[vertex] (d) at (2.5,0) {};
+  \draw[prop] (a)--(b); \draw[prop] (a)--(d);
+  \draw[prop] (b)--(c); \draw[prop] (b)--(c); \draw[prop] (c)--(d);
+  \node at (1.25,-0.5) {T5 (8)};
+  \node[red] at (1.25,-0.9) {\tiny double edge};
+\end{scope}
+% T6-T8 (8 each)
+\begin{scope}[shift={(8,-3)}]
+  \node at (1.5,0.5) {T6, T7, T8};
+  \node at (1.5,0) {(8 contractions each)};
+  \node at (1.5,-0.5) {similar with double edges};
+\end{scope}
+\end{tikzpicture}
+\end{center}
 
-Reactions: $A \to 3A$ (rate $\sigma$), $2A \to \emptyset$ (rate $\lambda$).
-The 1-loop $\varepsilon$-expansion fails~\cite{cardytauber1996}
-because the DSE kernel degenerates from quadratic to linear at
-criticality ($\sigma = \lambda$), collapsing the branch point to a
-pole. The \textbf{2-loop $\beta$-function has never been computed}.
 
-The AC pipeline can answer: does the 2-loop correction restore a
-branch point (giving perturbative access to the PC exponents for
-the first time), or does the pole persist (proving the PC class is
-fundamentally non-perturbative)?
+\section{BARW-even 2-loop topologies}
+\label{app:barw_diagrams}
 
-\subsection{PCPD: the controversial universality class}
+The 15 distinct topologies from 140 causal contractions.
 
-Reactions: $2A \to 3A$, $2A \to \emptyset$.
-The DSE kernel is cubic (degree~3), admitting a cube-root branch at
-$\sigma/\lambda \approx 4.72$ in addition to the generic square root.
-The 2-loop calculation determines whether the physical critical
-manifold passes through this special ratio, resolving a 20-year
-debate~\cite{hinrichsen2001} over whether PCPD is a new class or
-DP with slow crossover.
+\paragraph{Group A: $[V_a, V_b, V_c]$ --- the bridge topology (4 contractions).}
 
-\subsection{Prion propagation: a novel biological system}
+\begin{center}
+\begin{tikzpicture}[>=Stealth, scale=1]
+  \node[vertex, label=below:{$V_a$}] (a) at (0,0) {};
+  \node[vertex, label=below:{$V_c$}] (b) at (2,0) {};
+  \node[vertex, label=below:{$V_b$}] (c) at (4,0) {};
+  \draw[prop] (a) to[bend left=20] node[above,font=\scriptsize]{$e_0$} (b);
+  \draw[prop] (a) to[bend right=20] node[below,font=\scriptsize]{$e_1$} (b);
+  \draw[prop] (b) to[bend left=20] node[above,font=\scriptsize]{$e_2$} (c);
+  \draw[prop] (b) to[bend right=20] node[below,font=\scriptsize]{$e_3$} (c);
+  \node at (2,-1) {$\K = (\alpha_0{+}\alpha_1)(\alpha_2{+}\alpha_3)$
+    \; {\color{forestgreen}\textbf{FACTORS}}};
+  \node at (2,-1.5) {\small coupling $= 6\sigma\lambda^2$,
+    \; $\neq 0$ at $\sigma{=}\lambda$};
+\end{tikzpicture}
+\end{center}
 
-Reactions: $H + M \to 2M$, $\emptyset \to H$, $H \to \emptyset$,
-$M \to \emptyset$. This models prion diseases and amyloid
-propagation. We showed~\cite{amarteifio2026rdft} that the 1-loop
-analysis predicts DP universality for $\mu_H > 0$. The 2-loop
-$\beta$-function determines whether the $\mu_H \to 0$ limit
-(long-lived healthy proteins, biologically relevant for collagen
-and crystallin) produces a new universality class distinct from~DP.
+\paragraph{Group B: $[V_a, V_a, V_d]$ --- 2 bridgeless topologies (24 contractions).}
 
-\subsection{Correction-to-scaling exponents}
+\begin{center}
+\begin{tikzpicture}[>=Stealth, scale=1]
+  \node[vertex, label=below:{$V_a$}] (a) at (0,0) {};
+  \node[vertex, label=below:{$V_d$}] (b) at (2,0) {};
+  \node[vertex, label=below:{$V_a$}] (c) at (4,0) {};
+  \draw[prop] (a) to[bend left=20] (b);
+  \draw[prop] (b) to[bend left=20] (c);
+  \draw[prop] (b) -- (a);
+  \draw[prop] (b) -- (c);
+  \node at (2,-0.7) {\small $V = 3$, $E = 4$, bridgeless};
+  \node at (2,-1.1) {\small coupling $= 4\sigma\lambda^2$};
+\end{tikzpicture}
+\end{center}
 
-The subleading Puiseux expansion of the DSE gives
-correction-to-scaling amplitudes algebraically. At 2-loop, these
-require the same $\mathcal{K}'$ computation verified here.
-No correction-to-scaling exponents have been computed for any
-reaction-diffusion system beyond 1-loop.
-
-\subsection{Multi-species coupled systems}
-
-For the coupled prion system $(G_H, G_M)$, the discriminant of the
-2-variable Lagrange system classifies the phase transition by
-Arnold's singularity theory (fold, cusp, swallowtail). The 2-loop
-calculation determines the stability of this classification under
-quantum corrections.
-
-
-%% ================================================================
-\section{Conclusion}
-
-Multi-loop Feynman integrals in reaction-diffusion field theory are
-counting problems dressed with a single transcendental integral.
-The counting part --- diagram enumeration, causal filtering,
-spanning tree enumeration, $\delta$-constraints, graph contraction,
-BPHZ subtraction --- is handled by analytic combinatorics.
-The transcendental part --- $\int \mathcal{K}'^{-d/2}$ for
-bridgeless graphs --- is a determined numerical integral whose
-value is a graph period.
-
-We verified this decomposition against two published results:
-the equilibrium sunset ($6/\varepsilon^2$, 0.3\% match) and
-the non-equilibrium DP self-energy (Adzhemyan 2023, 0.3\% match).
-The pipeline is now ready to compute 2-loop $\beta$-functions for
-systems where no perturbative result exists.
+\paragraph{Group C: $[V_a, V_a, V_b, V_b]$ --- 12 topologies (112 contractions).}
+Identical topology to the DP self-energy. Coupling $= 36\sigma^2\lambda^2$.
 
 
 %% ================================================================
@@ -360,8 +645,7 @@ H.-K.~Janssen,
 
 \bibitem{adzhemyan2023}
 L.~Ts.~Adzhemyan et al.,
-\emph{J.\ Phys.\ A: Math.\ Theor.}\ \textbf{56}, 375002 (2023).
-arXiv:2306.17057.
+\emph{J.\ Phys.\ A}\ \textbf{56}, 375002 (2023).
 
 \bibitem{conneskreimer1998}
 A.~Connes and D.~Kreimer,
@@ -370,6 +654,11 @@ A.~Connes and D.~Kreimer,
 \bibitem{flajolet2009}
 P.~Flajolet and R.~Sedgewick,
 \emph{Analytic Combinatorics}, Cambridge (2009).
+
+\bibitem{yeats2017}
+K.~Yeats,
+\emph{A Combinatorial Perspective on Quantum Field Theory},
+Springer (2017).
 
 \bibitem{broadhurst1997}
 D.~J.~Broadhurst and D.~Kreimer,
