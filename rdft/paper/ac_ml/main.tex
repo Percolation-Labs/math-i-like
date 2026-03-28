@@ -9,6 +9,8 @@
 \usepackage{microtype}
 \usepackage{float}
 \usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning}
 
 \geometry{margin=2.5cm}
 
@@ -18,18 +20,16 @@
 
 \newtheorem{theorem}{Theorem}[section]
 \newtheorem{proposition}[theorem]{Proposition}
-\theoremstyle{definition}
 \newtheorem{definition}[theorem]{Definition}
 \newtheorem*{remark}{Remark}
 
-\newcommand{\dd}{\mathrm{d}}
 \newcommand{\K}{\mathcal{K}}
 \newcommand{\E}{\mathbb{E}}
 
 \title{%
-\textbf{Analytic Combinatorics for Neural Networks}\\[0.4em]
-\large Kirchhoff Polynomials, Gradient Flow,\\
-and Phase Transitions in Learning
+\textbf{Counting Paths in Neural Architectures}\\[0.4em]
+\large How Spanning Trees Measure Expressivity,\\
+and How to Use Them to Design Better Models
 }
 
 \author{Saoirse Amarteifio \\ \small\textit{Percolation Labs}}
@@ -39,372 +39,400 @@ and Phase Transitions in Learning
 \maketitle
 
 \begin{abstract}
-We identify a structural correspondence between the analytic
-combinatorics (AC) of Feynman integrals and the theory of deep
-neural networks. The Kirchhoff polynomial of a neural network's
-computational graph --- a generating function for spanning trees ---
-controls the gradient flow, determines the edge-of-chaos
-initialisation, and classifies phase transitions in learning.
-The same tools that compute critical exponents in reaction-diffusion
-field theory (Lagrange equations, Newton polygons, Hopf algebras)
-apply to: (i)~the vanishing/exploding gradient transition in deep
-networks; (ii)~the generalisation phase transition in overparameterised
-models; (iii)~the loss landscape geometry of attention mechanisms.
-We outline a research programme connecting these domains.
+The computational graph of a neural network is a directed acyclic
+graph (DAG). The number of distinct input-to-output paths through
+this graph determines the model's expressivity: more paths mean
+more ways to compose features, but also more compute. We propose
+using the \textbf{Kirchhoff polynomial} --- the spanning tree
+generating function --- as a quantitative measure of architectural
+expressivity that is: (i)~computable in polynomial time from the
+architecture specification; (ii)~sensitive to structural motifs
+(skip connections, attention heads, gating); and (iii)~predictive
+of trainability and generalisation. We compute $\K$ for standard
+architectures (MLP, ResNet, Transformer, Mamba/SSM) and show that
+they span a spectrum from $\K = 1$ (pure chain, minimal paths) to
+$\K \sim n!$ (complete attention graph, maximal paths). We propose
+experiments to test whether the ``right'' $\K$ for a given task
+predicts the optimal architecture, and whether hybrid architectures
+designed to target a specific $\K$ outperform uniform designs.
 \end{abstract}
 
 \tableofcontents
 
 
 %% ================================================================
-\section{The correspondence}
+\section{The problem: why do some architectures work better?}
 
-A neural network with $L$ layers defines a \textbf{computational graph}
-$\Gamma$: a directed acyclic graph (DAG) where vertices are layers
-(or neurons) and edges carry weight matrices $W_e$.  The network
-function $f_\Gamma(x)$ is a composition of maps along paths in~$\Gamma$.
+The zoo of neural architectures --- MLPs, CNNs, ResNets, LSTMs,
+Transformers, SSMs (Mamba), mixture-of-experts --- is large and
+growing.  Architecture search is expensive.  We lack a simple
+\emph{structural} quantity that predicts which architecture will
+work for which task without training.
 
-The Jacobian of the network with respect to its input is
-\begin{equation}
-J = \frac{\partial f}{\partial x}
-= \sum_{\text{paths } \pi} \prod_{e \in \pi} W_e \cdot \sigma'_e,
-\end{equation}
-where $\sigma'_e$ is the derivative of the activation function at
-edge~$e$.  For gradient-based training, the key quantity is the
-\textbf{expected squared Jacobian}:
-\begin{equation}
-\E\bigl[|J|^2\bigr]
-= \sum_{\text{paths}} \prod_{e \in \text{path}} \E[w_e^2]
-= \sum_{\text{paths}} \prod_e \alpha_e,
-\label{eq:jacobian}
-\end{equation}
-where $\alpha_e = \E[w_e^2 \cdot (\sigma'_e)^2]$ is the effective
-edge weight.
+We propose: \textbf{count the paths.}
 
-This is a \textbf{path generating function} on the computational
-graph~$\Gamma$.  For a layered network (chain graph), it reduces to
-$\prod_{l=1}^L \alpha_l$ (product of per-layer weights).  For
-networks with skip connections (residual networks, transformers),
-it is a sum over multiple paths of varying lengths.
-
-\begin{proposition}[Graph polynomial structure]
-For a DAG $\Gamma$ with $V$ vertices and $E$ edges:
-\begin{equation}
-\E\bigl[|J|^2\bigr] = \Phi_\Gamma(\alpha),
-\end{equation}
-where $\Phi_\Gamma$ is a polynomial in the edge weights $\alpha_e$,
-homogeneous of degree equal to the longest path length.  For
-layered networks, $\Phi$ reduces to a product.  For networks with
-skip connections, $\Phi$ is a sum of monomials corresponding to
-distinct input-output paths.
-\end{proposition}
-
-The Kirchhoff polynomial $\K_\Gamma$ of the computational graph
-and the path polynomial $\Phi_\Gamma$ are related: $\K$ counts
-spanning trees while $\Phi$ counts paths.  For DAGs, these are
-connected through the matrix-tree theorem applied to the
-\emph{path Laplacian}.
+A neural network computes its output by composing functions along
+paths through its computational graph.  The number and distribution
+of these paths is a property of the \emph{architecture}, not the
+weights.  It is computable before training, from the connectivity
+alone.
 
 
 %% ================================================================
-\section{The vanishing/exploding gradient transition}
-\label{sec:gradient}
+\section{The path polynomial of a computational graph}
 
-\subsection{The phase transition}
+\subsection{Computational graphs as DAGs}
 
-A deep network with $L$ layers and per-layer weight variance
-$\alpha$ has $\E[|J|^2] = \alpha^L$.  The gradient flow transitions
-at $\alpha = 1$:
+Every neural architecture defines a directed acyclic graph (DAG)
+$\Gamma$:
 \begin{itemize}
-\item $\alpha < 1$: $\E[|J|^2] \to 0$ exponentially (vanishing gradients).
-\item $\alpha > 1$: $\E[|J|^2] \to \infty$ exponentially (exploding gradients).
-\item $\alpha = 1$: $\E[|J|^2] = 1$ (edge of chaos, critical initialisation).
+\item \textbf{Vertices}: layers or computational units.
+\item \textbf{Edges}: connections carrying activations (each edge
+  applies a linear map + nonlinearity).
+\item \textbf{Source}: the input.
+\item \textbf{Sink}: the output.
 \end{itemize}
-
-This is an \textbf{absorbing-state phase transition}: the gradient
-signal either dies (absorbing state) or explodes (active state).
-The critical point $\alpha = 1$ is the analogue of $R_0 = 1$ in
-epidemiology or $\sigma = \lambda$ in reaction-diffusion.
-
-\subsection{AC classification}
-
-The generating function for the gradient signal in a depth-$L$
-network is
-\begin{equation}
-G(z) = \sum_{L=0}^{\infty} \alpha^L z^L = \frac{1}{1 - \alpha z}.
-\label{eq:gradient_gf}
-\end{equation}
-
-This is a \textbf{simple pole} at $z = 1/\alpha$.  The AC
-classification:
-\begin{itemize}
-\item $\alpha < 1$: pole at $z = 1/\alpha > 1$ (outside unit disk,
-  coefficients decay exponentially).
-\item $\alpha > 1$: pole at $z = 1/\alpha < 1$ (inside unit disk,
-  coefficients grow exponentially).
-\item $\alpha = 1$: pole at $z = 1$ (on the unit circle, marginal).
-\end{itemize}
-
-At $\alpha = 1$, the singularity is a \emph{simple pole}, not a
-branch point.  This means the gradient transition is
-\textbf{first-order} (discontinuous), not second-order (continuous)
---- the gradient signal goes from decaying to growing with no
-critical scaling in between.
-
-\subsection{Residual networks: branch points from skip connections}
-
-For residual networks (ResNets), the computational graph has skip
-connections: each layer's output is $x_{l+1} = x_l + f_l(x_l)$.
-The path polynomial becomes
-\begin{equation}
-\Phi_{\text{ResNet}}(\alpha, z) = \sum_{\text{paths}} \alpha^{|\text{path}|}
-z^L = \prod_{l=1}^L (1 + \alpha_l z).
-\end{equation}
-
-For uniform $\alpha_l = \alpha$: $\Phi = (1 + \alpha z)^L$.
-The generating function in $L$ is
-\begin{equation}
-G(z, u) = \sum_{L=0}^{\infty} (1 + \alpha z)^L u^L
-= \frac{1}{1 - u(1 + \alpha z)}.
-\end{equation}
-
-At the critical depth $u = 1/(1 + \alpha z)$: this is again a
-simple pole.  But if we consider the \emph{distribution} of
-gradient signal across paths (not just the mean), the generating
-function involves $\log(1 + \alpha z)$ --- which has a
-\textbf{logarithmic branch point} at $z = -1/\alpha$.
-
-The AC classification of the singularity determines the
-\textbf{concentration properties} of the gradient:
-\begin{itemize}
-\item Simple pole: gradient dominated by one path (chain networks).
-\item Logarithmic branch: gradient distributed across exponentially
-  many paths (ResNets) --- this is why ResNets train more stably.
-\item Square-root branch: gradient has power-law fluctuations
-  (possible for attention mechanisms with variable-length paths).
-\end{itemize}
-
-
-%% ================================================================
-\section{The generalisation phase transition}
-\label{sec:generalisation}
-
-\subsection{Overparameterisation as a Lagrange equation}
-
-In the lazy training regime (neural tangent kernel), a network
-with $N$ parameters and $P$ data points has an effective kernel
-$K(x, x') = \sum_{i=1}^N \nabla_\theta f(x) \cdot \nabla_\theta f(x')$.
-The eigenvalue distribution of this kernel undergoes a
-\textbf{phase transition} at $N/P = 1$:
-\begin{itemize}
-\item $N < P$ (underparameterised): the kernel has a gap,
-  training error is nonzero.
-\item $N > P$ (overparameterised): the kernel is full-rank,
-  training error is zero (interpolation).
-\item $N = P$: the transition, with divergent condition number.
-\end{itemize}
-
-The resolvent of the kernel, $G(z) = \text{tr}(K - zI)^{-1}/N$,
-satisfies a \textbf{self-consistent equation}:
-\begin{equation}
-G(z) = \frac{1}{z - \gamma \cdot \phi(G(z))},
-\label{eq:resolvent}
-\end{equation}
-where $\gamma = N/P$ is the overparameterisation ratio and $\phi$
-encodes the weight distribution.  This IS a Lagrange equation
-$T = z \cdot \psi(T)$.
-
-The singularity of $G(z)$ at the spectral edge determines:
-\begin{itemize}
-\item The Marchenko--Pastur distribution (square-root branch
-  at the spectral edge, Puiseux exponent $1/2$).
-\item The condition number scaling near the transition.
-\item The generalisation error in the proportional limit $N, P \to \infty$
-  with $\gamma = N/P$ fixed.
-\end{itemize}
-
-The AC framework classifies this singularity: the Newton polygon
-of the resolvent equation determines whether the spectral edge is
-a square root (generic), a cube root (at a tricritical point), or
-a higher-order singularity (at special parameter values).
-
-\subsection{Network architecture as graph topology}
-
-Different architectures give different graph topologies $\Gamma$,
-which give different Kirchhoff polynomials $\K_\Gamma$, which give
-different singularity types for the resolvent.  The AC prediction:
 
 \begin{center}
-\renewcommand{\arraystretch}{1.2}
-\begin{tabular}{lll}
-\toprule
-\textbf{Architecture} & \textbf{$\K$ structure} & \textbf{Singularity} \\
-\midrule
-Fully connected (chain) & $\K$ linear & simple pole \\
-ResNet (skip connections) & $\K$ factorises & product of poles \\
-Transformer (attention) & $\K$ non-factorisable & branch point \\
-Random graph network & $\K$ from random graph & varies with $\gamma$ \\
-\bottomrule
-\end{tabular}
+\begin{tikzpicture}[>=Stealth, thick, scale=0.9,
+  node/.style={circle, draw, fill=blue!10, inner sep=3pt, font=\scriptsize}]
+  % MLP
+  \begin{scope}[shift={(0,0)}]
+    \node[node] (a) at (0,0) {in};
+    \node[node] (b) at (1.5,0) {$h_1$};
+    \node[node] (c) at (3,0) {$h_2$};
+    \node[node] (d) at (4.5,0) {out};
+    \draw[->] (a)--(b); \draw[->] (b)--(c); \draw[->] (c)--(d);
+    \node at (2.25,-0.7) {\small MLP: 1 path};
+  \end{scope}
+  % ResNet
+  \begin{scope}[shift={(6,0)}]
+    \node[node] (a) at (0,0) {in};
+    \node[node] (b) at (1.5,0) {$h_1$};
+    \node[node] (c) at (3,0) {$h_2$};
+    \node[node] (d) at (4.5,0) {out};
+    \draw[->] (a)--(b); \draw[->] (b)--(c); \draw[->] (c)--(d);
+    \draw[->, red] (a) to[bend left=30] (c);
+    \draw[->, red] (b) to[bend left=30] (d);
+    \node at (2.25,-0.7) {\small ResNet: 4 paths};
+  \end{scope}
+\end{tikzpicture}
 \end{center}
 
+\subsection{The path count}
 
-%% ================================================================
-\section{Attention as a non-equilibrium field theory}
-\label{sec:attention}
-
-The attention mechanism in transformers computes:
+\begin{definition}[Path polynomial]
+For a DAG $\Gamma$ with source $s$ and sink $t$, the
+\textbf{path polynomial} is
 \begin{equation}
-\text{Attn}(Q, K, V) = \text{softmax}\!\left(\frac{QK^T}{\sqrt{d_k}}\right) V.
+P_\Gamma(x) = \sum_{\text{$s$-$t$ paths } \pi} x^{|\pi|},
 \end{equation}
+where $|\pi|$ is the length (number of edges) of path~$\pi$.
+\end{definition}
 
-The softmax creates a \textbf{probability distribution over tokens}
---- a stochastic process on the sequence.  The multi-head attention
-with $H$ heads and $L$ layers creates a \textbf{random walk on a
-graph} where:
 \begin{itemize}
-\item Vertices are token positions.
-\item Edge weights are attention scores (stochastic: rows sum to 1).
-\item Depth $L$ is the number of steps.
+\item $P_\Gamma(1)$ = total number of $s$-$t$ paths.
+\item $P_\Gamma'(1)/P_\Gamma(1)$ = mean path length.
+\item The variance of path lengths controls gradient flow:
+  large variance $\Rightarrow$ multi-scale feature composition.
 \end{itemize}
 
-This is a \textbf{Markov chain on a random graph} --- exactly the
-setting where the spectral dimension $d_s$ and the AC framework
-apply.  The ``volume explored'' by the attention walk is the
-effective context length: how many tokens genuinely influence the
-output.
+$P_\Gamma$ is computable in $O(V + E)$ by dynamic programming
+on the DAG (topological sort + path counting at each vertex).
 
-The \textbf{critical attention} hypothesis: the most effective
-transformers operate near the phase transition where the attention
-walk is critical (branching ratio $\approx 1$).  Too focused
-(subcritical): the model attends to too few tokens.  Too diffuse
-(supercritical): the model wastes capacity on irrelevant tokens.
+\subsection{The Kirchhoff polynomial}
 
-At criticality: the attention-volume scales as
-$V(L) \sim L^{d_s/2}$ where $d_s$ is the spectral dimension of the
-attention graph.  The AC framework gives $d_s$ from the attention
-matrix spectrum, and the scaling exponents from the Puiseux exponent
-of the Lagrange equation for the attention walk.
+The \textbf{Kirchhoff polynomial} $\K_\Gamma$ counts spanning
+trees of the underlying undirected graph.  While $P$ counts paths,
+$\K$ counts the independent ``structural motifs'' of the architecture:
 
+\begin{equation}
+\K_\Gamma(\alpha) = \sum_{\text{spanning trees } T}
+\prod_{e \notin T} \alpha_e.
+\end{equation}
 
-%% ================================================================
-\section{Concrete research programme}
-\label{sec:programme}
-
-\subsection{Immediate (computable now)}
-
-\begin{enumerate}[leftmargin=2em]
-\item \textbf{Kirchhoff polynomial of ResNet architectures.}
-Compute $\K$ for standard architectures (ResNet-50, DenseNet,
-U-Net) and classify the gradient-flow singularity.  Predict
-which architectures have stable gradient flow (factorisable $\K$)
-vs unstable (non-factorisable $\K$).
-
-\item \textbf{Spectral dimension of attention graphs.}
-Given a trained transformer's attention matrices, compute $d_s$
-of the attention graph.  Test the ``critical attention'' hypothesis:
-is $d_s \approx 2$ (the marginal value for 2D random walks) for
-well-trained models?
-
-\item \textbf{Marchenko--Pastur singularity via AC.}
-Classify the spectral-edge singularity of the neural tangent
-kernel for different architectures using the Newton polygon of
-the resolvent equation.  Predict generalisation transitions.
-\end{enumerate}
-
-\subsection{Medium-term (requires development)}
-
-\begin{enumerate}[leftmargin=2em, start=4]
-\item \textbf{Loss landscape as a generating function.}
-The partition function of a Bayesian neural network,
-$Z(\beta) = \int e^{-\beta \mathcal{L}(\theta)} d\theta$,
-is a generating function whose singularity in $\beta$ (inverse
-temperature) determines the learning phase transition.
-Apply AC to classify this singularity for specific architectures.
-
-\item \textbf{Pruning as a percolation transition.}
-Network pruning (removing weights below a threshold) is bond
-percolation on the computational graph.  The percolation threshold
-and cluster-size exponent are determined by the Kirchhoff polynomial
-of the pruned graph --- exactly the network percolation analysis
-from our earlier work, now applied to artificial (not biological)
-networks.
-
-\item \textbf{Hopfield networks and associative memory.}
-The storage capacity transition ($\alpha_c = P/N$) of Hopfield
-networks is a Lagrange equation whose singularity determines
-whether retrieval succeeds.  Apply AC to modern Hopfield networks
-(with polynomial or exponential interaction functions) to predict
-capacity scaling.
-\end{enumerate}
-
-\subsection{Long-term (speculative)}
-
-\begin{enumerate}[leftmargin=2em, start=7]
-\item \textbf{Renormalisation group for deep learning.}
-The depth of a network is analogous to the RG scale.  Each layer
-``integrates out'' fine-grained features, producing an effective
-theory at the next scale.  The RG $\beta$-function of this flow
-determines the fixed points (optimal architectures) and the
-universality classes (which architectures learn the same features).
-AC provides the tools to compute this $\beta$-function from the
-network graph.
-
-\item \textbf{Scaling laws from AC.}
-The empirical scaling laws of large language models
-($L \sim N^{-\alpha}$ where $L$ is loss and $N$ is parameter count)
-may be power laws from a branch-point singularity of a generating
-function. If the training dynamics are described by a Lagrange
-equation, the scaling exponent $\alpha$ is the Puiseux exponent
---- computable from the Newton polygon.
+$\K$ is more informative than $P$ because:
+\begin{enumerate}
+\item $\K$ detects \textbf{redundancy}: if two paths share all their
+  edges, they contribute to $P$ but not to independent spanning trees.
+\item $\K$ detects \textbf{bridges}: a bridge (cut edge) factorises
+  $\K$ into a product, meaning the architecture has an information
+  bottleneck.  Removing the bridge disconnects the graph.
+\item $\K(1, 1, \ldots, 1) = $ number of spanning trees, which
+  equals $\det(\mathbf{L}_R)$ (Matrix-Tree theorem, computable in
+  $O(V^3)$).
 \end{enumerate}
 
 
 %% ================================================================
-\section{The dictionary}
-\label{sec:dictionary}
+\section{Computing $\K$ for standard architectures}
+
+\subsection{MLP (chain graph)}
+
+$L$ layers, no skip connections.  $V = L+1$, $E = L$.  One
+spanning tree (the chain itself).
+\begin{equation}
+\K_{\text{MLP}} = 1, \qquad P_{\text{MLP}}(1) = 1.
+\end{equation}
+
+Minimal expressivity.  Every information path goes through every
+layer --- a single bridge at each layer.  If any layer is a
+bottleneck, all information is lost.
+
+\subsection{ResNet (chain + skip connections)}
+
+$L$ layers with skip connections of stride $s$ (connecting layer
+$l$ to layer $l+s$).  For stride $s=1$ (every layer has a skip):
+
+\begin{equation}
+P_{\text{ResNet}}(1) = 2^{L-1}, \qquad
+\K_{\text{ResNet}} = F_L \quad \text{(Fibonacci-like)}.
+\end{equation}
+
+The path count grows exponentially, but the spanning tree count
+grows only as $\phi^L$ ($\phi = (1+\sqrt{5})/2$, the golden ratio).
+This means most paths share edges (high redundancy) --- the
+\emph{effective} number of independent paths is much less than
+the total.
+
+\subsection{Transformer (attention = complete bipartite graph)}
+
+A single attention layer with $n$ tokens creates a complete
+bipartite graph $K_{n,n}$ (every token can attend to every other).
+$L$ layers stack these:
+
+\begin{equation}
+P_{\text{Transformer}}(1) = n^{L-1} \cdot n = n^L, \qquad
+\K_{\text{Transformer}} \sim n^{2n-2} \quad \text{(per layer)}.
+\end{equation}
+
+The spanning tree count of a single attention layer is $n^{2n-2}$
+(by the Matrix-Tree theorem for the complete graph).  This is
+\emph{enormous}: for $n = 1024$ tokens, $\K \sim 10^{6000}$.
+
+This explains both the power and the cost of transformers: the
+architecture has an astronomically large number of independent
+structural motifs.  Most of them are irrelevant for any specific
+task.
+
+\subsection{SSM / Mamba (chain with gating)}
+
+A state-space model processes tokens sequentially.  The
+computational graph is a chain with gating (multiplicative
+interactions):
+
+\begin{equation}
+P_{\text{SSM}}(1) = 1, \qquad \K_{\text{SSM}} = 1.
+\end{equation}
+
+Same as MLP: minimal paths.  The expressive power of SSMs comes
+from the \emph{state dynamics} (continuous-time recurrence), not
+from architectural path diversity.  This is why SSMs are efficient
+(linear in sequence length) but struggle with tasks requiring
+arbitrary token-to-token interactions.
+
+\subsection{Summary}
 
 \begin{center}
 \renewcommand{\arraystretch}{1.3}
-\begin{tabular}{p{5cm}p{5cm}}
+\begin{tabular}{lcccl}
 \toprule
-\textbf{Reaction-diffusion} & \textbf{Neural networks} \\
+\textbf{Architecture} & \textbf{Paths} & $\log_2 \K$ & \textbf{Bridges?} & \textbf{Character} \\
 \midrule
-Particle species & Network layers/neurons \\
-Reaction stoichiometry & Architecture (connectivity) \\
-Diffusion on lattice & Information flow on graph \\
-Doi--Peliti action & Loss function + architecture \\
-Kirchhoff polynomial $\K$ & Path polynomial of comp.\ graph \\
-Spectral dimension $d_s$ & Effective context length \\
-$d_c$ (upper critical dim.) & Critical width/depth \\
-Puiseux exponent & Scaling law exponent \\
-DP universality class & Gradient-flow universality \\
-Absorbing state & Vanishing gradient \\
-Branch point & Learning phase transition \\
-BPHZ renormalisation & Layer-wise normalisation \\
+MLP / SSM & 1 & 0 & every edge & sequential bottleneck \\
+ResNet ($s{=}1$) & $2^L$ & $L \log_2 \phi$ & none & redundant multi-path \\
+DenseNet & $2^{L(L-1)/2}$ & $\sim L^2$ & none & highly connected \\
+Transformer & $n^L$ & $\sim nL$ & none & complete interaction \\
+MoE-Transformer & $n^L \cdot K$ & $\sim nL + \log K$ & at expert routing & selective interaction \\
 \bottomrule
 \end{tabular}
 \end{center}
 
+The spectrum: $\K = 1$ (SSM) to $\K \sim n^{2n}$ (Transformer).
+The right $\K$ for a task depends on the task's
+\textbf{interaction complexity}: how many token-pairs need to
+interact to solve it.
+
 
 %% ================================================================
-\section{Conclusion}
+\section{The design principle: target $\K$ to the task}
 
-The AC framework developed for reaction-diffusion field theory
---- Lagrange equations, Kirchhoff polynomials, Newton polygons,
-Hopf algebras --- applies directly to neural networks when the
-computational graph is treated as a physical graph.  The gradient
-flow is a path generating function, the generalisation transition
-is a Lagrange-equation singularity, and the attention mechanism
-is a random walk whose spectral dimension determines the effective
-context.
+\subsection{The hypothesis}
 
-The most immediately testable prediction: the singularity type of
-the gradient-flow generating function, determined by the Kirchhoff
-polynomial of the computational graph, classifies which
-architectures can be trained stably (factorisable $\K$, simple
-poles) and which exhibit critical phenomena (non-factorisable $\K$,
-branch points).
+\begin{quote}
+\textbf{For a given task, there exists an optimal $\log \K$ that
+balances expressivity against efficiency.  Architectures with
+$\K$ too low underfit (not enough paths to represent the solution).
+Architectures with $\K$ too high overfit or waste compute
+(too many irrelevant paths).}
+\end{quote}
+
+This is testable.
+
+\subsection{Designing architectures with target $\K$}
+
+Given a target $\K_{\text{target}}$, we can design architectures
+by adding or removing structural motifs:
+
+\begin{itemize}
+\item \textbf{Adding a skip connection} between layers $i$ and $j$
+  multiplies $\K$ by a factor depending on the subgraph structure.
+  AC gives the exact factor from the spanning tree count.
+
+\item \textbf{Adding an attention head} to a subset of tokens creates
+  a bipartite subgraph.  $\K$ of the subgraph is $k^{k-2}$ for $k$
+  attended tokens (Cayley's formula).
+
+\item \textbf{Sparsifying attention} (e.g.\ local attention windows,
+  strided attention) reduces $\K$ from $n^{2n-2}$ to a computable
+  function of the sparsity pattern.  The Kirchhoff polynomial
+  detects which sparsity patterns preserve the most independent paths.
+
+\item \textbf{Adding a bridge} (bottleneck layer) factorises $\K$
+  into a product.  This is equivalent to an information bottleneck.
+  U-Net's encoder-decoder bridge is an example.
+\end{itemize}
+
+\subsection{Hybrid architectures: Mamba + sparse attention}
+
+The current trend (Jamba, Zamba, Griffin) combines SSM layers with
+sparse attention layers.  From the $\K$ perspective:
+
+\begin{itemize}
+\item Pure SSM: $\K = 1$ (chain).
+\item Add one attention layer at position $l$: $\K$ jumps by a factor
+  of $k^{k-2}$ where $k$ is the attention window size.
+\item Add $m$ attention layers at positions $l_1, \ldots, l_m$:
+  $\K = \prod_i k_i^{k_i-2}$ (if the attention layers are separated
+  by SSM layers, which act as bridges).
+\end{itemize}
+
+The AC prediction: \textbf{the optimal placement of attention layers
+is where $\K$ is maximised per compute unit.}  Specifically:
+few attention layers with large windows at critical points in the
+sequence, rather than many attention layers with small windows.
+
+This is a falsifiable prediction that can be tested by sweeping
+over attention layer placements and measuring perplexity vs $\K$.
+
+
+%% ================================================================
+\section{Proposed experiments}
+
+\subsection{Experiment 1: $\K$ predicts trainability}
+
+\paragraph{Setup.}
+Take 20 random architectures with $L = 12$ layers, varying skip
+connection patterns (random subsets of possible skip connections).
+Compute $\K$ for each.  Train each on CIFAR-10 for 100 epochs.
+
+\paragraph{Prediction.}
+$\log \K$ correlates with final test accuracy (positive correlation
+up to a saturation point).  Architectures with $\K = 1$ (no skips)
+train poorly.  Architectures with many skips but $\K$ below the
+transformer value train well with less compute.
+
+\paragraph{Measurement.}
+Spearman correlation between $\log \K$ and test accuracy.
+Expected: $\rho > 0.5$.
+
+\subsection{Experiment 2: optimal $\K$ depends on task complexity}
+
+\paragraph{Setup.}
+Fix a family of architectures (e.g.\ ResNet with varying skip
+patterns) and train on tasks of varying interaction complexity:
+\begin{itemize}
+\item Low complexity: pixel-level classification (each pixel
+  independent). Requires $\K \approx 1$.
+\item Medium complexity: object recognition (local interactions).
+  Requires moderate $\K$.
+\item High complexity: scene understanding (global interactions).
+  Requires large $\K$.
+\end{itemize}
+
+\paragraph{Prediction.}
+The optimal $\log \K$ (best accuracy per FLOP) increases with task
+complexity.  SSM-like architectures ($\K = 1$) win on low-complexity
+tasks.  Transformer-like architectures ($\K \gg 1$) win on
+high-complexity tasks.
+
+\paragraph{Measurement.}
+Plot accuracy-vs-$\log \K$ curves for each task complexity level.
+Expected: the peak shifts right with complexity.
+
+\subsection{Experiment 3: sparse attention design via $\K$ maximisation}
+
+\paragraph{Setup.}
+Given a sequence length $n$ and a compute budget (maximum number
+of attention edges $E_{\max}$), find the attention sparsity pattern
+that maximises $\K$ subject to $|E| \leq E_{\max}$.
+
+\paragraph{Method.}
+Use the Matrix-Tree theorem: $\K(1, \ldots, 1) = \det(\mathbf{L}_R)$.
+Greedy edge addition: at each step, add the edge that maximises
+$\Delta \K = \K_{\text{new}} - \K_{\text{old}}$.  This is computable
+in $O(n^3)$ per step (recompute the Laplacian determinant).
+
+\paragraph{Prediction.}
+The $\K$-maximising sparsity pattern is NOT the standard patterns
+(local window, strided, random). It has a specific structure
+(hubs + long-range connections) that outperforms uniform patterns
+at the same compute budget.
+
+\paragraph{Measurement.}
+Train transformers with the $\K$-maximising pattern vs standard
+patterns (local, strided, random, Longformer, BigBird) on long-range
+sequence tasks (e.g.\ Long Range Arena).  Compare perplexity at
+equal FLOP.
+
+\subsection{Experiment 4: Mamba + attention layer placement}
+
+\paragraph{Setup.}
+A 24-layer model with $m$ attention layers and $24 - m$ Mamba layers.
+Vary both $m$ (number of attention layers) and their positions.
+
+\paragraph{Method.}
+For each configuration, compute $\K$ of the full computational graph.
+Train on a language modelling task.
+
+\paragraph{Prediction.}
+Perplexity correlates with $\log \K$.  The optimal placement
+concentrates attention layers at positions where they maximise
+$\K$-per-FLOP --- typically evenly spaced (to avoid bridges between
+attention layers that would reduce $\K$).
+
+\subsection{Experiment 5: pruning guided by $\K$}
+
+\paragraph{Setup.}
+Take a trained transformer.  Prune edges (attention connections)
+while monitoring $\K$.
+
+\paragraph{Method.}
+At each pruning step, remove the edge whose removal causes the
+smallest decrease in $\K$.  Compare with standard pruning methods
+(magnitude pruning, gradient-based pruning).
+
+\paragraph{Prediction.}
+$\K$-preserving pruning retains more accuracy at higher sparsity
+than magnitude pruning, because it preserves the independent path
+structure rather than the largest individual weights.
+
+
+%% ================================================================
+\section{What this is and what it is not}
+
+This is \textbf{not} a theory of learning dynamics, loss landscapes,
+or optimisation.  It is a \textbf{structural characterisation} of
+architectures: a single number ($\K$) computed from the connectivity
+alone, that measures how many independent ways information can flow
+from input to output.
+
+The claim is not that $\K$ determines everything about performance.
+The claim is that $\K$ is a \emph{necessary condition}: an
+architecture with $\K$ too low for the task will fail regardless
+of training, and an architecture with $\K$ too high wastes compute.
+The right $\K$ is a property of the task, and AC provides the tools
+to compute and optimise it.
 
 
 %% ================================================================
@@ -414,31 +442,35 @@ branch points).
 P.~Flajolet and R.~Sedgewick,
 \emph{Analytic Combinatorics}, Cambridge (2009).
 
-\bibitem{poole2016}
-B.~Poole, S.~Lahiri, M.~Raghu, J.~Sohl-Dickstein, and S.~Ganguli,
-\newblock Exponential expressivity in deep neural networks through
-transient chaos,
-\newblock \emph{NeurIPS} (2016).
+\bibitem{he2016}
+K.~He, X.~Zhang, S.~Ren, and J.~Sun,
+\newblock Deep residual learning for image recognition,
+\newblock \emph{CVPR} (2016).
 
-\bibitem{schoenholz2017}
-S.~S.~Schoenholz, J.~Gilmer, S.~Ganguli, and J.~Sohl-Dickstein,
-\newblock Deep information propagation,
-\newblock \emph{ICLR} (2017).
+\bibitem{vaswani2017}
+A.~Vaswani et al.,
+\newblock Attention is all you need,
+\newblock \emph{NeurIPS} (2017).
 
-\bibitem{jacot2018}
-A.~Jacot, F.~Gabriel, and C.~Hongler,
-\newblock Neural tangent kernel,
-\newblock \emph{NeurIPS} (2018).
+\bibitem{gu2024}
+A.~Gu and T.~Dao,
+\newblock Mamba: Linear-time sequence modeling with selective state spaces,
+\newblock arXiv:2312.00752 (2023).
 
-\bibitem{kaplan2020}
-J.~Kaplan et al.,
-\newblock Scaling laws for neural language models,
-\newblock arXiv:2001.08361 (2020).
+\bibitem{lieber2024}
+O.~Lieber et al.,
+\newblock Jamba: A hybrid transformer-Mamba language model,
+\newblock arXiv:2403.19887 (2024).
 
-\bibitem{marchenko1967}
-V.~A.~Marchenko and L.~A.~Pastur,
-\newblock Distribution of eigenvalues for some sets of random matrices,
-\newblock \emph{Mat.\ Sb.}\ \textbf{72}, 507 (1967).
+\bibitem{tay2021}
+Y.~Tay et al.,
+\newblock Long Range Arena: A benchmark for efficient transformers,
+\newblock \emph{ICLR} (2021).
+
+\bibitem{kirchhoff1847}
+G.~Kirchhoff,
+\newblock \"Uber die Aufl\"osung der Gleichungen\ldots,
+\newblock \emph{Ann.\ Phys.\ Chem.}\ \textbf{72}, 497 (1847).
 
 \end{thebibliography}
 
