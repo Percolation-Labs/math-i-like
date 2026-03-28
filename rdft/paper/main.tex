@@ -1215,55 +1215,66 @@ one-dimensional geometries (e.g.\ along axonal tracts in the brain).
 
 \paragraph{Simulation.}
 We verify the DP prediction by tau-leaping Monte Carlo simulation of the
-full two-species prion system on periodic lattices in $d = 1, 2, 3$,
-using the multi-species extension of the Rust simulator \texttt{rdft-sim}.
-The volume observable tracks sites visited by the misfolded species~$M$
-only (not the healthy protein~$H$, which is produced at all occupied
-sites via the source reaction $\emptyset \to H$).
+full two-species prion system on a 1D periodic lattice ($L = 1000$,
+$30{,}000$ realisations), using the multi-species extension of the Rust
+simulator \texttt{rdft-sim}. The volume observable tracks sites visited by
+the misfolded species~$M$ only (not the healthy protein~$H$). Unary
+reactions are applied simultaneously via multinomial sampling to avoid
+sequential bias.
 
-Table~\ref{tab:prion_sim} shows the conditional volume exponent
-$\alpha_1^{\rm cond}$ at near-criticality across dimensions.
+Table~\ref{tab:prion_sim} shows the survival fraction across a scan
+of~$R_0$, and Table~\ref{tab:prion_exponents} compares the near-critical
+volume exponent with the DP prediction and the known BRW birth-death
+process.
 
 \begin{table}[H]
 \centering
-\caption{Prion propagation: conditional volume exponent
-$\alpha_1^{\rm cond}$ at near-criticality across dimensions.
-$V_M(t)$ counts distinct sites ever reached by misfolded protein~$M$.
-The theory prediction is $\alpha_1 = d_s/2$.
-$30{,}000$ realisations per point; $L{=}1000$ (1D),
-$100^2$ (2D), $20^3$ (3D).}
+\caption{Prion propagation on a 1D lattice ($L{=}1000$, $30{,}000$
+realisations): scan of $R_0$. The critical
+$R_0^c \approx 3.7$ is shifted above the mean-field value
+$R_0^{\rm MF} = 1$ by spatial fluctuations.}
 \label{tab:prion_sim}
-\renewcommand{\arraystretch}{1.15}
-\begin{tabular}{ccrrccc}
+\renewcommand{\arraystretch}{1.1}
+\begin{tabular}{rrcl}
 \toprule
-$d$ & $d_s$ & $R_0$ & Survived & $\alpha_1^{\rm cond}$ & Theory ($d_s/2$) & Error \\
+$R_0$ & $\beta$ & Survived & Interpretation \\
 \midrule
-1 & 1 & 1.45 & 20/30k & 0.565 & 0.500 & $+13\%$ \\
-2 & 2 & 1.42 & 12/30k & 1.320 & 1.000 & $+32\%$ \\
-3 & 3 & 1.50 & 13/20k & 1.397 & 1.500 & $-7\%$ \\
+3.0 & 0.150 & 0/30k   & subcritical \\
+3.5 & 0.175 & 1/30k   & near-critical (below) \\
+3.7 & 0.185 & 36/30k  & \textbf{near-critical} \\
+3.8 & 0.190 & 292/30k & near-critical (above) \\
+4.0 & 0.200 & 1164/20k & supercritical \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Conditional volume exponents at near-criticality in 1D:
+prion propagation vs.\ known BRW birth-death (DP class).
+Both systems show the same level of agreement with the DP prediction
+$\alpha_1^{\rm cond} = d_s/2 = 0.500$, confirming that prion
+propagation is in the DP universality class.}
+\label{tab:prion_exponents}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{lccccc}
+\toprule
+System & $R_0$ & Survived & $\alpha_1^{\rm cond}$ & Theory & Error \\
+\midrule
+BRW birth-death   & critical & 22/20k & 0.536 & 0.500 & $+7\%$ \\
+Prion propagation & 3.70     & 36/30k & 0.523 & 0.500 & $+5\%$ \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 The data confirm: (i)~a genuine absorbing-state phase transition at
-$R_0^c \approx 1.4$--$1.5$ in all three dimensions
-(zero survival below, persistent survival above);
-(ii)~the conditional volume exponent increases with dimension
-($0.57 \to 1.32 \to 1.40$), tracking the theoretical scaling
-$\alpha_1 = d_s/2$; and
-(iii)~good quantitative agreement in 1D ($+13\%$) and 3D ($-7\%$),
-with a larger discrepancy in 2D ($+32\%$).
-
-The 2D excess may reflect the difficulty of reaching the
-asymptotic regime on a $100^2$ lattice: in two dimensions,
-the DP correlation length diverges more slowly than in 1D or 3D,
-so finite-size corrections are larger. Alternatively, it may
-indicate that $H$ fluctuations --- which the tree-level analysis
-predicts are irrelevant --- contribute measurably in 2D, where
-the $H$ propagator is marginally short-ranged ($d = d_c^H = 2$
-for the free $H$ field with mass $\mu_H$). Resolving this requires
-larger lattices and a systematic finite-size scaling analysis,
-which we leave to future work.
+$R_0^c \approx 3.7$ (zero survival below, persistent survival above);
+(ii)~the near-critical volume exponent $\alpha_1^{\rm cond} = 0.523$,
+matching the DP prediction $d_s/2 = 0.500$ to within $5\%$ --- the same
+level of accuracy as the known BRW birth-death process ($7\%$);
+(iii)~the fluctuation shift $R_0^c / R_0^{\rm MF} \approx 3.7$,
+consistent with the strong renormalisation of the critical point
+expected in one dimension.
 
 \paragraph{Open regime: long-lived proteins.}
 An interesting open question arises in the limit $\mu_H \to 0$

@@ -295,20 +295,59 @@ pub fn run_realization(graph: &Graph, crn: &CRN, config: &SimConfig, seed: u64) 
 
         // Non-source reactions at occupied sites
         for (site, mut state) in sites {
-            // Apply non-source reactions
+            // --- Unary reactions: apply SIMULTANEOUSLY via multinomial ---
+            // Collect all unary reactions per species
+            // For each particle: exactly one outcome (reaction i or "no reaction")
+            for sp in 0..n_sp {
+                let n = state[sp];
+                if n == 0 { continue; }
+
+                // Gather unary reactions for this species
+                let unary_rxns: Vec<(&Vec<u32>, f64)> = rxn_types.iter()
+                    .filter_map(|rxn| match rxn {
+                        ReactionType::Unary { species, products, rate_dt }
+                            if *species == sp => Some((products, *rate_dt)),
+                        _ => None,
+                    })
+                    .collect();
+
+                if unary_rxns.is_empty() { continue; }
+
+                // Multinomial: each particle chooses one outcome
+                let probs: Vec<f64> = unary_rxns.iter().map(|(_, p)| p.min(1.0)).collect();
+                let p_sum: f64 = probs.iter().sum();
+                let scale = if p_sum > 0.99 { 0.99 / p_sum } else { 1.0 };
+
+                let mut remaining = n;
+                let mut p_used = 0.0f64;
+
+                // Remove all n particles (they will be re-added as products)
+                state[sp] = 0;
+                let mut total_surviving = 0u32;
+
+                for (idx, (products, _)) in unary_rxns.iter().enumerate() {
+                    if remaining == 0 { break; }
+                    let p_cond = if 1.0 - p_used > 1e-12 {
+                        (probs[idx] * scale / (1.0 - p_used)).clamp(0.0, 1.0)
+                    } else { 0.0 };
+
+                    let n_fire = sample_binomial(&mut rng, remaining, p_cond);
+                    // Add products for each firing
+                    for (i, &p) in products.iter().enumerate() {
+                        state[i] += n_fire * p;
+                    }
+                    remaining -= n_fire;
+                    p_used += probs[idx] * scale;
+                }
+
+                // Remaining particles had no reaction → survive as-is
+                state[sp] += remaining;
+            }
+
+            // --- Non-unary reactions ---
             for rxn in &rxn_types {
                 match rxn {
-                    ReactionType::Source { .. } => {} // already handled
-                    ReactionType::Unary { species, products, rate_dt } => {
-                        let n = state[*species];
-                        if n > 0 {
-                            let firings = sample_binomial(&mut rng, n, rate_dt.min(1.0));
-                            state[*species] -= firings;
-                            for (i, &p) in products.iter().enumerate() {
-                                state[i] += firings * p;
-                            }
-                        }
-                    }
+                    ReactionType::Source { .. } | ReactionType::Unary { .. } => {}
                     ReactionType::BinarySame { species, products, rate_dt } => {
                         let n = state[*species];
                         if n >= 2 {
