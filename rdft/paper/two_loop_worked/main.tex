@@ -478,26 +478,41 @@ This contribution is \textbf{nonzero at criticality}.
 It does not vanish when $\sigma = \lambda$, unlike the 1-loop
 $G^2$ coefficient of the DSE kernel.
 
-\subsection{Implication}
+\subsection{Implication and caveat}
 
 At 1-loop, the branch point of the DSE collapses to a pole at
 $\sigma = \lambda$ (the $G^2$ coefficient $(\sigma{-}\lambda)$
-vanishes). This is why the $\varepsilon$-expansion fails.
+vanishes).  This is why the $\varepsilon = 4 - d$ expansion
+fails~\cite{cardytauber1996}.
 
-At 2-loop, the bridge topology contributes a correction to the
-$\beta$-function that is nonzero at $\sigma = \lambda$. This means:
+The bridge topology contributes a 2-loop correction that is nonzero at
+$\sigma = \lambda$.  However, the quartic vertices $V_c$ and $V_d$
+have engineering dimension $[V_c] = [V_d] = 2 - d$ and are
+\textbf{irrelevant} at $d_c = 4$ (dimension $-2$).  Their contribution
+to the $\beta$-function, while formally nonzero, is suppressed by
+powers of the irrelevant coupling.
 
-\begin{quote}
-\textbf{The 2-loop correction restores the branch point.}
-\end{quote}
+The PC class has \emph{two} upper critical dimensions: $d_c = 4$ for
+the cubic vertices and $d_c = 2$ for the quartic vertices.  The PC
+fixed point lives in the 2-dimensional coupling space $(\sigma, \lambda)$
+and is not captured cleanly by either single $\varepsilon$-expansion.
+This is consistent with the known difficulty: the PC class resists
+perturbative analysis because neither expansion alone reaches the
+fixed point.
 
-The PC universality class is perturbatively accessible at 2-loop.
-The 1-loop failure was an artifact of the leading-order approximation,
-not a fundamental non-perturbative obstruction.
+What the AC pipeline \emph{does} provide:
+\begin{itemize}[leftmargin=2em]
+\item The complete diagram enumeration for the 2-coupling RG flow,
+  including topologies (Groups A, B) that are absent in DP.
+\item The bridge/bridgeless classification for each topology,
+  determining which contributions are exact rational and which
+  are transcendental.
+\item The tools for a double $\varepsilon$-expansion or a
+  functional-RG approach that treats both $d_c$ values simultaneously.
+\end{itemize}
 
-Computing the full 2-loop $\beta$-function (including the bridgeless
-contributions from $[V_a, V_a, V_d]$ and $[V_a, V_a, V_b, V_b]$)
-and extracting the PC critical exponents is the immediate next step.
+The extraction of PC critical exponents remains an open problem ---
+but one that is now equipped with a complete combinatorial toolkit.
 
 %% ================================================================
 \section{What AC does not provide}
