@@ -13,6 +13,9 @@ venv/
 simulations/target/
 simulations/Cargo.lock
 
+# WIP papers
+paper/wip/
+
 # Simulation output
 simulations/output/
 simulations/results/
