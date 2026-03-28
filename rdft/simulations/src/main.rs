@@ -36,6 +36,8 @@ struct RunOutput {
     fitted_exponents: Vec<ExponentResult>,
     convergence: Vec<Vec<(u32, f64)>>,
     wall_time_secs: f64,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    snapshots: Vec<(f64, std::collections::HashMap<u32, Vec<u32>>)>,
 }
 
 #[derive(Serialize)]
@@ -65,18 +67,25 @@ fn main() {
     }
 
     if args.len() > 1 {
-        let (graph, crn, n_real, t_max, max_per_site, d_s) = parse_args(&args);
+        let (graph, crn, n_real, t_max, max_per_site, d_s, snap_interval) = parse_args(&args);
         let mut config = SimConfig::brw_default(t_max);
         config.max_per_site = max_per_site;
         // For multi-species CRNs, configure initial species and tracking
         if crn.name.starts_with("Prion") {
             config.initial_species = 1; // seed M (species 1)
-            config.track_species = Some(1); // track M population
+            config.track_species = Some(1); // track M population & volume
         } else if crn.name.starts_with("Lotka") {
-            config.initial_species = 0; // seed prey A
-            // Seed some predators too
+            config.initial_species = 0;
         } else if crn.name == "A+B->0" {
-            config.initial_species = 0; // seed A; B should be seeded separately
+            config.initial_species = 0;
+        }
+        // Snapshot times
+        if let Some(interval) = snap_interval {
+            let mut t = interval;
+            while t <= t_max {
+                config.snapshot_times.push(t);
+                t += interval;
+            }
         }
         let result = run_single(&graph, &crn, &config, n_real, d_s);
         let json = serde_json::to_string_pretty(&result).unwrap();
@@ -141,6 +150,14 @@ fn run_single(
         );
     }
 
+    // Capture snapshots from a single representative realization
+    let snapshots = if !config.snapshot_times.is_empty() {
+        let snap_real = engine::run_realization(graph, crn, config, 42);
+        snap_real.snapshots
+    } else {
+        Vec::new()
+    };
+
     RunOutput {
         graph: graph.name.clone(),
         crn: crn.name.clone(),
@@ -153,6 +170,7 @@ fn run_single(
         fitted_exponents,
         convergence: ensemble.convergence,
         wall_time_secs: elapsed,
+        snapshots,
     }
 }
 
@@ -261,7 +279,7 @@ fn run_brw_suite() {
     println!("{}", json);
 }
 
-fn parse_args(args: &[String]) -> (Graph, CRN, u32, f64, u32, f64) {
+fn parse_args(args: &[String]) -> (Graph, CRN, u32, f64, u32, f64, Option<f64>) {
     let mut graph_str = "lattice:2:100".to_string();
     let mut crn_str = "gribov".to_string();
     let mut n_real = 1000u32;
@@ -269,6 +287,7 @@ fn parse_args(args: &[String]) -> (Graph, CRN, u32, f64, u32, f64) {
     let mut max_per_site = 0u32;
     let mut d_s = 2.0f64;
     let mut rates_str: Option<String> = None;
+    let mut snapshot_interval: Option<f64> = None;
 
     let mut i = 1;
     while i < args.len() {
@@ -301,6 +320,10 @@ fn parse_args(args: &[String]) -> (Graph, CRN, u32, f64, u32, f64) {
                 rates_str = Some(args[i + 1].clone());
                 i += 2;
             }
+            "--snapshots" => {
+                snapshot_interval = Some(args[i + 1].parse().unwrap());
+                i += 2;
+            }
             _ => {
                 eprintln!("Unknown arg: {}", args[i]);
                 i += 1;
@@ -310,7 +333,7 @@ fn parse_args(args: &[String]) -> (Graph, CRN, u32, f64, u32, f64) {
 
     let graph = parse_graph(&graph_str);
     let crn = parse_crn_with_rates(&crn_str, rates_str.as_deref());
-    (graph, crn, n_real, t_max, max_per_site, d_s)
+    (graph, crn, n_real, t_max, max_per_site, d_s, snapshot_interval)
 }
 
 fn parse_graph(s: &str) -> Graph {

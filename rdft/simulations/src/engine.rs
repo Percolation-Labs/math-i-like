@@ -43,6 +43,9 @@ pub struct SimConfig {
     /// Which species to track for "population" observable.
     /// None = total all species. Some(i) = species i only.
     pub track_species: Option<usize>,
+    /// If set, capture spatial snapshots at these times.
+    /// Each snapshot is a HashMap<site, Vec<count_per_species>>.
+    pub snapshot_times: Vec<f64>,
 }
 
 impl SimConfig {
@@ -67,6 +70,7 @@ impl SimConfig {
             max_per_site: 0,
             max_particles: 500_000,
             track_species: None,
+            snapshot_times: Vec::new(),
         }
     }
 }
@@ -78,11 +82,15 @@ impl SimConfig {
 #[derive(Clone, Debug, Serialize)]
 pub struct Realization {
     pub times: Vec<f64>,
-    /// Number of distinct sites ever visited (by any species).
+    /// Number of distinct sites ever visited (by tracked species, or any if unset).
     pub volume: Vec<u32>,
     /// Tracked population at each time.
     pub population: Vec<u32>,
     pub survived: bool,
+    /// Spatial snapshots: (time, {site: [count_per_species]}).
+    /// Only populated if snapshot_times is non-empty. Only first realization.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub snapshots: Vec<(f64, HashMap<u32, Vec<u32>>)>,
 }
 
 #[derive(Clone, Debug, Serialize)]
@@ -229,10 +237,22 @@ pub fn run_realization(graph: &Graph, crn: &CRN, config: &SimConfig, seed: u64) 
     let mut volumes = Vec::with_capacity(n_rec);
     let mut populations = Vec::with_capacity(n_rec);
 
+    let mut snapshots: Vec<(f64, HashMap<u32, Vec<u32>>)> = Vec::new();
+    let mut next_snap: usize = 0;
+
     let mut t: f64 = 0.0;
     let mut next_rec: usize = 0;
 
     loop {
+        // Capture snapshot if requested
+        while next_snap < config.snapshot_times.len() && t >= config.snapshot_times[next_snap] {
+            let snap: HashMap<u32, Vec<u32>> = occupation.iter()
+                .map(|(&site, state)| (site, state.clone()))
+                .collect();
+            snapshots.push((config.snapshot_times[next_snap], snap));
+            next_snap += 1;
+        }
+
         // Record observables
         while next_rec < n_rec && t >= config.record_times[next_rec] {
             let pop: u32 = match config.track_species {
@@ -450,12 +470,18 @@ pub fn run_realization(graph: &Graph, crn: &CRN, config: &SimConfig, seed: u64) 
             }
         }
 
-        // --- Mark visited sites ---
-        for &site in occupation.keys() {
-            let s = site as usize;
-            if !visited[s] {
-                visited[s] = true;
-                n_visited += 1;
+        // --- Mark visited sites (by tracked species only, if set) ---
+        for (&site, state) in &occupation {
+            let dominated = match config.track_species {
+                Some(sp) => state[sp] > 0,
+                None => true,
+            };
+            if dominated {
+                let s = site as usize;
+                if !visited[s] {
+                    visited[s] = true;
+                    n_visited += 1;
+                }
             }
         }
 
@@ -502,6 +528,7 @@ pub fn run_realization(graph: &Graph, crn: &CRN, config: &SimConfig, seed: u64) 
         volume: volumes,
         population: populations,
         survived,
+        snapshots,
     }
 }
 
