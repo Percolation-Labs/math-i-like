@@ -1,0 +1,445 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage{float}
+\usepackage{xcolor}
+
+\geometry{margin=2.5cm}
+
+\definecolor{deepblue}{RGB}{0,51,102}
+\definecolor{deepred}{RGB}{140,0,0}
+\hypersetup{colorlinks=true, linkcolor=deepblue, citecolor=deepred}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem*{remark}{Remark}
+
+\newcommand{\dd}{\mathrm{d}}
+\newcommand{\K}{\mathcal{K}}
+\newcommand{\E}{\mathbb{E}}
+
+\title{%
+\textbf{Analytic Combinatorics for Neural Networks}\\[0.4em]
+\large Kirchhoff Polynomials, Gradient Flow,\\
+and Phase Transitions in Learning
+}
+
+\author{Saoirse Amarteifio \\ \small\textit{Percolation Labs}}
+\date{March 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We identify a structural correspondence between the analytic
+combinatorics (AC) of Feynman integrals and the theory of deep
+neural networks. The Kirchhoff polynomial of a neural network's
+computational graph --- a generating function for spanning trees ---
+controls the gradient flow, determines the edge-of-chaos
+initialisation, and classifies phase transitions in learning.
+The same tools that compute critical exponents in reaction-diffusion
+field theory (Lagrange equations, Newton polygons, Hopf algebras)
+apply to: (i)~the vanishing/exploding gradient transition in deep
+networks; (ii)~the generalisation phase transition in overparameterised
+models; (iii)~the loss landscape geometry of attention mechanisms.
+We outline a research programme connecting these domains.
+\end{abstract}
+
+\tableofcontents
+
+
+%% ================================================================
+\section{The correspondence}
+
+A neural network with $L$ layers defines a \textbf{computational graph}
+$\Gamma$: a directed acyclic graph (DAG) where vertices are layers
+(or neurons) and edges carry weight matrices $W_e$.  The network
+function $f_\Gamma(x)$ is a composition of maps along paths in~$\Gamma$.
+
+The Jacobian of the network with respect to its input is
+\begin{equation}
+J = \frac{\partial f}{\partial x}
+= \sum_{\text{paths } \pi} \prod_{e \in \pi} W_e \cdot \sigma'_e,
+\end{equation}
+where $\sigma'_e$ is the derivative of the activation function at
+edge~$e$.  For gradient-based training, the key quantity is the
+\textbf{expected squared Jacobian}:
+\begin{equation}
+\E\bigl[|J|^2\bigr]
+= \sum_{\text{paths}} \prod_{e \in \text{path}} \E[w_e^2]
+= \sum_{\text{paths}} \prod_e \alpha_e,
+\label{eq:jacobian}
+\end{equation}
+where $\alpha_e = \E[w_e^2 \cdot (\sigma'_e)^2]$ is the effective
+edge weight.
+
+This is a \textbf{path generating function} on the computational
+graph~$\Gamma$.  For a layered network (chain graph), it reduces to
+$\prod_{l=1}^L \alpha_l$ (product of per-layer weights).  For
+networks with skip connections (residual networks, transformers),
+it is a sum over multiple paths of varying lengths.
+
+\begin{proposition}[Graph polynomial structure]
+For a DAG $\Gamma$ with $V$ vertices and $E$ edges:
+\begin{equation}
+\E\bigl[|J|^2\bigr] = \Phi_\Gamma(\alpha),
+\end{equation}
+where $\Phi_\Gamma$ is a polynomial in the edge weights $\alpha_e$,
+homogeneous of degree equal to the longest path length.  For
+layered networks, $\Phi$ reduces to a product.  For networks with
+skip connections, $\Phi$ is a sum of monomials corresponding to
+distinct input-output paths.
+\end{proposition}
+
+The Kirchhoff polynomial $\K_\Gamma$ of the computational graph
+and the path polynomial $\Phi_\Gamma$ are related: $\K$ counts
+spanning trees while $\Phi$ counts paths.  For DAGs, these are
+connected through the matrix-tree theorem applied to the
+\emph{path Laplacian}.
+
+
+%% ================================================================
+\section{The vanishing/exploding gradient transition}
+\label{sec:gradient}
+
+\subsection{The phase transition}
+
+A deep network with $L$ layers and per-layer weight variance
+$\alpha$ has $\E[|J|^2] = \alpha^L$.  The gradient flow transitions
+at $\alpha = 1$:
+\begin{itemize}
+\item $\alpha < 1$: $\E[|J|^2] \to 0$ exponentially (vanishing gradients).
+\item $\alpha > 1$: $\E[|J|^2] \to \infty$ exponentially (exploding gradients).
+\item $\alpha = 1$: $\E[|J|^2] = 1$ (edge of chaos, critical initialisation).
+\end{itemize}
+
+This is an \textbf{absorbing-state phase transition}: the gradient
+signal either dies (absorbing state) or explodes (active state).
+The critical point $\alpha = 1$ is the analogue of $R_0 = 1$ in
+epidemiology or $\sigma = \lambda$ in reaction-diffusion.
+
+\subsection{AC classification}
+
+The generating function for the gradient signal in a depth-$L$
+network is
+\begin{equation}
+G(z) = \sum_{L=0}^{\infty} \alpha^L z^L = \frac{1}{1 - \alpha z}.
+\label{eq:gradient_gf}
+\end{equation}
+
+This is a \textbf{simple pole} at $z = 1/\alpha$.  The AC
+classification:
+\begin{itemize}
+\item $\alpha < 1$: pole at $z = 1/\alpha > 1$ (outside unit disk,
+  coefficients decay exponentially).
+\item $\alpha > 1$: pole at $z = 1/\alpha < 1$ (inside unit disk,
+  coefficients grow exponentially).
+\item $\alpha = 1$: pole at $z = 1$ (on the unit circle, marginal).
+\end{itemize}
+
+At $\alpha = 1$, the singularity is a \emph{simple pole}, not a
+branch point.  This means the gradient transition is
+\textbf{first-order} (discontinuous), not second-order (continuous)
+--- the gradient signal goes from decaying to growing with no
+critical scaling in between.
+
+\subsection{Residual networks: branch points from skip connections}
+
+For residual networks (ResNets), the computational graph has skip
+connections: each layer's output is $x_{l+1} = x_l + f_l(x_l)$.
+The path polynomial becomes
+\begin{equation}
+\Phi_{\text{ResNet}}(\alpha, z) = \sum_{\text{paths}} \alpha^{|\text{path}|}
+z^L = \prod_{l=1}^L (1 + \alpha_l z).
+\end{equation}
+
+For uniform $\alpha_l = \alpha$: $\Phi = (1 + \alpha z)^L$.
+The generating function in $L$ is
+\begin{equation}
+G(z, u) = \sum_{L=0}^{\infty} (1 + \alpha z)^L u^L
+= \frac{1}{1 - u(1 + \alpha z)}.
+\end{equation}
+
+At the critical depth $u = 1/(1 + \alpha z)$: this is again a
+simple pole.  But if we consider the \emph{distribution} of
+gradient signal across paths (not just the mean), the generating
+function involves $\log(1 + \alpha z)$ --- which has a
+\textbf{logarithmic branch point} at $z = -1/\alpha$.
+
+The AC classification of the singularity determines the
+\textbf{concentration properties} of the gradient:
+\begin{itemize}
+\item Simple pole: gradient dominated by one path (chain networks).
+\item Logarithmic branch: gradient distributed across exponentially
+  many paths (ResNets) --- this is why ResNets train more stably.
+\item Square-root branch: gradient has power-law fluctuations
+  (possible for attention mechanisms with variable-length paths).
+\end{itemize}
+
+
+%% ================================================================
+\section{The generalisation phase transition}
+\label{sec:generalisation}
+
+\subsection{Overparameterisation as a Lagrange equation}
+
+In the lazy training regime (neural tangent kernel), a network
+with $N$ parameters and $P$ data points has an effective kernel
+$K(x, x') = \sum_{i=1}^N \nabla_\theta f(x) \cdot \nabla_\theta f(x')$.
+The eigenvalue distribution of this kernel undergoes a
+\textbf{phase transition} at $N/P = 1$:
+\begin{itemize}
+\item $N < P$ (underparameterised): the kernel has a gap,
+  training error is nonzero.
+\item $N > P$ (overparameterised): the kernel is full-rank,
+  training error is zero (interpolation).
+\item $N = P$: the transition, with divergent condition number.
+\end{itemize}
+
+The resolvent of the kernel, $G(z) = \text{tr}(K - zI)^{-1}/N$,
+satisfies a \textbf{self-consistent equation}:
+\begin{equation}
+G(z) = \frac{1}{z - \gamma \cdot \phi(G(z))},
+\label{eq:resolvent}
+\end{equation}
+where $\gamma = N/P$ is the overparameterisation ratio and $\phi$
+encodes the weight distribution.  This IS a Lagrange equation
+$T = z \cdot \psi(T)$.
+
+The singularity of $G(z)$ at the spectral edge determines:
+\begin{itemize}
+\item The Marchenko--Pastur distribution (square-root branch
+  at the spectral edge, Puiseux exponent $1/2$).
+\item The condition number scaling near the transition.
+\item The generalisation error in the proportional limit $N, P \to \infty$
+  with $\gamma = N/P$ fixed.
+\end{itemize}
+
+The AC framework classifies this singularity: the Newton polygon
+of the resolvent equation determines whether the spectral edge is
+a square root (generic), a cube root (at a tricritical point), or
+a higher-order singularity (at special parameter values).
+
+\subsection{Network architecture as graph topology}
+
+Different architectures give different graph topologies $\Gamma$,
+which give different Kirchhoff polynomials $\K_\Gamma$, which give
+different singularity types for the resolvent.  The AC prediction:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{lll}
+\toprule
+\textbf{Architecture} & \textbf{$\K$ structure} & \textbf{Singularity} \\
+\midrule
+Fully connected (chain) & $\K$ linear & simple pole \\
+ResNet (skip connections) & $\K$ factorises & product of poles \\
+Transformer (attention) & $\K$ non-factorisable & branch point \\
+Random graph network & $\K$ from random graph & varies with $\gamma$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+
+%% ================================================================
+\section{Attention as a non-equilibrium field theory}
+\label{sec:attention}
+
+The attention mechanism in transformers computes:
+\begin{equation}
+\text{Attn}(Q, K, V) = \text{softmax}\!\left(\frac{QK^T}{\sqrt{d_k}}\right) V.
+\end{equation}
+
+The softmax creates a \textbf{probability distribution over tokens}
+--- a stochastic process on the sequence.  The multi-head attention
+with $H$ heads and $L$ layers creates a \textbf{random walk on a
+graph} where:
+\begin{itemize}
+\item Vertices are token positions.
+\item Edge weights are attention scores (stochastic: rows sum to 1).
+\item Depth $L$ is the number of steps.
+\end{itemize}
+
+This is a \textbf{Markov chain on a random graph} --- exactly the
+setting where the spectral dimension $d_s$ and the AC framework
+apply.  The ``volume explored'' by the attention walk is the
+effective context length: how many tokens genuinely influence the
+output.
+
+The \textbf{critical attention} hypothesis: the most effective
+transformers operate near the phase transition where the attention
+walk is critical (branching ratio $\approx 1$).  Too focused
+(subcritical): the model attends to too few tokens.  Too diffuse
+(supercritical): the model wastes capacity on irrelevant tokens.
+
+At criticality: the attention-volume scales as
+$V(L) \sim L^{d_s/2}$ where $d_s$ is the spectral dimension of the
+attention graph.  The AC framework gives $d_s$ from the attention
+matrix spectrum, and the scaling exponents from the Puiseux exponent
+of the Lagrange equation for the attention walk.
+
+
+%% ================================================================
+\section{Concrete research programme}
+\label{sec:programme}
+
+\subsection{Immediate (computable now)}
+
+\begin{enumerate}[leftmargin=2em]
+\item \textbf{Kirchhoff polynomial of ResNet architectures.}
+Compute $\K$ for standard architectures (ResNet-50, DenseNet,
+U-Net) and classify the gradient-flow singularity.  Predict
+which architectures have stable gradient flow (factorisable $\K$)
+vs unstable (non-factorisable $\K$).
+
+\item \textbf{Spectral dimension of attention graphs.}
+Given a trained transformer's attention matrices, compute $d_s$
+of the attention graph.  Test the ``critical attention'' hypothesis:
+is $d_s \approx 2$ (the marginal value for 2D random walks) for
+well-trained models?
+
+\item \textbf{Marchenko--Pastur singularity via AC.}
+Classify the spectral-edge singularity of the neural tangent
+kernel for different architectures using the Newton polygon of
+the resolvent equation.  Predict generalisation transitions.
+\end{enumerate}
+
+\subsection{Medium-term (requires development)}
+
+\begin{enumerate}[leftmargin=2em, start=4]
+\item \textbf{Loss landscape as a generating function.}
+The partition function of a Bayesian neural network,
+$Z(\beta) = \int e^{-\beta \mathcal{L}(\theta)} d\theta$,
+is a generating function whose singularity in $\beta$ (inverse
+temperature) determines the learning phase transition.
+Apply AC to classify this singularity for specific architectures.
+
+\item \textbf{Pruning as a percolation transition.}
+Network pruning (removing weights below a threshold) is bond
+percolation on the computational graph.  The percolation threshold
+and cluster-size exponent are determined by the Kirchhoff polynomial
+of the pruned graph --- exactly the network percolation analysis
+from our earlier work, now applied to artificial (not biological)
+networks.
+
+\item \textbf{Hopfield networks and associative memory.}
+The storage capacity transition ($\alpha_c = P/N$) of Hopfield
+networks is a Lagrange equation whose singularity determines
+whether retrieval succeeds.  Apply AC to modern Hopfield networks
+(with polynomial or exponential interaction functions) to predict
+capacity scaling.
+\end{enumerate}
+
+\subsection{Long-term (speculative)}
+
+\begin{enumerate}[leftmargin=2em, start=7]
+\item \textbf{Renormalisation group for deep learning.}
+The depth of a network is analogous to the RG scale.  Each layer
+``integrates out'' fine-grained features, producing an effective
+theory at the next scale.  The RG $\beta$-function of this flow
+determines the fixed points (optimal architectures) and the
+universality classes (which architectures learn the same features).
+AC provides the tools to compute this $\beta$-function from the
+network graph.
+
+\item \textbf{Scaling laws from AC.}
+The empirical scaling laws of large language models
+($L \sim N^{-\alpha}$ where $L$ is loss and $N$ is parameter count)
+may be power laws from a branch-point singularity of a generating
+function. If the training dynamics are described by a Lagrange
+equation, the scaling exponent $\alpha$ is the Puiseux exponent
+--- computable from the Newton polygon.
+\end{enumerate}
+
+
+%% ================================================================
+\section{The dictionary}
+\label{sec:dictionary}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{p{5cm}p{5cm}}
+\toprule
+\textbf{Reaction-diffusion} & \textbf{Neural networks} \\
+\midrule
+Particle species & Network layers/neurons \\
+Reaction stoichiometry & Architecture (connectivity) \\
+Diffusion on lattice & Information flow on graph \\
+Doi--Peliti action & Loss function + architecture \\
+Kirchhoff polynomial $\K$ & Path polynomial of comp.\ graph \\
+Spectral dimension $d_s$ & Effective context length \\
+$d_c$ (upper critical dim.) & Critical width/depth \\
+Puiseux exponent & Scaling law exponent \\
+DP universality class & Gradient-flow universality \\
+Absorbing state & Vanishing gradient \\
+Branch point & Learning phase transition \\
+BPHZ renormalisation & Layer-wise normalisation \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+
+%% ================================================================
+\section{Conclusion}
+
+The AC framework developed for reaction-diffusion field theory
+--- Lagrange equations, Kirchhoff polynomials, Newton polygons,
+Hopf algebras --- applies directly to neural networks when the
+computational graph is treated as a physical graph.  The gradient
+flow is a path generating function, the generalisation transition
+is a Lagrange-equation singularity, and the attention mechanism
+is a random walk whose spectral dimension determines the effective
+context.
+
+The most immediately testable prediction: the singularity type of
+the gradient-flow generating function, determined by the Kirchhoff
+polynomial of the computational graph, classifies which
+architectures can be trained stably (factorisable $\K$, simple
+poles) and which exhibit critical phenomena (non-factorisable $\K$,
+branch points).
+
+
+%% ================================================================
+\begin{thebibliography}{99}
+
+\bibitem{flajolet2009}
+P.~Flajolet and R.~Sedgewick,
+\emph{Analytic Combinatorics}, Cambridge (2009).
+
+\bibitem{poole2016}
+B.~Poole, S.~Lahiri, M.~Raghu, J.~Sohl-Dickstein, and S.~Ganguli,
+\newblock Exponential expressivity in deep neural networks through
+transient chaos,
+\newblock \emph{NeurIPS} (2016).
+
+\bibitem{schoenholz2017}
+S.~S.~Schoenholz, J.~Gilmer, S.~Ganguli, and J.~Sohl-Dickstein,
+\newblock Deep information propagation,
+\newblock \emph{ICLR} (2017).
+
+\bibitem{jacot2018}
+A.~Jacot, F.~Gabriel, and C.~Hongler,
+\newblock Neural tangent kernel,
+\newblock \emph{NeurIPS} (2018).
+
+\bibitem{kaplan2020}
+J.~Kaplan et al.,
+\newblock Scaling laws for neural language models,
+\newblock arXiv:2001.08361 (2020).
+
+\bibitem{marchenko1967}
+V.~A.~Marchenko and L.~A.~Pastur,
+\newblock Distribution of eigenvalues for some sets of random matrices,
+\newblock \emph{Mat.\ Sb.}\ \textbf{72}, 507 (1967).
+
+\end{thebibliography}
+
+\end{document}
