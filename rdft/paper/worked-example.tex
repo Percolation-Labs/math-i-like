@@ -3341,35 +3341,69 @@ ratio, the weight cancels, and only the combinatorial structure (the
 singularity type of $\phi(G)$) survives. This is why the stoichiometry
 matrix suffices for exponents but not for amplitudes.
 
-\begin{remark}[The honest summary]
-For the Gribov one-loop $\beta$-function:
-\begin{center}
-\renewcommand{\arraystretch}{1.3}
-\begin{tabular}{lll}
-\toprule
-\textbf{Quantity} & \textbf{AC computes?} & \textbf{Value} \\
-\midrule
-Diagram count $c_2$ & Yes (Lagrange) & $\beta - \chi$ \\
-Symmetry factor & Yes (embedded in $c_2$) & $1/2$ \\
-Singularity type & Yes (Newton polygon) & Square-root \\
-$d_c$ & Yes (vertex dimension) & 4 \\
-Transfer exponent & Yes (from type) & $n^{-3/2}$ \\
-$\alpha_p$ & Yes (AC chain) & $(pd-2)/2$ \\
-\midrule
-Loop integral pole & No (requires $D$, $d$) & $1/(4\pi^2 D^2\varepsilon)$ \\
-$\beta$-function coeff $b_1$ & No (= $c_2 \times$ integral) & $1/(4\pi^2 D^2)$ \\
-$\lambda^*$ (fixed point) & No (= $\varepsilon/b_1$) & $4\pi^2 D^2\varepsilon$ \\
-Anomalous dimension $\eta$ & Open programme & $\varepsilon/12 + O(\varepsilon^2)$ \\
-\bottomrule
-\end{tabular}
-\end{center}
-The first six rows are what this paper computes. The last four are
-what the RG adds. The division is clean: AC gives the
-\emph{combinatorial skeleton}; the loop integral gives the
-\emph{metric} (the $D$- and $d$-dependent weight per loop).
-For universal quantities (exponents, universality class), the metric
-cancels. For non-universal quantities (amplitudes, fixed-point location),
-it doesn't.
+\begin{remark}[What is actually inaccessible?]
+At first glance, the $\beta$-function coefficient $b_1 = 1/(4\pi^2 D^2)$
+seems to require a loop integral that AC cannot compute. But look at what
+the ``integral'' actually is: the one-loop bubble in $d = 4 - \varepsilon$
+evaluates to
+\[
+I_1 = \frac{\Omega_d}{D^2} \cdot \Gamma(\varepsilon/2),
+\qquad\text{where}\quad
+\Omega_d = \frac{(4\pi)^{-d/2}}{\Gamma(d/2)}
+\]
+This is not a numerical integral --- it is a \emph{ratio of gamma
+functions} times a power of $D$. The gamma function is itself a
+combinatorial object: $\Gamma(n) = (n{-}1)!$ for integers, and its
+values at half-integers ($\Gamma(1/2) = \sqrt{\pi}$, etc.) are known
+closed forms. The pole $\Gamma(\varepsilon/2) \sim 2/\varepsilon$ is
+an algebraic fact about the gamma function, not the output of a hard
+integral.
+
+So the full $Z$-factor is:
+\[
+Z_\lambda = 1 + \underbrace{(\beta - \chi)}_{\text{Lagrange: }c_2}
+\times \underbrace{\frac{(4\pi)^{-d/2}}{\Gamma(d/2)\, D^2}}_{\Omega_d / D^2}
+\times \underbrace{\frac{2}{\varepsilon}}_{\Gamma(\varepsilon/2)}
+\]
+Every factor is either a Lagrange inversion coefficient (combinatorial),
+a gamma function (closed form), or a physical parameter ($D$). No
+numerical integration is performed.
+
+At higher loops, the parametric integrals involve the Symanzik
+polynomials $\Psi$ and $\Phi$, which are \emph{sums over spanning
+trees} of the Feynman graph --- again, combinatorial objects. The
+integrals over Schwinger parameters reduce (via the Cheng--Wu theorem)
+to gamma functions in favourable cases, or to known transcendentals
+($\zeta(3)$, $\zeta(5)$, multiple zeta values) in general. These are
+not ``hard'' integrals in the sense of requiring numerical evaluation;
+they are algebraic consequences of the graph structure.
+
+The anomalous dimension $\eta$ requires the momentum-dependent
+self-energy $\Sigma(k^2)$, which introduces a second variable.
+In the AC framework, this corresponds to a \emph{two-variable}
+Lagrange equation $G(G_0, k^2)$ whose singularity analysis is a
+2D Newton polygon problem. The mathematics exists (Puiseux
+expansion in several variables~\cite{flajolet2009}); it has not
+been applied to reaction-diffusion systems.
+\end{remark}
+
+\begin{remark}[The real division of labour]
+The correct statement is not that ``AC cannot compute $b_1$'' but rather
+that this paper \emph{chose} to extract only the coarsest feature
+(the singularity type) because it suffices for the scaling exponents.
+The finer features --- $\beta$-function coefficients, anomalous
+dimensions, corrections to scaling --- are all encoded in the same
+generating function and are accessible via:
+\begin{enumerate}
+\item The $d$-dependent weighted Lagrange equation (for the
+      $\varepsilon$-expansion).
+\item The full Puiseux expansion (for corrections to scaling, as
+      demonstrated for Catalan and SIR above).
+\item Multi-variable singularity analysis (for anomalous dimensions).
+\end{enumerate}
+Nothing in the RG is mathematically inaccessible to AC. The generating
+function contains \emph{all} the information. What varies is how much
+of that information we choose to extract.
 \end{remark}
 
 %% ================================================================
@@ -3460,45 +3494,33 @@ angles. The RG detects it via the divergence of loop integrals (poles
 in $\epsilon = d_c - d$); the AC route detects it via the algebraic
 structure of the Lagrange equation (branch points of $G(G_0)$).
 
-An important clarification: the AC route as developed in this paper
-extracts only the \emph{leading} exponents (from the singularity type).
-The standard RG additionally computes anomalous dimensions ($\eta$,
-$\gamma$), corrections to scaling, and $\beta$-function coefficients.
-
-However, there is no reason in principle why these quantities should
-be inaccessible to AC. They are all encoded in the generating function:
+Nothing in the RG is mathematically inaccessible to AC. The
+generating function contains all the information; what varies is how
+much we extract. In this paper we extract the coarsest feature (the
+singularity type, giving the leading exponents). But the finer
+features are there:
 \begin{itemize}
-\item \textbf{Anomalous dimensions} correspond to the \emph{amplitude}
-      $C$ in $G \sim G^* - C(G_0^* - G_0)^{1/2}$. We extract the
-      exponent $1/2$ but discard $C$. The amplitude is determined by
-      $\phi(G^*)$, $\phi''(G^*)$, and $G_0^*$ --- all algebraic
-      quantities computable from the DSE kernel.
-\item \textbf{Corrections to scaling} come from the subleading terms
-      in the Puiseux expansion: $c_n \sim n^{-3/2}(1 + c_1/n + c_2/n^2
-      + \cdots)$. These are computed by the \emph{full} transfer theorem
-      (Flajolet--Sedgewick Theorem~VI.3 includes arbitrarily many
-      correction terms), not just the leading order.
-\item \textbf{$\beta$-function coefficients} encode how the effective
-      coupling runs with scale. In the AC framework, the scale
-      dependence enters through the $d$-dependent weight $\Omega_d$
-      (Section~\ref{sec:combined}). The $\epsilon$-expansion is the
-      Taylor expansion of the branch point location $z^*(d)$ around
-      $d = d_c$.
+\item \textbf{Corrections to scaling} come from the full Puiseux
+      expansion (demonstrated for Catalan and SIR in
+      Appendix~\ref{app:corrections}).
+\item \textbf{$\beta$-function coefficients} come from the
+      $d$-dependent branch point $z^*(d)$, expanded around $d_c$.
+      The ``loop integral'' reduces to gamma functions and powers of
+      $D$ --- closed forms, not numerical integrals
+      (Appendix~\ref{app:corrections}).
+\item \textbf{Anomalous dimensions} require the momentum-dependent
+      generating function $G(G_0, k^2)$, a two-variable singularity
+      problem. The mathematics (multi-variable Puiseux expansion)
+      exists; the application to reaction-diffusion is open.
 \end{itemize}
-In short: the RG information is \emph{already in} the generating
-function. What we have developed here extracts only the coarsest
-feature (the singularity type). Extracting the finer features
-(amplitudes, corrections, running) from the AC side is an open
-programme --- but one where the mathematical tools (Puiseux expansion,
-$d$-dependent Lagrange equations) already exist.
 
-What the AC route does provide, which the RG does not make manifest,
+What the AC route provides that the RG does not make manifest
 is a direct link from stoichiometry to universality class: systems
 with the same $\phi(G)$ degree have the same exponents because they
 have the same singularity type. The classification in
 Table~\ref{tab:crn_survey} of the main paper~\cite{amarteifio2019}
 --- 14 CRNs sorted by singularity type --- is an AC result that would
-be opaque from the RG perspective.
+be opaque from the RG side.
 
 %% ================================================================
 \section{Notation Reference}
