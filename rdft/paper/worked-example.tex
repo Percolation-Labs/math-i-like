@@ -1663,6 +1663,49 @@ The conjecture is validated numerically for:
 See Table~\ref{tab:validation} for the full comparison.
 \end{remark}
 
+\begin{remark}[How 1D counting and graph spectral combine algebraically]
+\label{rem:combination}
+The derivation assembles two independent mathematical objects: the DSE
+generating function $G(G_0) = \sum c_n\, G_0^n$ (a 1D counting problem,
+living in \emph{perturbative space}) and the graph Laplacian spectrum
+(living in \emph{physical space}). How do these combine?
+
+The spectral dimension enters as a \textbf{weight per loop} that rescales
+the counting variable. Each loop in the perturbative expansion picks up a
+factor $\Omega_{d_s} = (4\pi)^{-d_s/2}/\Gamma(d_s/2)$ from the graph's
+eigenvalue density. The physical generating function is therefore:
+\begin{equation}
+G_{\mathrm{phys}}(z) = G(z/\Omega_{d_s}) = \sum_n c_n\,
+\bigl(z / \Omega_{d_s}\bigr)^n,
+\qquad z = G_0 \cdot \Omega_{d_s}
+\end{equation}
+The combinatorial branch point at $G_0^*$ becomes a physical branch
+point at $z^* = G_0^* \cdot \Omega_{d_s}$. The \emph{type} of
+singularity (square root) does not change --- it is determined by the
+polynomial degree of $\phi(G)$, which knows nothing about the graph.
+The \emph{location} $z^*$ depends on $d_s$ through $\Omega_{d_s}$.
+
+The factorisation $\langle a^p \rangle \sim \Psurv(t) \cdot V(t)^p$ is
+the physical consequence of this algebraic structure:
+\begin{itemize}
+\item $\Psurv \sim t^{-1}$ comes from the singularity \emph{type}
+      (the transfer theorem applied to the combinatorial GF). It lives
+      in perturbative space and does not see the graph.
+\item $V(t) \sim t^{d_s/2}$ comes from Weyl's law (the eigenvalue
+      density of the graph Laplacian). It lives in physical space and
+      does not see the diagram combinatorics.
+\item The product $\Psurv \cdot V^p$ combines the two spaces. The
+      factorisation holds because the DSE sums over diagram topologies
+      while the heat kernel sums over Laplacian eigenvalues, and these
+      two sums are independent: the topology of a Feynman diagram does
+      not depend on the eigenvalues of the spatial graph.
+\end{itemize}
+In short: \emph{$d_s$ rescales the counting variable but does not
+change the combinatorial structure.} The exponent $\alpha_p = (pd_s - 2)/2$
+depends on $d_s$ only through the volume $V(t)$, never through the
+singularity type.
+\end{remark}
+
 %% ================================================================
 \section{Worked Numerical Examples}
 \label{sec:examples}
