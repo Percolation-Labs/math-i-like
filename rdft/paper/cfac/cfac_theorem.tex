@@ -240,10 +240,12 @@ Lagrange-equation language these fluctuations are controlled by
 the local coefficients of the Puiseux expansion at $(G_*, z_*)$,
 which feed into~\eqref{eq:transfer}.  The two pieces of data
 $(S, C)$ are thus both read off from the polynomial $\phi$
-without simulation or WKB.  (In practice, as in
-\citep{CFACpaper}, $C$ is often calibrated from small-$V$
-simulation; the in-principle route via~\eqref{eq:transfer} is
-the one guaranteed by Theorem~\ref{thm:cfac}.)
+without simulation or WKB.  The companion paper~\citep{CFACpaper}
+carries this out explicitly for the Schl\"ogl-I model, giving
+$S$ and $C_\infty$ as closed-form algebraic functions of the
+rate constants (via the branch-point biquadratic and a
+Kramers-type formula built on the same polynomial data), verified
+against Gillespie simulation.
 \end{proof}
 
 \begin{corollary}[Coupled field extension via resultant]
@@ -369,9 +371,13 @@ applies unconditionally for (C1), (C2), (C4).  For the nucleation
 consequence (C3), the reduction holds only when the physical
 saddle is a real branch point of the resultant; a 3-site lattice
 test in~\citep{CFACpaper} finds this fails at moderate coupling,
-where the saddle is complex.  Extending (C3) to that regime is
-an open problem and requires machinery beyond the polynomial
-scope of Theorem~\ref{thm:cfac}.
+where the saddle is complex.  The companion paper extends (C3)
+to that regime concretely by complex analytic continuation of the
+resultant with a Coleman--Callan sum over complex-conjugate
+saddle pairs, verified against Gillespie simulation to $\sim 3\%$
+at $\alpha = 0.3$; the residual open problem is the general
+enumerability of reachable conjugate pairs from the real axis (a
+Galois/monodromy question on the resultant's Riemann surface).
 
 % ══════════════════════════════════════════════════════════════════
 \section{Proof}
@@ -400,8 +406,11 @@ then follow directly: (C1) is the transfer theorem; (C2) is the
 Newton-polygon analysis of~\eqref{eq:lagrange} at the
 discriminant zero; (C3) is proved by change of variables $y \to z
 = w^-(y)/w^+(y)$ in the quasi-potential integral; (C4) is
-standard QFT power counting applied to the 1PI graph list
-produced by the algebraic formalism~\citep{Amarteifio2019Thesis}.
+Weinberg's convergence theorem~\citep{Weinberg1960,Zimmermann1969}
+applied to the 1PI graph list produced by the algebraic
+formalism~\citep{Amarteifio2019Thesis}, with the subdiagram
+condition automatic when the vertex dictionary is closed under
+1PI restriction.
 \end{proof}
 
 The proof of (C3) is worth spelling out explicitly because the
@@ -555,15 +564,24 @@ Eliminating auxiliary variables by resultant gives a univariate
 polynomial to which Corollary~\ref{cor:coupled} applies.  The
 perturbative consequences (C1), (C2), (C4) of
 Theorem~\ref{thm:cfac} extend unconditionally to the coupled
-setting; the non-perturbative nucleation consequence (C3) extends
-only while the nucleation saddle remains a real branch point of
-the resultant.  A detailed development---including the
-demonstrations of one-loop perturbative exactness, a branch-gap
-instanton formula verified to six digits on seven parameter sets
-in the well-mixed limit, and a three-loop two-colour Kirchhoff
-factorisation, together with a 3-site lattice test that
-identifies the failure mode of (C3) at moderate spatial
-coupling---appears in~\citep{CFACpaper}.
+setting; the non-perturbative nucleation consequence (C3) in its
+literal real-algebraic form extends only while the nucleation
+saddle remains a real branch point of the resultant, and is
+refined by complex analytic continuation (Coleman--Callan sum
+over conjugate saddle pairs) at moderate coupling.  For the
+Doi--Peliti/MSR Keller--Segel bacterial self-energy, the
+\emph{matrix-tree structural theorem}
+$\mathcal{K}(G; p, f) = p^{L-1}\,Q_G(p, f)$ holds at every loop
+order $L \geq 1$ and every vertex-consistent two-colouring: the
+vertex signature $(\deg_P, \deg_F) = (2, 1)$ forces the
+field-coloured subgraph to be a perfect matching on the $V = 2L$
+internal vertices, giving the pencil $(\widetilde L_F, \widetilde L_P)$
+an $(L-1)$-fold rational eigenvalue at $\mu = 0$.  A detailed
+development---including one-loop perturbative exactness, the
+branch-gap instanton to six digits, the complex-saddle refinement
+at moderate spatial coupling, the DP--MSR KS bi-colour structural
+theorem, and a closed-form Kramers prefactor on Schl\"ogl-I---
+appears in~\citep{CFACpaper}.
 
 % ══════════════════════════════════════════════════════════════════
 \section{Discussion}
@@ -614,6 +632,8 @@ belongs to which class) a question of polynomial equivalence.
 \bibitem[Peliti(1985)]{Peliti1985} Peliti, L., 1985. Path integral approach to birth-death processes on a lattice. \textit{J.\ Physique} 46, 1469.
 \bibitem[T\"auber(2014)]{Tauber} T\"auber, U.~C., 2014. \textit{Critical Dynamics}. Cambridge Univ.\ Press.
 \bibitem[Cox et al.(2007)]{CLO} Cox, D.~A., Little, J., and O'Shea, D., 2007. \textit{Ideals, Varieties, and Algorithms}, 3rd ed., Springer.
+\bibitem[Weinberg(1960)]{Weinberg1960} Weinberg, S., 1960. High-energy behavior in quantum field theory. \textit{Phys.\ Rev.} 118, 838.
+\bibitem[Zimmermann(1969)]{Zimmermann1969} Zimmermann, W., 1969. Convergence of Bogoliubov's method of renormalization in momentum space. \textit{Commun.\ Math.\ Phys.} 15, 208.
 
 \end{thebibliography}
 

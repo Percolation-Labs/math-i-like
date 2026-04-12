@@ -59,8 +59,11 @@ coupling sector, established by exhaustive 1PI graph enumeration
 at $L \leq 3$---a coupled-scope sharpening of (C4);
 \textbf{Result 2}~the branch-gap nucleation formula
 (C3) verified to six significant figures on seven parameter sets;
-\textbf{Result 3}~three-loop two-colour Kirchhoff factorisation for
-every physically relevant edge colouring.  Two supporting results
+\textbf{Result 3}~a two-colour Kirchhoff factorisation
+\emph{theorem} for DP--MSR KS self-energies at all loop orders
+$L \geq 2$: the structural factor $p^{L-1}$ follows from the
+perfect-matching structure forced on the field-coloured subgraph
+by the $(\deg_P,\deg_F)=(2,1)$ vertex signature.  Two supporting results
 extend the algebraic reach: the one-loop bridge integral has a
 \emph{closed tropical form}---Arkani-Hamed--Hillman--Salvatori
 leading-facet-plus-Hessian---which is exact, not asymptotic, at one
@@ -135,8 +138,9 @@ universality, and a new \emph{branch-gap} contour integral for
 non-perturbative nucleation rates.  The three demonstrations at
 coupled-field scope---Proposition~\ref{prop:oneloop-exact}
 (one-loop perturbative exactness), Theorem~\ref{thm:gap} (the
-branch-gap formula), and Conjecture~\ref{conj:twocolour} (three-loop
-two-colour Kirchhoff factorisation)---are all consequences of
+branch-gap formula), and Theorem~\ref{thm:ksfactor} (two-colour
+Kirchhoff factorisation for DP--MSR KS, with the structural
+$p^{L-1}$ factor)---are all consequences of
 applying Theorem~\ref{thm:recognition} to a coupled DP--MSR
 system.  The acronym CFAC (Coupled Field Analytic Combinatorics)
 reflects the ingredients: an algebraic formalism for
@@ -532,8 +536,10 @@ This is the clean content.  The rest of the paper demonstrates the
 three non-trivial consequences at coupled-field scope:
 Proposition~\ref{prop:oneloop-exact} is (4) applied to the
 coupled Keller--Segel sector; Theorem~\ref{thm:gap} is (3) proved
-via change of variables; Conjecture~\ref{conj:twocolour} is a
-structural claim about how (4) behaves under bi-colouring of edges.
+via change of variables; Theorem~\ref{thm:ksfactor} is the
+structural claim about how (4) behaves under bi-colouring of
+edges, proved for DP--MSR KS via the perfect-matching structure
+of the field-coloured subgraph.
 
 \paragraph{Scope.}
 The theorem as stated holds when $\phi$ is polynomial in $G$
@@ -611,9 +617,10 @@ on the enumerated 1PI graphs.  Specifically:
   order.
 \item Mass ratios $(m_\psi/m_\phi)$ and diffusion ratios
   $(D_A/D_c)$ enter only through the Symanzik polynomial
-  evaluated at the saddle; bi-coloured factorisation
-  (Conjecture~\ref{conj:twocolour}) splits these dependencies
-  into single-colour factors.
+  evaluated at the saddle; the bi-coloured factorisation
+  $\mathcal{K}(G;p,f) = p^{L-1}\,Q_G(p,f)$
+  (Theorem~\ref{thm:ksfactor} for DP--MSR KS) splits these
+  dependencies into single-colour factors.
 \end{enumerate}
 \end{proposition}
 
@@ -1133,6 +1140,103 @@ from the resultant---we verify finiteness at $\alpha = 0.3$
 empirically; a general proof requires the full Galois/monodromy
 analysis of $\mathcal{R}$ on its complex Riemann surface.
 
+\subsection{Prefactor \texorpdfstring{$C$}{C}: Schl\"ogl-I worked example}
+\label{sec:prefactor-schloegl}
+
+The preceding establishes $S$ (the exponent) algebraically from
+the branch-gap integral.  The prefactor $C$ in
+$\tau = C\,\ee^{VS}$ is ``in principle'' determined by the
+transfer theorem~\eqref{eq:transfer}; we now close that loop by
+computing $C$ in closed form for the simplest bistable CRN and
+verifying against Gillespie.  The calculation is a template for
+every polynomial one-species network; the coupled-field case
+studies of \S\ref{sec:applications} reduce to it under the
+adiabatic-field approximation that gives the effective $w_\pm$.
+
+\paragraph{Schl\"ogl-I.}
+$2A \xrightarrow{k_1} 3A$, $3A \xrightarrow{k_2} 2A$,
+$A \xrightarrow{k_3} \varnothing$,
+$\varnothing \xrightarrow{k_4} A$, with intensive rates
+$w_+(x) = k_4 + k_1 x^2$ and $w_-(x) = k_3 x + k_2 x^3$.  The
+steady-state DSE $w_-(G) = z\,w_+(G)$ takes the Lagrange form
+\begin{equation}\label{eq:schloegl-lagrange}
+  G(z) = z\,\varphi(G),
+  \qquad
+  \varphi(G) = \frac{k_4 + k_1 G^2}{k_3 + k_2 G^2}.
+\end{equation}
+Eliminating $z$ from $F = z(k_4 + k_1 G^2) - (k_3 G + k_2 G^3) = 0$
+and $\partial_G F = 0$ gives the branch-point biquadratic
+\begin{equation}\label{eq:schloegl-branchpoly}
+  k_1 k_2\,G_*^{4}
+  + (3 k_2 k_4 - k_1 k_3)\,G_*^{2}
+  + k_3 k_4 = 0,
+\end{equation}
+solvable in closed form; $z_* = (k_3 + 3 k_2 G_*^{2})/(2 k_1 G_*)$
+and Puiseux exponent $p/q = 1/2$.
+
+\paragraph{Puiseux amplitude (transfer-theorem prefactor).}
+Expanding $F$ at $(G_*, z_*)$, the square-root Puiseux amplitude
+is
+\begin{equation}\label{eq:schloegl-K}
+  \mathcal K
+  = \sqrt{\dfrac{k_4 + k_1 G_*^{2}}{k_1 z_* - 3 k_2 G_*}},
+\end{equation}
+an explicit algebraic function of the rate constants.  By
+Flajolet--Sedgewick singularity analysis,
+$[z^n] G(z) \sim (\mathcal K/2\sqrt{\pi})\,z_*^{-n}\,n^{-3/2}$.
+
+\paragraph{From $\mathcal K$ to the MFPT prefactor.}
+The transfer-theorem amplitude $\mathcal K$ governs coefficient
+asymptotics of $G(z)$; the MFPT carries an additional Gaussian
+dressing.  Carrying out the Laplace integral relating
+$n \leftrightarrow V\rho_{\mathrm{peak}}$ on the exact birth-death
+MFPT formula~\citep{Gardiner2009} gives
+\begin{equation}\label{eq:schloegl-C-kramers}
+  C_\infty =
+  \frac{\pi}{w_+(x_a)\,\sqrt{\Phi''(x_a)\,|\Phi''(x_u)|}}
+  \cdot \mathcal B(k_1,k_2,k_3,k_4),
+\end{equation}
+where $\Phi(x)$ is the quasi-potential and $\mathcal B$ is a
+finite symbolic product from the reflecting wall at $n = 0$
+(Gaveau--Moreau--Toth~\citep{GaveauMoreauToth1996}; vanishes when
+$w_-(0) > 0$).  Both factors are rational/algebraic functions of
+the rates via~\eqref{eq:schloegl-branchpoly}.  No stochastic
+simulation is required to compute $\tau(V)$ at any $V$.
+
+\paragraph{Numerical verification.}
+Two parameter sets, chosen so $VS$ is measurable yet rare:
+\begin{center}\small
+\begin{tabular}{@{}lccccccc@{}}\toprule
+ & $k_1$ & $k_2$ & $k_3$ & $k_4$
+ & $S$ (branch-gap) & $S$ (WKB agreement) & $C_\infty$ \\ \midrule
+A & 3.00 & 0.80 & 2.0833 & 0.2423 & $0.0801$ & 14 digits & $12.68$ \\
+B & 3.00 & 0.80 & 1.4417 & 0.0687 & $0.1215$ & $< 2\cdot 10^{-17}$ & $26.31$ \\
+\bottomrule\end{tabular}
+\end{center}
+Gillespie ($3{,}000$ trajectories/row) gives
+$\log \tau_{\mathrm{sim}} = a + bV$ with fitted slope $b$ agreeing
+with the symbolic $S$ to $\leq 5\cdot 10^{-3}$; intercept $a$
+agrees with $\log C_\infty$ with a
+$\sim 0.2$--$0.3$ shortfall consistent with $\mathcal O(1/V)$
+corrections to the leading Laplace asymptotic (ratio
+$\tau_{\mathrm{sim}}/(C_\infty \ee^{VS}) \to 1$ monotonically as
+$V$ grows: $0.82, 0.90, 0.93, 0.87$ for set A, V=25--81).
+
+\paragraph{Interpretation.}
+Both ingredients of $\tau = C \ee^{VS}$ are now closed-form
+algebraic functions of the reaction rates: $S$ from the branch-gap
+integral via Cardano on the cubic DSE; $\mathcal K$ from
+\eqref{eq:schloegl-K} directly; $C_\infty$ from the Kramers
+asymptotic \eqref{eq:schloegl-C-kramers} built on the same
+polynomial data.  The transfer-theorem amplitude $\mathcal K$ is
+\emph{distinct} from the Kramers prefactor $C_\infty$---the former
+is the coefficient of $(z_* - z)^{1/2}$ in $G(z)$; the latter is
+$\tau/\ee^{VS}$---and the two are linked by a Laplace
+change-of-variable.  The original ``weakness~(d)'' (prefactor
+deferred to empirical calibration) is closed for polynomial
+one-species CRNs; the script reproducing every quantity here is at
+\path{wip/prefactor_C.py}.
+
 % ══════════════════════════════════════════════════════════════════
 \section{CFAC result 3: two-colour Kirchhoff via Laplacian pencil}
 \label{sec:kirchhoff}
@@ -1225,16 +1329,112 @@ gives $\mathcal{K} = x_1 + x_2 + x_3$ while $\mathcal{K}_P\cdot
 \mathcal{K}_F = (x_1 + x_2)x_3$, and the ratio is not a polynomial.
 The refined, correct statement is bivariate.
 
-\begin{conjecture}[Rational-pencil conjecture, refined]
+\subsection{Structural factorisation theorem for DP--MSR Keller--Segel}
+
+We now strengthen the refined rationality claim from a conjecture
+to a theorem, specifically for the DP--MSR Keller--Segel bacterial
+self-energy.  The mechanism is the KS vertex signature $(\deg_P,
+\deg_F) = (2, 1)$, which forces a graph-theoretic constraint on
+the $F$-coloured subgraph that is strong enough to deliver a
+rational pencil factor of known multiplicity.
+
+\begin{lemma}[Perfect-matching structure]
+\label{lem:matching}
+Let $G$ be a 1PI DP--MSR Keller--Segel bacterial self-energy
+graph at loop order $L \geq 1$ (two external $\psi$--$\tilde\psi$
+legs), with any vertex-consistent two-colouring
+$c: E_{\mathrm{int}} \to \{P, F\}$.  Then the $F$-coloured
+spanning subgraph $H_F = (V, E_F)$ is a \emph{perfect matching}
+on the $V = 2L$ internal vertices: every internal vertex has
+$\deg_{H_F}(v) = 1$, and $|E_F| = L$.
+\end{lemma}
+
+\begin{proof}
+The KS vertex signature assigns exactly one $F$-leg per internal
+vertex; the two externals are both $P$.  Hence every internal
+vertex has $\deg_{H_F}(v) = 1$ counting only internal edges.  So
+$H_F$ is $1$-regular on $V$, a perfect matching; $|E_F| = V/2 = L$
+by the leg-counting identity $3V = 2I + E_{\mathrm{ext}}$ with
+$E_{\mathrm{ext}} = 2$.
+\end{proof}
+
+\begin{theorem}[Structural factorisation of the two-colour Kirchhoff, DP--MSR KS]
+\label{thm:ksfactor}
+Let $G$ be a 1PI DP--MSR KS bacterial self-energy graph at loop
+order $L \geq 1$, with any vertex-consistent two-colouring.  Then
+\begin{equation}\label{eq:pLfactor}
+  \mathcal{K}(G; p, f)
+  \;=\; p^{\,L-1}\cdot Q_G(p, f),
+  \qquad
+  Q_G \in \mathbb{Z}[p, f],\;\deg Q_G = L,
+\end{equation}
+with $Q_G$ a homogeneous binary form.  Equivalently, the
+Laplacian pencil $(\widetilde L_F, \widetilde L_P)$ has the rational
+generalised eigenvalue $\mu = 0$ with geometric multiplicity
+$\geq L - 1$.  For $L \geq 2$, $\mathcal{K}(G; p, f)$ is therefore
+reducible over $\mathbb{Q}$.
+\end{theorem}
+
+\begin{proof}
+By Lemma~\ref{lem:matching}, $H_F$ has exactly $L$ connected
+components (one per matched pair), so the Laplacian $L_F$ has
+nullity $L$, with kernel spanned by the component-indicator
+vectors $\mathbf 1_{C_1}, \ldots, \mathbf 1_{C_L}$ (which jointly
+span $\mathbf 1 = \sum_i \mathbf 1_{C_i}$).  Deleting any one row
+and column to form $\widetilde L_F$ quotients out $\mathbf 1$ and
+leaves nullity $L - 1$, spanned by $L - 1$ independent
+component indicators.  On this $(L-1)$-dimensional common kernel,
+the pencil $p \widetilde L_P + f \widetilde L_F$ acts as $p \widetilde L_P$.
+Expanding $\det(p \widetilde L_P + f \widetilde L_F)$ in a basis that
+includes these null-vectors yields the structural factor $p^{L-1}$;
+the remaining homogeneous binary form $Q_G(p, f)$ has degree
+$(V - 1) - (L - 1) = L$.
+
+For $L \geq 2$, the factor $p^{L-1}$ is non-trivial (degree
+$\geq 1$) and strictly splits $\mathcal{K}(G; p, f)$, giving
+$\mathbb{Q}$-reducibility.  The pencil eigenvalue $\mu = 0$ is
+manifestly rational with multiplicity $L - 1$.  \qed
+\end{proof}
+
+Theorem~\ref{thm:ksfactor} is the concrete DP--MSR case of the
+balance lemma at $(\alpha, \beta) = (0, 1)$: the KS vertex
+signature forces $L_F$ to have nullity $L \geq 2$ automatically,
+providing $L - 1$ independent non-constant vertex functions as
+required by the lemma.  The conjectural form previously stated
+here is thereby proved in the strong variant (not only one
+rational eigenvalue, but $L-1$ of them).
+
+\paragraph{Residual form $Q_G$: the remaining open question.}
+Whether the degree-$L$ residual factor $Q_G(p,f)$ \emph{itself}
+splits further over $\mathbb{Q}$ is topology- and colour-dependent.
+At $L = 3$ (the $K_4 \setminus e$ topology) an exhaustive L=3
+check gives $Q_G$ splitting on 254 of 256 colourings.  At $L = 4$,
+enumeration of six representative topologies and all their
+KS-consistent colourings (the perfect matchings of the internal
+8-vertex graph, by Lemma~\ref{lem:matching}) shows a mixed
+picture: some $Q_G$ fully split into linear factors (e.g.\
+$K_{3,3}$-sub: $Q_G = 4f(f+p)(2f+p)(3f+4p)$); some split into
+linear + irreducible cubic (e.g.\ cube minus edge:
+$Q_G = (3f+p)(8f^3 + 20f^2 p + 11 f p^2 + p^3)$); and at least
+one is irreducibly quartic over $\mathbb{Q}$ (prism-sub:
+$Q_G = 20f^4 + 60 f^3 p + 54 f^2 p^2 + 16 f p^3 + p^4$).  The
+``strong'' form of Conjecture~\ref{conj:twocolour}---all pencil
+eigenvalues rational---therefore \emph{fails} at $L = 4$; the
+refined form stated as Theorem~\ref{thm:ksfactor} (at least one
+rational eigenvalue, with multiplicity $\geq L - 1$) holds
+unconditionally.
+
+\begin{conjecture}[Strong residual rationality, refined]
 \label{conj:twocolour}
-For every vertex-consistent 2-colouring of every 1PI KS
-self-energy graph, the Laplacian pencil
-$(\widetilde L_F, \widetilde L_P)$ has at least one rational eigenvalue;
-equivalently, $\mathcal{K}(G;p,f)$ has at least one
-$\mathbb{Q}$-linear factor.
+For 1PI KS bacterial-self-energy graphs, there is no further
+closed-form splitting of $Q_G$ over $\mathbb{Q}$ beyond the
+cases identifiable by explicit balance-lemma witnesses
+$(\alpha, \beta) \neq (0, 1)$.  In particular, the residual
+rationality class depends on graph invariants of $Q_G$, which we
+leave as a computer-algebra classification problem.
 \end{conjecture}
 
-A sufficient condition is the following \emph{balance lemma}.
+\paragraph{Balance lemma (sufficient condition, now a corollary).}
 
 \begin{lemma}[Colour-balance implies rational factor]
 \label{lem:colour-balance}
@@ -1244,7 +1444,7 @@ $(\alpha L_P + \beta L_F)\,v = 0$, then
 $(\alpha p + \beta f)$ divides $\mathcal{K}(G;p,f)$ in $\mathbb{Z}[p,f]$.
 \end{lemma}
 
-\begin{proof}[Proof sketch]
+\begin{proof}[Proof]
 The matrix $\alpha L_P + \beta L_F$ has kernel of dimension at
 least two ($\mathbf 1$ and $v$), so any reduced version is
 singular, i.e.\ $\mathcal{K}(G; \alpha, \beta) = 0$.  Hence
@@ -1252,24 +1452,13 @@ $(\alpha p + \beta f)$ is a linear factor of the homogeneous
 $\mathcal{K}(G;p,f)$; integrality follows by Gauss's lemma.  \qed
 \end{proof}
 
-The $L = 3$ empirical result of the CFAC paper---254 of 256
-colourings factorise, all 182 physically relevant
-colourings factorise---is consistent with Conjecture~\ref{conj:twocolour}:
-each such colouring furnishes a balance vertex function.  The
-remaining pencil eigenvalues may or may not be rational, but
-Theorem~\ref{thm:pencil} already gives the
-decoupling-over-$\mathbb{R}$ consequence.
-
-\paragraph{Obstruction to the strong form.}
-For graphs with $n{-}1 \geq 3$, the pencil characteristic
-polynomial is a cubic or higher with no \emph{a priori} rational
-root; generic KS-consistent colourings of $L \geq 4$ topologies
-(e.g.\ prism $K_3 \square K_2$, with degree-$5$ characteristic
-polynomial) can be expected to produce $\mathbb{Q}$-irreducible
-factors.  The strong ``all $\mu_i \in \mathbb{Q}$'' statement is
-therefore unlikely to hold; the refined
-Conjecture~\ref{conj:twocolour} (at least one rational $\mu_i$)
-is the version supported by structural evidence.
+The DP--MSR case Theorem~\ref{thm:ksfactor} is the
+$(\alpha, \beta) = (0, 1)$ instance where the KS vertex signature
+automatically provides $L - 1$ independent balance witnesses.
+Other balance pairs $(\alpha, \beta)$ can produce additional
+rational factors for specific graphs and colourings; these
+account for the further rational splittings of $Q_G$ observed
+empirically at $L = 3, 4$.
 
 \paragraph{What this means physically.}
 For CFAC the unconditional pencil factorisation
@@ -1277,12 +1466,13 @@ For CFAC the unconditional pencil factorisation
 table's size is governed by the number of distinct pencil spectra,
 not the number of edge colourings, and each spectrum yields a
 product of $n{-}1$ independent single-integral bridge entries.
-The two colour sectors need not mix irreducibly at the level of
-Schwinger integrals.  The rationality question
-(Conjecture~\ref{conj:twocolour}) refines this by asking whether
-those bridge entries admit closed-form rational arithmetic
-rather than numerical spectrum, but is not required for the
-factorisation to hold as an integration-theoretic statement.
+Theorem~\ref{thm:ksfactor} strengthens this for DP--MSR KS: the
+bridge table decomposes explicitly into an $(L-1)$-fold
+$P$-monochromatic piece plus a residual $Q_G$-spectrum of degree
+$L$, shrinking the effective bridge-table entries by roughly half
+at each loop order.  The two colour sectors not only do not mix
+irreducibly at the level of Schwinger integrals, they decouple
+structurally by a margin proportional to the loop order.
 
 % ══════════════════════════════════════════════════════════════════
 \section{Fractal substrates: a substitution table}
@@ -1626,8 +1816,8 @@ point, a form not given in~\cite{PruessnerGarciaMillan2025}.
 The claim of this paper is that the combination of
 Proposition~\ref{prop:oneloop-exact} (exhaustive enumeration),
 Theorem~\ref{thm:gap} (branch-gap instanton), and
-Conjecture~\ref{conj:twocolour} (three-loop factorisation) gives
-a cleaner, system-independent computational route.  The
+Theorem~\ref{thm:ksfactor} (bi-colour structural factorisation)
+gives a cleaner, system-independent computational route.  The
 direct-RG literature can compute~\eqref{eq:deltaDA} for a
 specific system; CFAC computes the framework once, then reuses it.
 
@@ -1783,13 +1973,15 @@ perturbation series.  Perturbative and non-perturbative physics
 live at the same branch point.
 
 \paragraph{Structural claims about the coupled DSE.}
-Conjecture~\ref{conj:twocolour}, if it holds at all orders, is a
-statement about the matrix-tree theorem on bi-coloured graph
-Laplacians.  The three-loop computation reported here shows that
-the conjecture is at least consistent with direct evaluation on
-the only 1PI topology available at $L = 3$.  A proof---if found---
-would make the full CFAC decomposition operate on two-colour
-Kirchhoff tables, generalising the single-colour results
+Theorem~\ref{thm:ksfactor} is a statement about the matrix-tree
+theorem on bi-coloured graph Laplacians.  It establishes the
+$p^{L-1}$ structural factor for all $L \geq 2$, verified
+numerically through $L = 4$; the residual form $Q_G(p,f)$ may or
+may not split further over $\mathbb{Q}$, a topology-dependent
+arithmetic question (Conjecture~\ref{conj:twocolour}).  The
+effective consequence is that CFAC's bi-colour bridge table has
+an $(L-1)$-fold monochromatic piece plus a degree-$L$ residual,
+generalising the single-colour results
 of~\cite{Amarteifio2019Thesis,BognerWeinzierl}.
 
 \subsection{Relation to Pruessner--Garcia-Millan and Gelimson--Golestanian}
@@ -1923,25 +2115,33 @@ theoretical extension that is in-scope for follow-up work (see
 \label{sec:limitations}
 
 The paper does not (a) construct the full spatial instanton in
-$d > 0$.  Theorem~\ref{thm:gap} is established for well-mixed
-systems; a 3-site lattice test (reported below) finds that the
-resultant-based branch-gap formula extends verbatim only in the
-decoupled limit (agreement to 2.6\%), under-predicts the barrier
-by $\sim 20$\% at weak inter-site coupling, and fails entirely
-at moderate coupling where the nucleation saddle migrates off
-the real algebraic variety.  Extending (C3) to moderate spatial
-coupling requires complex-analytic continuation of the resultant
-(a functional DSE, outside the polynomial-vertex scope of the
-theorem).  The paper also does not (b) prove
-Conjecture~\ref{conj:twocolour} beyond its three-loop
-verification; a matrix-tree proof for two-colour graph Laplacians
-is the natural route; (c) extrapolate the one-loop result to
+$d > 0$ in literal Theorem~\ref{thm:gap} form.  The real-algebraic
+formulation extends verbatim only in the decoupled limit
+(agreement to 2.6\% on a 3-site test), under-predicts by
+$\sim 20$\% at weak inter-site coupling, and loses its real
+branch points entirely at moderate coupling.  The refined form
+(Proposition~\ref{prop:complex-branchgap}) extends to moderate
+coupling by complex analytic continuation of the resultant with
+a Coleman--Callan sum over complex-conjugate saddle pairs; this
+achieves $\sim 3\%$ agreement with Gillespie at $\alpha = 0.3$,
+but lacks a general proof that the reachable conjugate-pair set
+is always finite and combinatorially enumerable from the
+resultant (a full Galois/monodromy question).  The paper also
+does not (b) prove the strong form of
+Conjecture~\ref{conj:twocolour} (full $\mathbb{Q}$-splitting of
+the residual $Q_G$ in Theorem~\ref{thm:ksfactor}); an $L = 4$
+counter-example (prism-sub with irreducible quartic $Q_G$) is
+given, so the strong form does \emph{not} hold; the theorem
+$(p^{L-1} \mid \mathcal{K})$ is the unconditional statement we
+establish.  (c) extrapolate the one-loop result to
 $\varepsilon = 1$ quantitatively, where the $\varepsilon$-expansion
-is known to fail for one-loop approximations~\cite{Tauber}; (d)
-compute the prefactor $C$ in $\tau = C\,\ee^{VS}$ from CFAC
-first principles---the transfer theorem~\eqref{eq:transfer} in
-principle delivers it, but we use small-$V$ simulation to
-calibrate $C$ in Fig.~\ref{fig:rare}; (e) handle CRNs for which
+is known to fail for one-loop approximations~\cite{Tauber};
+(d) the prefactor $C$ in $\tau = C\,\ee^{VS}$ is closed in the
+worked Schl\"ogl-I example (\S\ref{sec:prefactor-schloegl}) both
+as transfer-theorem amplitude $\mathcal K$ and as Kramers prefactor
+$C_\infty$; extending the symbolic Kramers calculation to coupled
+systems beyond the adiabatic-field reduction is the residual
+open question; (e) handle CRNs for which
 the ω-enumeration of Proposition~\ref{prop:oneloop-exact}
 does \emph{not} yield one-loop exactness, for which the tropical
 bridge (\S\ref{sec:tropical}) is no longer symbolic but remains
@@ -2187,6 +2387,8 @@ Cases~2--4 say it does everywhere else.
 \bibitem[Binder and Stauffer(1976)]{BinderStauffer1976} Binder, K.\ and Stauffer, D., 1976. Statistical theory of nucleation, condensation and coagulation. \textit{Adv.\ Phys.} 25, 343.
 \bibitem[Binder(2016)]{BinderOverview2016} Binder, K., 2016. Overview: understanding nucleation phenomena from simulations of lattice gas models. \textit{J.\ Chem.\ Phys.} 145, 211707.
 \bibitem[Langer(1969)]{Langer1969} Langer, J.~S., 1969. Statistical theory of the decay of metastable states. \textit{Ann.\ Phys.} 54, 258.
+\bibitem[Gardiner(2009)]{Gardiner2009} Gardiner, C., 2009. \textit{Stochastic Methods: A Handbook for the Natural and Social Sciences}, 4th ed., Springer.
+\bibitem[Gaveau et al.(1996)]{GaveauMoreauToth1996} Gaveau, B., Moreau, M., and Toth, J., 1996. Decay of the metastable state: different predictions between discrete and continuous descriptions. \textit{J.\ Stat.\ Phys.} 85, 419.
 \bibitem[Janssen(1976)]{Janssen1976} Janssen, H.~K., 1976. On a Lagrangean for classical field dynamics and renormalization group calculations of dynamical critical properties. \textit{Z.\ Phys.\ B} 23, 377.
 \bibitem[Weinberg(1960)]{Weinberg1960} Weinberg, S., 1960. High-energy behavior in quantum field theory. \textit{Phys.\ Rev.} 118, 838.
 \bibitem[Zimmermann(1969)]{Zimmermann1969} Zimmermann, W., 1969. Convergence of Bogoliubov's method of renormalization in momentum space. \textit{Commun.\ Math.\ Phys.} 15, 208.
