@@ -2136,6 +2136,171 @@ collaboration with an experimental group, and the third is a
 theoretical extension that is in-scope for follow-up work (see
 ``what remains'' below).
 
+\subsection{Contributions, distilled}
+\label{sec:contributions}
+
+It is worth stating plainly what this paper adds and what it does
+not.  The paper does \emph{not} compute a new critical exponent,
+solve a long-standing open problem in active matter, or
+out-compute the direct-RG programme on its own terms.  What it
+does is restructure how coupled particle-field calculations are
+\emph{organised}, in a way that makes several objects algebraic
+that were previously obtained by case-by-case computation.
+
+Five concrete contributions, in order of structural depth:
+\begin{enumerate}[leftmargin=1.8em,itemsep=0.15em]
+\item \textbf{The recognition theorem} (companion note): the
+  Doi--Peliti/MSR dressed-propagator generating function of any
+  CRN-in-medium is a Lagrange equation $G = z \phi(G)$ in the
+  sense of Flajolet--Sedgewick.  The proof is a three-line
+  rewriting of the Dyson--Schwinger equation; its \emph{content}
+  is that a body of mathematics not previously drawn on in
+  stochastic field theory---the transfer theorem, Puiseux
+  classification of universality, Newton-polygon singularity
+  analysis---transfers wholesale.  Everything else in this paper
+  is a consequence of this recognition being applied to
+  coupled-field examples.
+\item \textbf{The branch-gap contour integral} for the
+  nucleation barrier (Theorem~\ref{thm:gap}) puts perturbative
+  (C1) and non-perturbative (C3) physics on the same
+  singularity of the same generating function.  Direct-RG
+  handles the two with distinct technology (Feynman diagrams for
+  perturbation theory, complex-field saddle points for
+  instantons); CFAC unifies them.  The moderate-coupling
+  extension via complex-conjugate saddle sum
+  (Prop.~\ref{prop:complex-branchgap}) pushes this through to
+  the regime where the real algebraic formulation fails.
+\item \textbf{The matrix-tree pencil theorem} for the two-colour
+  Kirchhoff polynomial (Theorem~\ref{thm:pencil}), together with
+  the DP--MSR KS structural factorisation
+  (Theorem~\ref{thm:ksfactor}).  $\mathcal{K}(G; p, f) =
+  p^{L-1}\,Q_G(p, f)$ at every loop order, forced by the
+  perfect-matching structure of the field-coloured subgraph.
+  This is the one place the paper states a theorem about
+  coupled-field diagrams that was previously only conjectural and
+  numerically verified.  It is the technical centrepiece.
+\item \textbf{The substitution table for fractal substrates}
+  (Prop.~\ref{prop:substitution-table}).  Different physical
+  exponents inherit different dimensions from a non-Euclidean
+  substrate: universality class is substrate-independent,
+  kinetic exponents use $d_s$, CNT droplet uses $d_f$, walk
+  statistics use $d_w$.  The row-by-row decomposition is
+  apparently new in this clean form; Row~4
+  $\bigl(\Phi_c \sim \sigma^{d_f}/\Delta f^{d_f - 1}\bigr)$ is
+  the apparently-novel prediction, modulo an important
+  ramification caveat.
+\item \textbf{The one-loop tropical bridge}
+  (Prop.~\ref{prop:tropical-exact}) gives the one-loop integral
+  in closed algebraic form (AHHS leading-facet+Hessian), exact
+  because the Symanzik polynomial is quadratic at one loop.
+  Combined with the one-loop-exactness criterion
+  (Prop.~\ref{prop:one-loop-criterion}) this makes the entire
+  CFAC pipeline closed-form symbolic end-to-end for the CRNs of
+  physical interest (pair annihilation, pure DP, BARW,
+  chemotaxis, KS).
+\end{enumerate}
+
+\subsection{What we find most interesting}
+\label{sec:interesting}
+
+An honest ranking.  The \textbf{branch-gap contour integral} is
+the single result we expect physicists to care about most: a
+non-perturbative rate from the same polynomial that controls the
+perturbation series, computed by contour integration around a
+branch point rather than by complex-field saddle-point.  The
+complex-conjugate extension to moderate coupling makes it robust
+beyond weak coupling.
+
+The \textbf{DP--MSR bi-colour structural theorem} is the result
+we find most mathematically satisfying: a graph-theoretic
+theorem that the KS vertex signature $(2, 1)$ forces a perfect
+matching on the field-coloured subgraph, giving a pencil
+eigenvalue of multiplicity $L - 1$.  The mechanism is elementary
+once seen but wasn't seen before; its consequence---that
+bi-colour bridge integrals decompose with an $(L-1)$-fold
+monochromatic factor---says the two colour sectors decouple
+structurally at every loop order.
+
+The \textbf{substitution table} is the result we think is most
+likely to propagate into other calculations.  Once stated as a
+row-by-row decomposition---with each row of the CFAC pipeline
+picking up exactly one substrate dimension---it becomes a
+template anyone working on RD systems on complex substrates can
+use.  Row 4 (CNT $\sim d_f$) is the prediction we'd most like to
+see tested cleanly.
+
+The \textbf{one-loop tropical bridge} is the result we think is
+most under-appreciated.  ``The one-loop bridge has a closed
+algebraic form'' sounds technical; what it \emph{means} is that
+for one-loop-exact CRNs (the standard case) the whole CFAC
+pipeline---from reaction network to beta function---is closed in
+polynomial algebra, with no numerical quadrature, table lookup,
+or Monte Carlo anywhere.  This sharpens what ``CFAC factors
+counting out of coupled particle-field renormalisation'' means.
+
+\subsection{Future work}
+\label{sec:future}
+
+Four concrete directions, in decreasing order of confidence that
+they are tractable and worthwhile.
+
+\paragraph{A second coupled system, fully worked through.}
+Everything in this paper has been demonstrated on KS; a second
+coupled example---BARW with a field-driven branching rate, or a
+predator--prey DP--MSR system, or a field-coupled Schl\"ogl---
+would confirm that the machine runs generically.  We expect no
+obstruction; this is the most obvious next step.
+
+\paragraph{CNT droplet scaling on an infinitely-ramified fractal.}
+The substitution-table prediction
+$\Phi_c \sim \sigma^{d_f}/\Delta f^{d_f - 1}$ is honest for
+substrates where $|\partial B(R)| \sim R^{d_f - 1}$, which holds
+on Sierpinski carpets but fails on gaskets.  A clean
+verification requires a carpet substrate (say $d_f = \log 8/\log
+3 \approx 1.893$, predicted CNT slope $-0.893$) at weak
+inter-site coupling.  We expect the prediction to hold; a clean
+numerical test would turn Row~4 from ``derivation'' into
+``derivation plus verification''.
+
+\paragraph{Complete Galois/monodromy analysis of the coupled resultant.}
+The moderate-coupling branch-gap extension via complex-conjugate
+saddles
+(Prop.~\ref{prop:complex-branchgap}) empirically finds three
+pairs at $\alpha = 0.3$ on the 3-site ring; a general proof that
+the reachable conjugate-pair set is always finite and
+combinatorially determined from the resultant's algebraic data
+would upgrade the proposition to a theorem.  This is a question
+in computational algebraic geometry---the complex Riemann
+surface of a two-variable polynomial---and is a tractable PhD
+project.
+
+\paragraph{Matrix-tree beyond one-loop and beyond two colours.}
+Theorem~\ref{thm:ksfactor} covers DP--MSR KS (bacterial
+self-energy).  Chemical-sector self-energies follow by symmetry
+with the $F$/$P$ roles swapped.  Mixed-sector $n$-point functions
+(one $\psi$ external, one $\phi$ external) are not covered---the
+perfect-matching argument relies on both externals being the
+same colour.  The natural extension is a matrix-tree statement
+for graphs with mixed colour externals, likely involving a
+second Symanzik polynomial $F(G; p, f)$ in place of $\mathcal K$.
+More speculatively: three-colour generalisations for theories
+with two fields plus a reservoir (a DP--MSR--MSR system, e.g.\
+bacteria + chemoattractant + oxygen) would give three-variable
+pencils whose factorisation structure is unknown.  The
+matrix-tree technology extends but the specific ``perfect
+matching forces factorisation'' mechanism does not generalise
+mechanically; new structural observations are needed.
+
+Beyond these four: a functional-analytic extension of the
+recognition theorem itself (to momentum-dependent vertex
+couplings, giving a Lagrange equation in function space rather
+than formal power series) would cover the chemotaxis coupling at
+full momentum without the zero-momentum projection; higher-loop
+tropical bridges (beyond one loop, where the Symanzik is no
+longer quadratic) need Borinsky's multi-facet technology and
+remain algorithmic rather than closed-form.  These are real but
+distinctly harder.
+
 \subsection{Limitations}
 \label{sec:limitations}
 
