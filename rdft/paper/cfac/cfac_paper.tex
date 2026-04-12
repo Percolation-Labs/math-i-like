@@ -1284,9 +1284,27 @@ over $\mathbb{R}$ as
 \end{equation}
 with $\mu_1, \ldots, \mu_{n-1}$ the generalised eigenvalues of the
 Laplacian pencil $(\widetilde L_F, \widetilde L_P)$
-(solutions of $\det(\widetilde L_F - \mu \widetilde L_P) = 0$).  Both
-reduced Laplacians are symmetric and positive semidefinite, so
-every $\mu_i \geq 0$.
+(solutions of $\det(\widetilde L_F - \mu \widetilde L_P) = 0$).\footnote{The
+term ``pencil'' comes from classical projective geometry, where a
+\emph{pencil of conics} is the one-parameter family
+$\lambda C_1 + \mu C_2 = 0$ of conics passing through the four
+common intersection points of two fixed conics $C_1, C_2$---a
+bundle of curves ``fanning out'' from a shared source (Latin
+\textit{peniculus}, ``little brush'').  A \emph{matrix pencil} is
+the same construction in linear algebra: the one-parameter family
+$A - \lambda B$ formed from two fixed matrices, with the
+\emph{generalised eigenvalue problem}
+$\det(A - \lambda B) = 0$ asking where the family degenerates.
+The standard eigenvalue problem is the special case $B = I$.
+Matrix pencils and their generalised eigenvalue problem are
+treated systematically in numerical linear
+algebra~\citep{GolubVanLoan2013}; the QZ algorithm is the standard
+diagonalisation method.  For the two-colour Kirchhoff polynomial,
+the pencil of graph Laplacians $p \widetilde L_P + f \widetilde L_F$ is
+parameterised by the two colour weights, and its generalised
+eigenvalues are the roots that factor $\mathcal{K}(G; p, f)$
+over~$\mathbb{R}$.}  Both reduced Laplacians are symmetric and
+positive semidefinite, so every $\mu_i \geq 0$.
 \end{theorem}
 
 \begin{proof}
@@ -2395,6 +2413,7 @@ Cases~2--4 say it does everywhere else.
 \bibitem[Binder(2016)]{BinderOverview2016} Binder, K., 2016. Overview: understanding nucleation phenomena from simulations of lattice gas models. \textit{J.\ Chem.\ Phys.} 145, 211707.
 \bibitem[Langer(1969)]{Langer1969} Langer, J.~S., 1969. Statistical theory of the decay of metastable states. \textit{Ann.\ Phys.} 54, 258.
 \bibitem[Gardiner(2009)]{Gardiner2009} Gardiner, C., 2009. \textit{Stochastic Methods: A Handbook for the Natural and Social Sciences}, 4th ed., Springer.
+\bibitem[Golub and Van Loan(2013)]{GolubVanLoan2013} Golub, G.~H.\ and Van Loan, C.~F., 2013. \textit{Matrix Computations}, 4th ed., Johns Hopkins Univ.\ Press.
 \bibitem[Gaveau et al.(1996)]{GaveauMoreauToth1996} Gaveau, B., Moreau, M., and Toth, J., 1996. Decay of the metastable state: different predictions between discrete and continuous descriptions. \textit{J.\ Stat.\ Phys.} 85, 419.
 \bibitem[Janssen(1976)]{Janssen1976} Janssen, H.~K., 1976. On a Lagrangean for classical field dynamics and renormalization group calculations of dynamical critical properties. \textit{Z.\ Phys.\ B} 23, 377.
 \bibitem[Weinberg(1960)]{Weinberg1960} Weinberg, S., 1960. High-energy behavior in quantum field theory. \textit{Phys.\ Rev.} 118, 838.
