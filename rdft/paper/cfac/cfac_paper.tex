@@ -2244,12 +2244,58 @@ counting out of coupled particle-field renormalisation'' means.
 Four concrete directions, in decreasing order of confidence that
 they are tractable and worthwhile.
 
-\paragraph{A second coupled system, fully worked through.}
+\paragraph{A second coupled system: the ant/KPZ pipeline.}
 Everything in this paper has been demonstrated on KS; a second
-coupled example---BARW with a field-driven branching rate, or a
-predator--prey DP--MSR system, or a field-coupled Schl\"ogl---
-would confirm that the machine runs generically.  We expect no
-obstruction; this is the most obvious next step.
+coupled example in a \emph{different universality class} is the
+natural next step.  Our primary candidate is a chemotactic ant
+colony---foragers laying a volatile pheromone trail (MSR field)
+while a discrete population (DP) senses its gradient---because
+in the continuum limit the trail field is described by the
+Kardar--Parisi--Zhang equation~\citep{KPZ1986} and the system
+inherits a non-trivial Puiseux exponent $p/q = 1/3$ rather than
+the mean-field $1/2$ of KS.  Specifically, we expect CFAC to
+reproduce the critical recruitment density
+$\lambda_c \sim \rho^{1/3}$ (observed in pheromone-trail
+experiments on \textit{L.\ niger} and \textit{M.\ sanguinea}; see
+Deneubourg \& Goss, \textit{J.\ Theor.\ Biol.}\ 1989) from the
+vertex dictionary alone, exercising three parts of the framework
+that KS does not: (i)~the compact-DP / triple-root Puiseux class
+in (C2); (ii)~a KPZ-type $(\nabla\phi)^2$ vertex, which has
+$\tau_v = 0$ and therefore sits at the critical edge of
+Proposition~\ref{prop:one-loop-criterion}'s one-loop-exactness
+condition; (iii)~Row~4 of the substitution table in a system
+where the nucleation event is collective (colony-level
+switching) rather than local (ice-crystal initiation), testing
+whether $\Phi_c \sim \sigma^{d_f}/\Delta f^{d_f - 1}$ carries the
+right interpretation for a sociobiological transition.  A full
+writeup ties the CFAC paper into the larger AC+ programme and
+gives a second physical system on which the pipeline is
+demonstrated end-to-end.
+
+\paragraph{A second coupled system from the literature: Toner--Tu.}
+For readers who prefer a target whose one-loop RG is already
+published, the Toner--Tu theory of polar
+flocking~\citep{TonerTu1995,TonerTu1998,Toner2012} is the
+cleanest choice.  It is a DP--MSR coupled action in exactly the
+sense used here: self-propelled particles with number
+fluctuations (DP) coupled to a velocity and density field
+(MSR), with an explicit one-loop calculation culminating in the
+anomalous dynamical exponent $z = 2$ and the spectacular
+Mermin--Wagner-evading long-range order in $d = 2$.  A CFAC
+re-derivation would exercise the vertex dictionary in a
+different way: convective $\psi \nabla \psi$ vertices give
+$\tau_v > 0$, so the one-loop-exactness criterion
+(Proposition~\ref{prop:one-loop-criterion}) does \emph{not}
+apply---Toner--Tu flocking is a genuine case where higher-loop
+UV divergences persist and the tropical bridge loses its closed
+form.  It is therefore the right stress test for the scope of
+the framework.  The two-colour Kirchhoff pencil
+(Theorem~\ref{thm:pencil}) still applies; whether the
+DP--MSR-KS-style structural factor extends to flocking is an
+open question whose answer would immediately generalise the
+perfect-matching argument.  Active nematic
+systems~\citep{RamaswamySimhaToner2003,ChenToner2013} generalise
+this further and have similar published one-loop anchors.
 
 \paragraph{CNT droplet scaling on an infinitely-ramified fractal.}
 The substitution-table prediction
@@ -2580,6 +2626,12 @@ Cases~2--4 say it does everywhere else.
 \bibitem[Gardiner(2009)]{Gardiner2009} Gardiner, C., 2009. \textit{Stochastic Methods: A Handbook for the Natural and Social Sciences}, 4th ed., Springer.
 \bibitem[Golub and Van Loan(2013)]{GolubVanLoan2013} Golub, G.~H.\ and Van Loan, C.~F., 2013. \textit{Matrix Computations}, 4th ed., Johns Hopkins Univ.\ Press.
 \bibitem[Gaveau et al.(1996)]{GaveauMoreauToth1996} Gaveau, B., Moreau, M., and Toth, J., 1996. Decay of the metastable state: different predictions between discrete and continuous descriptions. \textit{J.\ Stat.\ Phys.} 85, 419.
+\bibitem[Kardar et al.(1986)]{KPZ1986} Kardar, M., Parisi, G., and Zhang, Y.-C., 1986. Dynamic scaling of growing interfaces. \textit{Phys.\ Rev.\ Lett.} 56, 889.
+\bibitem[Toner and Tu(1995)]{TonerTu1995} Toner, J.\ and Tu, Y., 1995. Long-range order in a two-dimensional dynamical XY model: how birds fly together. \textit{Phys.\ Rev.\ Lett.} 75, 4326.
+\bibitem[Toner and Tu(1998)]{TonerTu1998} Toner, J.\ and Tu, Y., 1998. Flocks, herds, and schools: a quantitative theory of flocking. \textit{Phys.\ Rev.\ E} 58, 4828.
+\bibitem[Toner(2012)]{Toner2012} Toner, J., 2012. Reanalysis of the hydrodynamic theory of fluid, polar-ordered flocks. \textit{Phys.\ Rev.\ E} 86, 031918.
+\bibitem[Ramaswamy et al.(2003)]{RamaswamySimhaToner2003} Ramaswamy, S., Simha, R.~A., and Toner, J., 2003. Active nematics on a substrate: giant number fluctuations and long-time tails. \textit{Europhys.\ Lett.} 62, 196.
+\bibitem[Chen and Toner(2013)]{ChenToner2013} Chen, L.\ and Toner, J., 2013. Universality for moving stripes: a hydrodynamic theory of polar active smectics. \textit{Phys.\ Rev.\ Lett.} 111, 088701.
 \bibitem[Janssen(1976)]{Janssen1976} Janssen, H.~K., 1976. On a Lagrangean for classical field dynamics and renormalization group calculations of dynamical critical properties. \textit{Z.\ Phys.\ B} 23, 377.
 \bibitem[Weinberg(1960)]{Weinberg1960} Weinberg, S., 1960. High-energy behavior in quantum field theory. \textit{Phys.\ Rev.} 118, 838.
 \bibitem[Zimmermann(1969)]{Zimmermann1969} Zimmermann, W., 1969. Convergence of Bogoliubov's method of renormalization in momentum space. \textit{Commun.\ Math.\ Phys.} 15, 208.
