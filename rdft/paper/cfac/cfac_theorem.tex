@@ -35,17 +35,25 @@
 \maketitle
 
 \begin{abstract}
-For any chemical reaction network with polynomial vertex
-structure, the Doi--Peliti dressed-propagator generating
-function satisfies a Lagrange equation in the sense of
+A chemical reaction network (CRN) of physical interest typically
+lives in a continuous fluctuating medium: bacteria in a
+chemoattractant, protein monomers in a cytoplasmic density field,
+ice nucleation sites in supersaturated vapour.  Treating the
+discrete reacting species with Doi--Peliti (DP) and the
+continuous medium with Martin--Siggia--Rose
+(MSR)~\citep{PruessnerGarciaMillan2025,Bothe2023} produces a
+coupled DP--MSR action whose vertex content is polynomial.  We
+show that for any such coupled theory the dressed-propagator
+generating function satisfies a Lagrange equation in the sense of
 Flajolet--Sedgewick analytic combinatorics.  The recognition is
 an elementary rewriting; the consequences are the transfer
 theorem for all-orders coefficient asymptotics, classification of
-mean-field universality by Puiseux exponent, and a branch-gap
-contour integral for non-perturbative nucleation rates.  We call
-the resulting framework Coupled Field Analytic Combinatorics
-(CFAC).  This note states the theorem, gives the proof, and lists
-what can be read off from any reaction network.
+mean-field universality by Puiseux exponent, a branch-gap contour
+integral for non-perturbative nucleation rates, and closed
+algebraic form at one loop via tropical geometry.  We call the
+resulting framework Coupled Field Analytic Combinatorics (CFAC).
+This note states the theorem, gives the proof, and lists what can
+be read off from any CRN-in-medium once written in DP--MSR form.
 \end{abstract}
 
 % ══════════════════════════════════════════════════════════════════
@@ -53,19 +61,47 @@ what can be read off from any reaction network.
 \label{sec:defs}
 % ══════════════════════════════════════════════════════════════════
 
-\begin{definition}[Chemical reaction network]
-A chemical reaction network (CRN) is a finite collection of
-species $\{A_1, \ldots, A_s\}$ and reactions
+\paragraph{CRN in a continuous medium.}
+A reaction network of physical interest rarely sits in isolation;
+it is embedded in a continuous medium whose fluctuations couple
+back to the reaction kinetics.  Bacteria secrete and consume a
+chemical field, amyloid monomers diffuse in a thermally
+fluctuating cytoplasm, nucleation sites see a supersaturated
+carrier.  Pruessner and
+Garcia-Millan~\citep{PruessnerGarciaMillan2025} and Bothe
+\textit{et al.}~\citep{Bothe2023} have recently emphasised that
+coarse-graining the discrete reacting species into a pure
+continuous-field description produces \emph{spurious} entropy
+production: the particle sector must be retained alongside the
+field sector.  CFAC takes this as given and treats both sectors
+on equal footing: discrete reacting species via
+Doi--Peliti~\citep{Doi1976,Peliti1985,Tauber}, the continuous
+medium via Martin--Siggia--Rose~\citep{MSR1973,Janssen1976,DeDominicis1976},
+with interactions between them as coupling vertices.  The rest
+of this section sets up the object that results: a Liouvillian
+with a polynomial vertex dictionary, equally at home on the
+particle legs and the field legs.
+
+\begin{definition}[Chemical reaction network in a continuous medium]
+A CRN-in-medium is a finite collection of discrete reacting
+species $\{A_1, \ldots, A_s\}$ together with reactions
 $\bigl\{\sum_i k_{r i}\,A_i \to \sum_i l_{r i}\,A_i\bigr\}_{r}$
-with nonnegative integer stoichiometry
-$k_{r i}, l_{r i} \in \mathbb{Z}_{\geq 0}$ and rates
-$k_r > 0$.
+with nonnegative integer stoichiometry and rates $k_r > 0$, and
+optionally a finite collection of continuous medium fields
+$\{\phi_1, \ldots, \phi_m\}$ with stochastic dynamics
+$\partial_t \phi_j = \mathcal F_j(\{\phi\}, \{A_i\}) + \eta_j$,
+$\eta_j$ Gaussian noise.  Coupling vertices
+$A_i \longleftrightarrow \phi_j$ may appear in both the reaction
+rates and $\mathcal F_j$.  When no medium is present ($m = 0$)
+this reduces to a standard CRN.
 \end{definition}
 
-\begin{definition}[Liouvillian of a CRN]
-Associated to each reaction $r$ are Heisenberg--Weyl creation and
-annihilation variables $\psit_i, \psi_i$ for each species $A_i$,
-and an operator
+\begin{definition}[Liouvillian of a CRN-in-medium]
+For each discrete species $A_i$ introduce Heisenberg--Weyl
+creation and annihilation variables $\psit_i, \psi_i$; for each
+continuous medium field $\phi_j$ introduce the MSR
+response/field pair $\phit_j, \phi_j$.  To each reaction $r$
+associate the operator
 \begin{equation}\label{eq:Q-ordinary}
   \widehat{Q}_r
   = k_r\,
@@ -81,8 +117,17 @@ in the ``ordinary'' (non-Doi-shifted) form, or equivalently
     - \prod_i (1 + \psit_i)^{k_{r i}}\Bigr]
   \prod_i \psi_i^{\,k_{r i}}
 \end{equation}
-in the Doi-shifted form.  The Liouvillian of the CRN is
-$Q = \sum_r Q_r$ (or $\widehat{Q} = \sum_r \widehat{Q}_r$).
+in the Doi-shifted form.  The MSR action for each medium field is
+$S^{\mathrm{MSR}}_j
+= \int \dd t\,\dd \mathbf x\;[\,\phit_j(\partial_t \phi_j
+- \mathcal F_j) - \tfrac12 D_j\,\phit_j^{\,2}\,]$.
+The total Liouvillian is
+$Q = \sum_r Q_r + \sum_j \mathcal L_j^{\mathrm{MSR}}$
+together with coupling vertices $A_i \leftrightarrow \phi_j$
+read off from the reaction rates that depend on $\phi$ and from
+the $\phi_j$-equation terms that depend on $\{A_i\}$.  For
+$m = 0$ (no medium fields) this reduces to the pure Doi--Peliti
+Liouvillian.
 \end{definition}
 
 The two forms~\eqref{eq:Q-ordinary}--\eqref{eq:Q-doi} are related
@@ -338,7 +383,7 @@ gives an exact integration procedure.
 The restriction of Corollary~\ref{cor:tropical} to one loop is
 less severe than it appears, because (C4) itself is typically
 \emph{one-loop-exact} for CRNs of interest.  A CRN is one-loop
-exact when the ω-enumeration gives $\omega(L) < 0$ for every
+exact when the $\omega$-enumeration gives $\omega(L) < 0$ for every
 topology with $L \geq 2$---meaning no higher-loop UV divergences
 arise.  This is the situation for pair annihilation, pure DP,
 BARW, chemotaxis \citep{GelimsonGolestanian2015}, the KS
@@ -352,7 +397,7 @@ dictionary $\to$ Lagrange equation $\to$ Puiseux exponent +
 branch-gap + closed-form bridge integral, with no numerical
 quadrature anywhere.  The restricted class where this fails
 (e.g.\ active-birth $\psi^4$ sectors with persistent two-loop
-divergences) is exactly the class where ε-expansion resummation
+divergences) is exactly the class where $\varepsilon$-expansion resummation
 is also required in the standard direct-RG route; CFAC neither
 helps nor hurts there, and Borinsky's algorithm remains the
 available exact evaluator.
@@ -630,6 +675,12 @@ belongs to which class) a question of polynomial equivalence.
 \bibitem[Freidlin and Wentzell(2012)]{FreidlinWentzell} Freidlin, M.\ and Wentzell, A., 2012. \textit{Random Perturbations of Dynamical Systems}. Springer.
 \bibitem[Assaf and Meerson(2017)]{Meerson} Assaf, M.\ and Meerson, B., 2017. WKB theory of large deviations in stochastic populations. \textit{J.\ Phys.\ A} 50, 263001.
 \bibitem[Peliti(1985)]{Peliti1985} Peliti, L., 1985. Path integral approach to birth-death processes on a lattice. \textit{J.\ Physique} 46, 1469.
+\bibitem[Martin et al.(1973)]{MSR1973} Martin, P.~C., Siggia, E.~D., and Rose, H.~A., 1973. Statistical dynamics of classical systems. \textit{Phys.\ Rev.\ A} 8, 423.
+\bibitem[Janssen(1976)]{Janssen1976} Janssen, H.~K., 1976. On a Lagrangean for classical field dynamics and renormalization group calculations of dynamical critical properties. \textit{Z.\ Phys.\ B} 23, 377.
+\bibitem[De Dominicis(1976)]{DeDominicis1976} De Dominicis, C., 1976. Techniques de renormalisation de la th\'eorie des champs et dynamique des ph\'enom\`enes critiques. \textit{J.\ Physique Colloques} 37, C1-247.
+\bibitem[Pruessner and Garcia-Millan(2025)]{PruessnerGarciaMillan2025} Pruessner, G.\ and Garcia-Millan, R., 2025. Field theories of active particle systems and their entropy production. \textit{Rep.\ Prog.\ Phys.} arXiv:2211.11906.
+\bibitem[Gelimson and Golestanian(2015)]{GelimsonGolestanian2015} Gelimson, A.\ and Golestanian, R., 2015. Collective dynamics of dividing chemotactic cells. \textit{Phys.\ Rev.\ Lett.} 114, 028101.
+\bibitem[Bothe et al.(2023)]{Bothe2023} Bothe, M., Cocconi, L., Zhen, Z., and Pruessner, G., 2023. Particle entity in the Doi-Peliti and response field formalisms. \textit{J.\ Phys.\ A} 56, 175002.
 \bibitem[T\"auber(2014)]{Tauber} T\"auber, U.~C., 2014. \textit{Critical Dynamics}. Cambridge Univ.\ Press.
 \bibitem[Cox et al.(2007)]{CLO} Cox, D.~A., Little, J., and O'Shea, D., 2007. \textit{Ideals, Varieties, and Algorithms}, 3rd ed., Springer.
 \bibitem[Weinberg(1960)]{Weinberg1960} Weinberg, S., 1960. High-energy behavior in quantum field theory. \textit{Phys.\ Rev.} 118, 838.
