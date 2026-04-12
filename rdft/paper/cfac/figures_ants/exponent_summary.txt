@@ -1,0 +1,13 @@
+# CFAC exponent measurement
+# σ = 0.2, n = 0.15, grid 96x96, 2000 steps
+
+lambda  xi_theory  xi_lattice  phi_mean
+0.020  3.162  3.510  10.516
+0.030  2.582  3.023  5.759
+0.050  2.000  2.417  2.366
+0.080  1.581  1.793  1.021
+0.120  1.291  1.398  0.532
+0.200  1.000  1.037  0.250
+0.300  0.816  0.850  0.136
+
+Fitted ν (correlation length) = 0.5427   (CFAC MF = 0.5)
