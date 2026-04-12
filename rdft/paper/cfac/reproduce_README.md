@@ -1,14 +1,16 @@
 # Reproducing results from the CFAC paper
 
-## `keller_segel_reproduce.py`
+## `reproduce.py`
 
 Runs all numerical experiments from the paper and generates the figures:
 
 ```bash
-python paper/keller_segel_reproduce.py
+python paper/cfac/reproduce.py
+# or equivalently:
+cd paper/cfac && python reproduce.py
 ```
 
-Produces in `paper/figures/`:
+Produces in `paper/cfac/figures/`:
 
 | File | What it shows | Paper ref |
 |------|--------------|-----------|

@@ -2,29 +2,32 @@
 
 Promoted papers (tracked in git).
 
-## `cfac_paper.tex` — Factoring the Counting Problem
-Coupled DP-MSR theory for particle-field systems; proves one-loop
-exactness for Keller-Segel, the branch-gap instanton theorem, and
-three-loop Kirchhoff factorisation. Applications to amyloid fibril
-nucleation and ice crystal formation.
-PDF: `cfac_paper.pdf` (9 pages).
-
 ## `main.tex` — Reaction-Diffusion Field Theory via Analytic Combinatorics
 The broader AC pipeline: stoichiometry → DSE → critical exponents
 for arbitrary reaction-diffusion on arbitrary graphs.
 PDF: `main.pdf`.
 
-## `worked-example.tex` — Worked example companion piece.
+## `worked-example.tex` — Worked example companion piece
+Complete AC derivation of the BRW scaling exponents with extensive
+appendices (AC tutorial, Lagrange equations, SIR example,
+BARW-even, branch points, scaling corrections).
+PDF: `worked-example.pdf`.
 
-## `reproduce.py` — Reproduces all numerical results from `cfac_paper.tex`
-Generates figures in `figures/`:
-- `mfpt_vs_V.pdf` — Gillespie MFPT vs branch-gap prediction
-- `branch_structure.pdf` — Cubic DSE branches
-- `barrier_vs_coupling.pdf` — Barrier S vs coupling λ
-- `oneloop_deltaD.pdf` — Numerical vs analytical one-loop integral
+## `two_loop_worked/` — BARW-even 2-loop calculation
 
-Run: `python paper/reproduce.py` (~1-2 min).
+## `cfac/` — Coupled Field Analytic Combinatorics
+Extension of the AC framework to coupled particle-field systems
+(Doi-Peliti + Martin-Siggia-Rose). Contains:
+- `cfac_paper.tex` — Factoring the counting problem.
+  One-loop exactness for Keller-Segel, branch-gap instanton
+  theorem, three-loop Kirchhoff factorisation. Applications to
+  amyloid fibril nucleation and ice crystal formation.
+- `cfac_theorem.tex` — Standalone theorem companion.
+- `reproduce.py` — Reproduces all numerical results.
+- `figures/` — Generated plots.
+
+Run: `cd paper/cfac && python reproduce.py` (~1-2 min).
 
 ## `wip/` — gitignored drafts
-Precursor documents that fed into the promoted paper. Not under
+Precursor documents that fed into the promoted papers. Not under
 version control.

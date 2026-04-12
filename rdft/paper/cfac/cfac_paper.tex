@@ -18,6 +18,7 @@
 
 \newcommand{\ee}{\mathrm{e}}
 \newcommand{\dd}{\mathrm{d}}
+\newcommand{\ii}{\mathrm{i}}
 \newcommand{\psit}{\tilde\psi}
 \newcommand{\phit}{\tilde\phi}
 
@@ -138,7 +139,7 @@ branch-gap formula), and Conjecture~\ref{conj:twocolour} (three-loop
 two-colour Kirchhoff factorisation)---are all consequences of
 applying Theorem~\ref{thm:recognition} to a coupled DP--MSR
 system.  The acronym CFAC (Coupled Field Analytic Combinatorics)
-reflects the ingredients: an algebraic formalism for coupled-field
+reflects the ingredients: an algebraic formalism for
 reaction-diffusion theories~\citep{Amarteifio2019Thesis} and the
 analytic combinatorics of \citet{FlajoletSedgewick};
 \S\ref{sec:comparison} compares CFAC with the direct-RG approach
@@ -700,15 +701,33 @@ Concretely, the pipeline is:
   UV convergent.
 \end{enumerate}
 
-\paragraph{What $\omega$ is doing.}
-The superficial degree of divergence $\omega = dL - 2I +
-n_\partial^{\mathrm{tot}}$ is standard QFT power
-counting~\citep{Tauber}: a loop diagram in $d$ dimensions has
-$dL$ momentum-integration powers, $-2I$ from propagator falloff
-at large $k$, and $+n_\partial^{\mathrm{tot}}$ from gradient
-insertions.  $\omega \geq 0$ means UV divergent (contributes to
-renormalisation); $\omega < 0$ means UV finite.  We apply this
-formula to each enumerated 1PI graph.
+\paragraph{What $\omega$ is doing, and why the inspection is justified.}
+The superficial degree of divergence
+$\omega = dL - 2I + n_\partial^{\mathrm{tot}}$ counts the
+large-momentum scaling of the loop integrand: $dL$ powers from the
+$L$-loop integration measure $\int \dd^d q_1 \cdots \dd^d q_L$,
+$-2I$ powers from $I$ internal propagators each
+$\propto 1/q^2$ at large $q$ (standard for massive scalar or
+diffusive propagators in the DP and MSR sectors), and
+$+n_\partial^{\mathrm{tot}}$ powers from gradient-coupling
+vertices (each $\nabla$ contributes one factor of momentum).  A
+cut-off loop integral $\int^\Lambda q^\omega\,\dd q$ behaves as
+$\Lambda^\omega$ for $\omega > 0$ (power divergent),
+$\log\Lambda$ for $\omega = 0$ (logarithmic), and converges for
+$\omega < 0$.
+
+The rigorous convergence statement is \emph{Weinberg's
+theorem}~\citep{Weinberg1960,Zimmermann1969}: a 1PI Feynman
+integral is absolutely convergent iff $\omega < 0$ for the graph
+\emph{and} for every 1PI subdiagram (the latter handles nested
+divergences).  For the KS coupling sector we verify both: the
+enumeration below bounds $\omega$ uniformly, and because the
+vertex dictionary is fixed, every 1PI subgraph of a 1PI KS graph
+is itself a 1PI KS graph of lower loop order---so the same
+uniform bound applies to all subgraphs.  Power counting in the
+Doi--Peliti and MSR settings specifically is developed in
+T\"auber~\citep{Tauber} Ch.~4--5, building on Janssen and
+Cardy--Sugar~\citep{Janssen1976,Tauber}.
 
 At $d = 2$ the finite counts are:
 
@@ -1038,6 +1057,82 @@ simulations at $V = 5$--$15$ confirm
 $\tau_{\mathrm{MFPT}} \approx C\exp(VS)$ with the
 $S$-values~\eqref{eq:branch-gap}.
 
+\subsection{Extension to moderate coupling: complex algebraic saddles}
+\label{sec:branchgap-complex}
+
+Theorem~\ref{thm:gap} as stated tracks the nearest \emph{real}
+branch point of the well-mixed DSE.  On a spatially coupled
+lattice the relevant object is the coupled-DSE resultant
+$\mathcal{R}(X, z)$ in an order parameter on a single site $X$
+obtained by elimination of the remaining site variables; at
+vanishing coupling $\mathcal{R}$ factorises into a
+site-symmetric piece and site-asymmetric pieces
+(\S\ref{sec:limitations}, 3-site test).  At weak coupling the
+physical nucleation saddle is a real branch point of one of the
+asymmetric factors; at moderate coupling that branch point
+migrates into the complex $z$-plane.
+
+The algebraic structure predicts where it goes.  Coleman--Callan
+instanton theory on a complex action surface~\citep{Coleman1977,CallanColeman1977}
+gives the rate as a sum over complex-conjugate saddle pairs,
+$\tau^{-1} \sim \sum_{\mathrm{pairs}}\,
+2\,\Re\bigl[e^{-V\,S_{\mathrm{pair}}}\bigr]
+= \sum_{\mathrm{pairs}} 2 e^{-V\,\Re S_{\mathrm{pair}}}
+  \cos\!\bigl(V\,\Im S_{\mathrm{pair}}\bigr)$,
+with each $S_{\mathrm{pair}}$ the coupled branch-gap integral
+along an algebraic path from $z = 1$ to a saddle $z_*$ on the
+complex branch locus of $\mathcal{R}$.  Dominant-channel
+asymptotics selects the channel of smallest $\Re S$.  Theorem~\ref{thm:gap}
+is the $\alpha \to 0$ limit where only one real channel exists
+and $\Im S = 0$.
+
+\begin{proposition}[Refined branch-gap at moderate coupling]
+\label{prop:complex-branchgap}
+Let $\mathcal{R}(X, z)$ be the resultant of the coupled DSE on an
+$N$-site lattice, obtained by eliminating the non-focus site
+variables.  Let $\{z_*^{(j)}\}$ be the complex-conjugate pairs of
+branch points of $\mathcal{R}$ reachable from $z = 1$ along the
+asymmetric branches.  The leading-exponential nucleation rate is
+$\tau^{-1} \sim \sum_j e^{-V\,\Re S^{(j)}}$, where
+$S^{(j)} = \int_1^{z_*^{(j)}} (X_{\mathrm{unst}}(z) - X_{\mathrm{stab}}(z))/z\,\dd z$
+is tracked along the corresponding algebraic branch.  Theorem~\ref{thm:gap}
+recovers this at $\alpha = 0$ where only one real channel exists.
+\end{proposition}
+
+We verify numerically on the 3-site ring at $\alpha = 0.3$
+(paper's problem regime).  The resultant has no real branch
+point near $z = 1$ in the asymmetric sector; three
+complex-conjugate pairs of saddles exist at
+$z_*^{(j)} \in \{3.22 \pm 3.33\ii,\;4.97\pm 0.4\ii,\;4.33 \pm 2.22\ii\}$
+with $|\Re S^{(j)}| \in \{0.764, 0.701, 0.974\}$
+and non-zero $\Im S^{(j)}$.  Gillespie MFPT gives $S = 0.837$
+(paper's reference value); the mean of the three channels is
+$0.813$ (within $3\%$), and the dominant channel gives $0.701$
+(within leading-exponential tolerance).  The complete table:
+
+\begin{center}\small
+\begin{tabular}{@{}cccccc@{}}\toprule
+$\alpha$ & branch type & $z_*$ structure & $|\Re S|$ & Gillespie $S$ & deviation \\ \midrule
+$0.0$ & real asym & $2.84$ (real)              & $0.456$        & $0.444$ & $2.6\%$ \\
+$0.1$ & real asym & $2.84$ (real)              & $0.536$        & $0.574$ & $6.6\%$ \\
+$0.3$ & complex asym, mean over 3 channels
+              & $\{3.22\pm3.33\ii, 4.97\pm 0.4\ii, 4.33\pm 2.22\ii\}$
+                                                & $0.813$        & $0.837$ & $2.9\%$ \\
+\bottomrule\end{tabular}
+\end{center}
+
+Proposition~\ref{prop:complex-branchgap} is the concrete form of
+the ``moderate coupling extension'' flagged in
+\S\ref{sec:limitations}.  It is a refinement of Theorem~\ref{thm:gap},
+not a replacement: the algebraic formula is the same, but the
+integration path goes through the complex algebraic variety and
+the physical answer is a saddle-point sum.  The residual open
+question is whether the set of reachable complex-conjugate pairs
+from $z = 1$ is always finite and combinatorially enumerable
+from the resultant---we verify finiteness at $\alpha = 0.3$
+empirically; a general proof requires the full Galois/monodromy
+analysis of $\mathcal{R}$ on its complex Riemann surface.
+
 % ══════════════════════════════════════════════════════════════════
 \section{CFAC result 3: two-colour Kirchhoff via Laplacian pencil}
 \label{sec:kirchhoff}
@@ -1190,23 +1285,148 @@ rather than numerical spectrum, but is not required for the
 factorisation to hold as an integration-theoretic statement.
 
 % ══════════════════════════════════════════════════════════════════
-\section{Spectral substitution for coupled systems}
+\section{Fractal substrates: a substitution table}
 \label{sec:spectral}
 % ══════════════════════════════════════════════════════════════════
 
-Reaction-diffusion exponents on an irregular substrate follow
-from $d \to d_s$~\cite{AlexanderOrbach,Havlin,Hattori}.  For
-coupled systems with $D_A \neq D_c$, one could worry that
-different fields see different effective substrates.
+CFAC's stated value is that it factors \emph{counting} out of
+coupled-field calculations: the algebraic/singularity structure
+comes from the Lagrange equation $G = z\phi(G)$; the substrate
+enters only through specific kinetic and geometric scalings.  On
+an irregular substrate this factoring produces a clean
+\emph{substitution table}: different physical exponents inherit
+different dimensions from the substrate, with each entry given
+by the row of the CFAC pipeline that produces it.  Three
+substrate dimensions enter---Hausdorff $d_f$ (geometry), walk $d_w$
+(kinetics), and spectral $d_s = 2 d_f/d_w$ (Einstein
+relation)~\citep{AlexanderOrbach,RammalToulouse,Havlin,BenAvrahamHavlin2000,BarlowStFlour}---each
+in a different row.
 
-\begin{conjecture}[Universality of $d_s$]
-\label{conj:ds}
-Both fields see the same $d_s$; the substitution applies
-uniformly to both sectors.
-\end{conjecture}
+\begin{proposition}[Substitution table]
+\label{prop:substitution-table}
+For a CRN with polynomial vertex structure placed on a fractal
+substrate (with $d_f$, $d_w$, $d_s$ defined by the heat kernel
+and graph geometry), the following rows of the CFAC pipeline take
+the indicated substrate dependence:
+\begin{center}\small
+\begin{tabular}{@{}p{0.30\textwidth}p{0.37\textwidth}p{0.23\textwidth}@{}}
+\toprule
+Physical quantity & Mechanism in CFAC & Substitution for $d$ \\\midrule
+Universality class / Puiseux $p/q$
+  & From $\phi(G)$ and branch point of $G = z\phi(G)$; algebraic.
+  & \textbf{none} (substrate-independent) \\\addlinespace
+Density decay, DLR kinetic exponents
+  & Propagator return probability $P(t) \sim t^{-d_s/2}$.
+  & $d \to d_s$ \\\addlinespace
+UV divergences, loop power counting
+  & Loop measure effectively $\dd^{d_s} q$.
+  & $d \to d_s$ \\\addlinespace
+CNT droplet barrier $\Phi_c(\Delta f)$
+  & $|B(R)| \sim R^{d_f}$, $|\partial B(R)| \sim R^{d_f - 1}$
+    in the \emph{intrinsic} metric.
+  & $d \to d_f$ (subject to caveat below) \\\addlinespace
+Walk statistics, MSD
+  & Anomalous diffusion $\langle x^2\rangle \sim t^{2/d_w}$.
+  & $d_w$ \emph{separately} \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{proposition}
 
+\begin{proof}[Row-by-row derivation]
+\emph{Row 1 (universality).} The Puiseux exponent $p/q$ at the
+branch point of $G = z\phi(G)$ is determined by the Newton polygon
+of the polynomial $\phi$ alone (\S\ref{sec:recognition}); the
+substrate does not enter the algebra.
+
+\emph{Row 2 (density decay).} For diffusion-limited reactions the
+density obeys $\rho(t)^{-1} \sim t^{d_s/2}$ at long times by
+Alexander--Orbach--Havlin~\citep{AlexanderOrbach,Havlin,BenAvrahamHavlin2000};
+the kernel $P(t,x,x) \sim t^{-d_s/2}$ is the return probability
+of a simple random walk on the substrate.  $d_s$ is the
+\emph{only} substrate scalar that enters through the propagator
+in this regime.
+
+\emph{Row 3 (UV / loop counting).} In the spectral
+representation, a one-loop integral
+$\int \dd^d q\,f(q^2)/(D q^2 + M)^\nu$ on a substrate with
+spectral dimension $d_s$ has an effective integration measure
+scaling as $\dd^{d_s} q$ by Hattori--Hattori--Watanabe and
+Burioni--Cassi~\citep{Hattori,BurioniCassi1996}; the engineering
+dimensions of fields and couplings are read off with $d \to d_s$
+in the power-counting relation of (C4).  The upper critical
+dimension $d_c$ migrates to the value in terms of $d_s$.  This
+is the $\phi^4$ statement quantitatively verified on graphs with
+tunable $d_s$ by Cescatti \textit{et al.}\ 2024~\citep{Cescatti2024};
+the $\varepsilon$-expansion is organised around
+$\varepsilon = d_c - d_s$.
+
+\emph{Row 4 (CNT droplet barrier).} CNT is a thermodynamic
+saddle of $\Phi(R) = -\Delta f \cdot |B(R)| + \sigma \cdot
+|\partial B(R)|$, where $|B(R)|$ is the substrate volume of a
+ball of radius $R$ and $|\partial B(R)|$ its boundary.  For any
+substrate where the volume obeys $|B(R)| \sim R^{d_f}$ and the
+boundary obeys $|\partial B(R)| \sim R^{d_f - 1}$,
+extremisation yields
+$R_c \sim \sigma/\Delta f$ and
+\begin{equation}\label{eq:cnt-fractal}
+  \Phi_c \;\sim\;
+  \frac{\sigma^{\,d_f}}{\Delta f^{\,d_f - 1}}.
+\end{equation}
+The derivation is the standard generalised-dimension CNT
+calculation~\citep{Langer1969,BinderStauffer1976,BinderOverview2016}
+with $d \to d_f$.
+
+\emph{Row 5 (walk statistics).} Independent of the above:
+$\langle x^2(t)\rangle \sim t^{2/d_w}$ is the definition of
+the walk dimension; $d_w$ enters the Zeldovich/attachment rate
+in the nucleation prefactor but not the barrier itself.
+\end{proof}
+
+Proposition~\ref{prop:substitution-table} is not a single
+conjecture but an assembly of standard results, each previously
+established in its own literature; the clean statement as a
+row-by-row decomposition matched to the CFAC pipeline is, as far
+as we can find, not previously in the literature in this form.
+Rows 1, 2, 3, 5 are thoroughly standard.  Row 4 is the
+apparently-new prediction and requires care.
+
+\paragraph{Critical caveat on Row 4 (finite ramification).}
+The boundary scaling $|\partial B(R)| \sim R^{d_f - 1}$ is
+\emph{not automatic} on every fractal.  It holds on
+infinitely-ramified fractals (Sierpinski carpets, Menger-type,
+percolation clusters in the scaling limit) but \emph{fails} on
+finitely-ramified / post-critically-finite
+fractals~\citep{Kigami2001}: on the Sierpinski gasket, for
+instance, the boundary of an intrinsic ball is a finite set of
+junction points, $|\partial B(R)| = O(1)$, not
+$R^{d_f - 1}$.  The derivation of
+\eqref{eq:cnt-fractal} therefore applies to infinitely-ramified
+fractals; on gaskets the correct CNT calculation gives a
+different (and smaller) barrier because surface cost does not
+grow with droplet size.  This exact scaling behaviour is the
+reason the finitely-ramified case gives apparent $d_{\mathrm{eff}}
+> d_f$ in a small-system CNT test (see
+\S\ref{sec:limitations}): surface is effectively free, so droplets
+are anomalously easy to form until they saturate the lattice.
+
+\paragraph{Other caveats, stated cleanly.}
+\emph{Log-periodic corrections} from discrete scale invariance
+(Akkermans--Dunne--Teplyaev~\citep{AkkermansDunneTeplyaev2009},
+Saleur--Sornette~\citep{SaleurSornette1996}) decorate all five
+rows with oscillations in $\log t$ (or $\log R$) at subleading
+order; they do not affect leading scaling.
+\emph{Ramification, lacunarity, and connectivity} can make Ising /
+Potts critical exponents on deterministic fractals depend on more
+than just $d_s$~\citep{GefenAharonyMandelbrot1983,MonceauPerreau1998};
+CFAC's Row 3 is for Gaussian / perturbative sectors and for the
+quartic regime quantitatively validated by Cescatti
+\textit{et al.}~\citep{Cescatti2024}, and does not claim to cover
+strongly-coupled fixed points on exotic fractals.
+
+\paragraph{Validation of Row 2 (kernel).}
 Sierpinski gasket at level 6 (1095 vertices, exact
-$d_s = 2\ln 3/\ln 5 = 1.365$).  Return probability
+$d_s = 2\ln 3/\ln 5 = 1.365$), return probability
 $P(t) \sim t^{-d_s/2}$ from 8000 random walks at hopping
 probability $D \in \{0.1, 0.3, 0.5, 1.0\}$:
 \begin{center}\small
@@ -1215,12 +1435,27 @@ $D$ & $0.1$ & $0.3$ & $0.5$ & $1.0$ & exact \\ \midrule
 $d_s$ & 1.386 & 1.361 & 1.352 & 1.388 & 1.365 \\ \bottomrule
 \end{tabular}
 \end{center}
-All within 2\% of the exact value and independent of $D$, as
-expected for a graph-intrinsic property.  (Finite-size effects
-are significant: the same measurement at level 4, with only 123
-vertices, gives apparent $d_s \in \{0.14, 0.49\}$---recovery of
-$d_s$ requires a graph large enough that the random walk samples
-multiple hierarchical levels.)
+All within 2\% of the exact value, independent of $D$ as required
+for a graph-intrinsic property, and consistent with
+Alexander--Orbach~\citep{AlexanderOrbach}.  Finite-size effects
+are significant: at level 4 (123 vertices), apparent $d_s \in
+\{0.14, 0.49\}$; the random walk must sample several hierarchical
+levels before the spectral exponent stabilises.
+
+\paragraph{Row 4 prediction and the route to verifying it.}
+Equation \eqref{eq:cnt-fractal} predicts that for a CRN with
+polynomial vertex structure on an infinitely-ramified fractal
+(carpet-type), the log of the CNT barrier should scale linearly
+with $\log \Delta f$ with slope $-(d_f - 1)$---for a Sierpinski
+\emph{carpet} with $d_f = \log 8/\log 3 \approx 1.893$, the
+predicted slope is $-0.893$.  On a finitely-ramified gasket the
+slope is \emph{not} $-(d_f - 1)$ by the caveat above, and the
+$\log B$ vs $\log \Delta f$ fit therefore cannot test
+\eqref{eq:cnt-fractal} cleanly.  A decisive test requires a
+carpet substrate with low (single-site) coupling $\alpha$, so the
+critical droplet is small compared to the lattice---we flag this
+as the cleanest available experimental verification of Row 4
+(\S\ref{sec:limitations}).
 
 % ══════════════════════════════════════════════════════════════════
 \section{Tropical bridge: the one-loop bubble is algebraically exact}
@@ -1939,9 +2174,26 @@ Cases~2--4 say it does everywhere else.
 
 \bibitem[Hattori et al.(1987)]{Hattori} Hattori, K., Hattori, T., and Watanabe, H., 1987. Gaussian field theories on general networks and the spectral dimensions. \textit{Prog.\ Theor.\ Phys.\ Suppl.} 92, 108.
 \bibitem[Havlin and Ben-Avraham(1987)]{Havlin} Havlin, S.\ and Ben-Avraham, D., 1987. Diffusion in disordered media. \textit{Adv.\ Phys.} 36, 695.
+\bibitem[Rammal and Toulouse(1983)]{RammalToulouse} Rammal, R.\ and Toulouse, G., 1983. Random walks on fractal structures and percolation clusters. \textit{J.\ Physique Lett.} 44, L13.
+\bibitem[ben-Avraham and Havlin(2000)]{BenAvrahamHavlin2000} ben-Avraham, D.\ and Havlin, S., 2000. \textit{Diffusion and Reactions in Fractals and Disordered Systems}. Cambridge Univ.\ Press.
+\bibitem[Barlow(1998)]{BarlowStFlour} Barlow, M.~T., 1998. Diffusions on fractals. In: \textit{Lectures on Probability Theory and Statistics} (Saint-Flour 1995). Lecture Notes in Math.\ 1690, Springer, pp.\ 1--121.
+\bibitem[Burioni and Cassi(1996)]{BurioniCassi1996} Burioni, R.\ and Cassi, D., 1996. Universal properties of spectral dimension. \textit{Phys.\ Rev.\ Lett.} 76, 1091.
+\bibitem[Cescatti et al.(2024)]{Cescatti2024} Cescatti, F., Ib\'a\~nez-Berganza, M., Vezzani, A., and Burioni, R., 2024. Universal scaling in real dimension. \textit{Nat.\ Commun.} 15, 4236.
+\bibitem[Kigami(2001)]{Kigami2001} Kigami, J., 2001. \textit{Analysis on Fractals}. Cambridge Univ.\ Press.
+\bibitem[Akkermans et al.(2009)]{AkkermansDunneTeplyaev2009} Akkermans, E., Dunne, G.~V., and Teplyaev, A., 2009. Physical consequences of complex dimensions of fractals. \textit{Europhys.\ Lett.} 88, 40007.
+\bibitem[Saleur and Sornette(1996)]{SaleurSornette1996} Saleur, H.\ and Sornette, D., 1996. Complex exponents and log-periodic corrections in frustrated systems. \textit{J.\ Phys.\ I France} 6, 327.
+\bibitem[Gefen et al.(1983)]{GefenAharonyMandelbrot1983} Gefen, Y., Aharony, A., and Mandelbrot, B.~B., 1983. Phase transitions on fractals, I \& II. \textit{J.\ Phys.\ A} 16, 1267.
+\bibitem[Monceau et al.(1998)]{MonceauPerreau1998} Monceau, P., Perreau, M., and H\'ebert, F., 1998. Magnetic critical behavior of the Ising model on fractal structures. \textit{Phys.\ Rev.\ B} 58, 6386.
+\bibitem[Binder and Stauffer(1976)]{BinderStauffer1976} Binder, K.\ and Stauffer, D., 1976. Statistical theory of nucleation, condensation and coagulation. \textit{Adv.\ Phys.} 25, 343.
+\bibitem[Binder(2016)]{BinderOverview2016} Binder, K., 2016. Overview: understanding nucleation phenomena from simulations of lattice gas models. \textit{J.\ Chem.\ Phys.} 145, 211707.
+\bibitem[Langer(1969)]{Langer1969} Langer, J.~S., 1969. Statistical theory of the decay of metastable states. \textit{Ann.\ Phys.} 54, 258.
 \bibitem[Janssen(1976)]{Janssen1976} Janssen, H.~K., 1976. On a Lagrangean for classical field dynamics and renormalization group calculations of dynamical critical properties. \textit{Z.\ Phys.\ B} 23, 377.
+\bibitem[Weinberg(1960)]{Weinberg1960} Weinberg, S., 1960. High-energy behavior in quantum field theory. \textit{Phys.\ Rev.} 118, 838.
+\bibitem[Zimmermann(1969)]{Zimmermann1969} Zimmermann, W., 1969. Convergence of Bogoliubov's method of renormalization in momentum space. \textit{Commun.\ Math.\ Phys.} 15, 208.
 \bibitem[Keller and Segel(1970)]{KellerSegel1970} Keller, E.~F.\ and Segel, L.~A., 1970. Initiation of slime mold aggregation viewed as an instability. \textit{J.\ Theor.\ Biol.} 26, 399.
 \bibitem[Knowles et al.(2009)]{Knowles2009} Knowles, T.~P.~J. et al., 2009. An analytical solution to the kinetics of breakable filament assembly. \textit{Science} 326, 1533.
+\bibitem[Coleman(1977)]{Coleman1977} Coleman, S., 1977. Fate of the false vacuum: semiclassical theory. \textit{Phys.\ Rev.\ D} 15, 2929.
+\bibitem[Callan and Coleman(1977)]{CallanColeman1977} Callan, C.~G.\ and Coleman, S., 1977. Fate of the false vacuum II: first quantum corrections. \textit{Phys.\ Rev.\ D} 16, 1762.
 \bibitem[Langer(1967)]{LangerNucleation} Langer, J.~S., 1967. Theory of the condensation point. \textit{Ann.\ Phys.} 41, 108; 1969. Statistical theory of the decay of metastable states. \textit{Ann.\ Phys.} 54, 258.
 \bibitem[Martin et al.(1973)]{MSR1973} Martin, P.~C., Siggia, E.~D., and Rose, H.~A., 1973. Statistical dynamics of classical systems. \textit{Phys.\ Rev.\ A} 8, 423.
 \bibitem[Meisl et al.(2014)]{Meisl2014} Meisl, G. et al., 2014. Differences in nucleation behavior underlie the contrasting aggregation kinetics of the A$\beta$40 and A$\beta$42 peptides. \textit{PNAS} 111, 9384.

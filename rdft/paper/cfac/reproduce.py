@@ -2,8 +2,8 @@
 Reproduce key results from "Factoring the Counting Problem Out of
 Coupled Particle-Field Renormalisation" for the Keller-Segel system.
 
-Run: python paper/keller_segel_reproduce.py
-Produces figures in paper/figures/ and prints a table of results.
+Run: python paper/cfac/reproduce.py (or: cd paper/cfac && python reproduce.py)
+Produces figures in paper/cfac/figures/ and prints a table of results.
 
 Key results reproduced:
   1. Branch-gap instanton formula (Theorem 1): S_gap = S_exact to 6 digits
