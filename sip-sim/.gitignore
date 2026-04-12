@@ -1,0 +1,26 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Simulation outputs
+output_*.png
+output_*.gif
+*.mp4
+
+# Training data & checkpoints
+experiments/tinystories/.data/
+experiments/tinystories/checkpoints/
+experiments/tinystories/analysis/
+experiments/owt/.data/
+experiments/owt/checkpoints/
+learn/tinystories/.data/
+learn/tinystories/checkpoints/
+learn/owt/.data/
+learn/owt/checkpoints/

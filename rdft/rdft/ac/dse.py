@@ -617,3 +617,132 @@ def ac_full_derivation(liouvillian, d: sp.Expr = None,
     }
 
     return result
+
+
+# ================================================================== #
+#  AC+ extensions: coupled DP-MSR systems                             #
+# ================================================================== #
+
+def upper_critical_dimension_general(
+    vertex_legs: list,
+    n_deriv: int = 0,
+    z_dyn: int = 2
+) -> sp.Expr:
+    """
+    Parametric upper critical dimension for arbitrary field content.
+
+    For a vertex with field legs carrying scaling dimensions
+    Δ₁(d), Δ₂(d), ..., and n_deriv spatial derivatives:
+
+        [g] = d + z_dyn - Σ Δᵢ(d) - n_deriv
+
+    d_c is where [g] = 0.
+
+    Parameters
+    ----------
+    vertex_legs : list of sympy expressions in Symbol('d')
+    n_deriv : number of spatial derivatives in the vertex
+    z_dyn : dynamical exponent (2 for diffusive)
+
+    Examples
+    --------
+    >>> d = Symbol('d')
+    >>> upper_critical_dimension_general([d/2, d/2, d/2])  # DP cubic
+    4
+    >>> upper_critical_dimension_general([(d+2)/2, (d-2)/2, (d-2)/2, (d-2)/2])  # Model A
+    4
+    >>> upper_critical_dimension_general([(d+2)/2, (d-2)/2, (d-2)/2], n_deriv=2)  # KS
+    2
+    """
+    d = Symbol('d', positive=True)
+    eng_dim = d + z_dyn - sum(vertex_legs) - n_deriv
+    eng_dim = sp.expand(eng_dim)
+
+    solutions = solve(eng_dim, d)
+    real_pos = [s for s in solutions if s.is_real and s > 0]
+
+    if not real_pos:
+        return sp.oo
+    return real_pos[0]
+
+
+def coupled_dse(
+    dp_vertices: Dict[Tuple[int, int], sp.Expr],
+    field_kernel: sp.Expr = None,
+    coupling_in_dp: sp.Expr = None,
+    G_psi: sp.Symbol = None,
+    G_phi: sp.Symbol = None,
+    z: sp.Symbol = None,
+) -> Dict:
+    """
+    Construct and analyse a coupled DP-MSR Dyson-Schwinger equation.
+
+    For a linear field sector: G_φ = z·(1 + field_kernel(G_ψ)).
+    The field is eliminated by substitution, giving an effective
+    single-variable DSE F(G_ψ, z) = 0 whose degree determines
+    the singularity type.
+
+    Parameters
+    ----------
+    dp_vertices : {(m̃, m): coupling} for the DP sector
+    field_kernel : expression in G_psi for the field's response
+    coupling_in_dp : expression in G_psi, G_phi for the coupling
+    G_psi, G_phi, z : sympy Symbols
+
+    Returns
+    -------
+    Dict with 'F', 'degree', 'degree_increase', 'singularity_type',
+    'discriminant', 'branch_points'
+    """
+    if G_psi is None:
+        G_psi = Symbol('G_psi')
+    if G_phi is None:
+        G_phi = Symbol('G_phi')
+    if z is None:
+        z = Symbol('z', positive=True)
+
+    # DP kernel from vertices
+    dp_kernel = sp.S.One
+    classified = classify_vertices(dp_vertices)
+    for m, n, g in classified['interaction']:
+        dp_kernel += g * G_psi ** (m + n - 2)
+
+    # Add coupling
+    full_kernel = dp_kernel + (coupling_in_dp if coupling_in_dp else 0)
+
+    # Substitute field: G_φ = z·(1 + field_kernel)
+    G_phi_expr = z * (1 + field_kernel) if field_kernel is not None else z
+    full_kernel_sub = full_kernel.subs(G_phi, G_phi_expr)
+    F = sp.expand(G_psi - z * full_kernel_sub)
+
+    poly = sp.Poly(F, G_psi)
+    degree = poly.degree()
+
+    # Degree without coupling
+    F_no_coupling = sp.expand(G_psi - z * dp_kernel)
+    try:
+        degree_no_field = sp.Poly(F_no_coupling, G_psi).degree()
+    except Exception:
+        degree_no_field = 1
+
+    sing_type = {1: 'pole', 2: 'square_root', 3: 'cube_root'}.get(
+        degree, f'degree_{degree}')
+
+    result = {
+        'F': F,
+        'degree': degree,
+        'degree_without_field': degree_no_field,
+        'degree_increase': degree - degree_no_field,
+        'singularity_type': sing_type,
+    }
+
+    if degree == 2:
+        coeffs = poly.all_coeffs()
+        disc = sp.expand(coeffs[1]**2 - 4*coeffs[0]*coeffs[2])
+        result['discriminant'] = disc
+        try:
+            result['branch_points'] = solve(disc, z)
+        except Exception:
+            result['branch_points'] = None
+
+    return result

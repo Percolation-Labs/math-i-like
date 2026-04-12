@@ -1,0 +1,1414 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{bm}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage[margin=1in]{geometry}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{subcaption}
+\usepackage{xcolor}
+\usepackage{cleveref}
+
+% Theorem environments
+\newtheorem{definition}{Definition}
+\newtheorem{proposition}{Proposition}
+\newtheorem{theorem}{Theorem}
+\newtheorem{remark}{Remark}
+
+% Notation shortcuts
+\newcommand{\field}{\bm{\phi}}
+\newcommand{\deposit}{\bm{d}}
+\newcommand{\evap}{\varepsilon}
+\newcommand{\retain}{\alpha}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\x}{\bm{x}}
+\newcommand{\q}{\bm{q}}
+\newcommand{\K}{\bm{k}}
+\newcommand{\vv}{\bm{v}}
+\newcommand{\W}{W}
+
+\title{Stigmergic Attention: Closing the Feedback Loop\\
+Between Pheromone Fields and Neural Attention}
+
+\author{Research Notes}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We introduce \emph{stigmergic attention}, a modification of the transformer
+attention mechanism that augments standard query-key matching with a
+decaying pheromone field---an additive bias accumulated from past deposits
+and subject to uniform erosion. Drawing on the theory of phase transitions
+in lattice ant models, we identify a precise three-ingredient recipe for
+edge-of-chaos dynamics: \emph{amplification} (positive feedback between
+field and output), \emph{injection} (content-dependent deposits uncorrelated
+with the field), and \emph{erosion} (uniform exponential decay). We show
+that a na\"ive implementation lacking positive feedback reduces to an inert
+decaying average with no phase transition, while closing the feedback
+loop---computing deposits from attention \emph{output} rather than
+input---recovers the full stigmergic dynamics. We present the architecture,
+its connection to linear state-space models, and experimental results on
+in-context learning tasks.
+\end{abstract}
+
+% ================================================================
+\section{Introduction}
+\label{sec:intro}
+
+Stigmergy is the mechanism by which organisms coordinate through
+modification of a shared environment rather than direct communication.
+The canonical example is ant trail formation: ants deposit pheromone
+as they walk, subsequent ants preferentially follow high-pheromone
+paths, and pheromone evaporates uniformly over time. This creates a
+positive feedback loop that, at the right balance between deposition
+and evaporation, produces emergent structure at the edge of chaos
+\cite{antpaper}.
+
+Transformers \cite{vaswani2017attention} coordinate information flow
+through attention---a content-based routing mechanism where each
+position queries all others. We ask: can the stigmergic mechanism
+augment attention with a complementary structural channel? Specifically,
+can a decaying deposit field, accumulated causally across sequence
+positions, provide useful inductive bias for in-context learning?
+
+Our investigation proceeds in three stages:
+\begin{enumerate}
+    \item We define stigmergic attention as standard attention plus an
+          additive field bias from a linear recurrence (\Cref{sec:architecture}).
+    \item We identify, via the ant trail phase transition literature, that
+          positive feedback is the critical missing ingredient, and show
+          how to close the loop (\Cref{sec:theory}).
+    \item We present experiments comparing feedback and non-feedback
+          variants across evaporation rates (\Cref{sec:experiments}).
+\end{enumerate}
+
+
+% ================================================================
+\section{Architecture}
+\label{sec:architecture}
+
+% ----------------------------------------------------------------
+\subsection{Standard Attention}
+
+Given an input sequence $X \in \R^{T \times d}$, standard causal
+multi-head attention computes, for each head $h \in \{1, \ldots, H\}$:
+
+\begin{definition}[Scaled dot-product attention]
+\label{def:attention}
+Let $\q_i, \K_j \in \R^{d_h}$ be the query and key vectors at positions
+$i$ and $j$ respectively, with $d_h = d / H$ the head dimension. The
+attention weight from position $i$ to position $j$ is:
+\begin{equation}
+    a_{ij}^{(h)} = \frac{\exp\!\bigl(\q_i^{(h)\top} \K_j^{(h)} / \sqrt{d_h}\bigr)}
+                        {\sum_{k \leq i} \exp\!\bigl(\q_i^{(h)\top} \K_k^{(h)} / \sqrt{d_h}\bigr)}
+    \quad \text{for } j \leq i
+\end{equation}
+where the restriction $j \leq i$ enforces causal masking.
+The output at position $i$ is:
+\begin{equation}
+    \bm{o}_i = \text{Concat}_{h=1}^{H}\!\Bigl(\sum_{j \leq i} a_{ij}^{(h)} \vv_j^{(h)}\Bigr) \cdot W_O
+\end{equation}
+with queries $\q^{(h)} = X W_Q^{(h)}$, keys $\K^{(h)} = X W_K^{(h)}$,
+values $\vv^{(h)} = X W_V^{(h)}$, and output projection $W_O \in \R^{d \times d}$.
+\end{definition}
+
+% ----------------------------------------------------------------
+\subsection{The Pheromone Field}
+
+We augment attention with a scalar field per head that accumulates
+deposits and decays over positions.
+
+\begin{definition}[Pheromone field]
+\label{def:field}
+For head $h$, the \emph{pheromone field} at position $i$ is defined
+by the linear recurrence:
+\begin{equation}
+    \phi_i^{(h)} = \retain \cdot \phi_{i-1}^{(h)} + d_i^{(h)},
+    \quad \phi_0^{(h)} = d_0^{(h)}
+    \label{eq:field_recurrence}
+\end{equation}
+where:
+\begin{itemize}
+    \item $\retain = 1 - \evap \in (0, 1)$ is the \emph{retention rate},
+          with $\evap$ the \emph{evaporation rate}
+    \item $d_i^{(h)} \in \R$ is the \emph{deposit} at position $i$ for head $h$
+    \item The field has initial condition $\phi_{-1}^{(h)} = 0$
+\end{itemize}
+\end{definition}
+
+\begin{proposition}[Closed-form solution]
+\label{prop:closedform}
+The recurrence in \Cref{eq:field_recurrence} has the closed-form solution:
+\begin{equation}
+    \phi_i^{(h)} = \sum_{j=0}^{i} \retain^{i-j} \cdot d_j^{(h)}
+    \label{eq:field_closedform}
+\end{equation}
+which can be computed as a matrix-vector product $\field^{(h)} = D \deposit^{(h)}$
+where $D \in \R^{T \times T}$ is the lower-triangular decay matrix with
+entries $D_{ij} = \retain^{i-j}$ for $j \leq i$ and $0$ otherwise.
+\end{proposition}
+
+\begin{proof}
+By induction. Base case: $\phi_0 = d_0 = \retain^0 d_0$. Inductive step:
+$\phi_i = \retain \sum_{j=0}^{i-1} \retain^{i-1-j} d_j + d_i
+= \sum_{j=0}^{i-1} \retain^{i-j} d_j + \retain^0 d_i
+= \sum_{j=0}^{i} \retain^{i-j} d_j$.
+\end{proof}
+
+\begin{remark}[Connection to state-space models]
+\Cref{eq:field_recurrence} is a first-order linear recurrence---the
+simplest possible state-space model (SSM). It is a scalar, per-head
+instance of the general form $s_i = A s_{i-1} + B u_i$ with
+$A = \retain \in \R$ and $B = 1$. Unlike S4 or Mamba, which use
+structured matrices $A \in \R^{n \times n}$ for multi-dimensional
+state, the pheromone field uses a single scalar state per head,
+making it both interpretable and cheap.
+\end{remark}
+
+% ----------------------------------------------------------------
+\subsection{Stigmergic Attention}
+
+The field enters the attention computation as an additive bias on the
+pre-softmax logits.
+
+\begin{definition}[Stigmergic attention]
+\label{def:stigmergic}
+The stigmergic attention logit from position $i$ to position $j$ is:
+\begin{equation}
+    \ell_{ij}^{(h)} = \frac{\q_i^{(h)\top} \K_j^{(h)}}{\sqrt{d_h}} + \phi_j^{(h)}
+    \label{eq:stigmergic_logit}
+\end{equation}
+The attention weights are obtained by applying causal masking and softmax
+over the logit vector $\bm{\ell}_i^{(h)} = [\ell_{i1}^{(h)}, \ldots, \ell_{iT}^{(h)}]$
+as in \Cref{def:attention}.
+\end{definition}
+
+The field bias $\phi_j^{(h)}$ is \emph{position-indexed}: it biases
+attention \emph{toward} position $j$ across all queries $i \geq j$.
+Positions with high accumulated deposits attract more attention,
+analogous to how pheromone-rich trail segments attract more ants.
+
+The key design question is: where do deposits come from?
+
+
+% ================================================================
+\section{Theory: The Three-Ingredient Recipe}
+\label{sec:theory}
+
+% ----------------------------------------------------------------
+\subsection{Lessons from Ant Trail Phase Transitions}
+
+The lattice ant model \cite{antpaper} studies pheromone trail formation
+on a discrete grid. The continuum limit of the pheromone dynamics is:
+\begin{equation}
+    \frac{\partial \phi}{\partial t}
+    = \underbrace{\alpha_{\text{inj}}}_{\text{injection}}
+    + \underbrace{\beta \cdot g(\phi)}_{\text{amplification}}
+    - \underbrace{\lambda \cdot \phi}_{\text{erosion}}
+    + \underbrace{D \nabla^2 \phi}_{\text{diffusion}}
+    \label{eq:ant_pde}
+\end{equation}
+The paper's central finding is that edge-of-chaos dynamics---the boundary
+between frozen (ordered) and disordered phases---requires exactly three
+ingredients, all \emph{structurally uncorrelated} with the field $\phi$:
+
+\begin{enumerate}
+    \item \textbf{Amplification}: Positive feedback where the field
+          influences behavior, which in turn reinforces the field.
+          In ants: high-pheromone trails attract more ants, who deposit
+          more pheromone.
+    \item \textbf{Injection}: An unconditional source of deposits that
+          is uncorrelated with the current field state. In ants: all ants
+          deposit pheromone regardless of the existing trail strength.
+    \item \textbf{Erosion}: Uniform removal that is uncorrelated with the
+          field state. In ants: pheromone evaporates at a constant rate
+          everywhere.
+\end{enumerate}
+
+The paper tested seven alternative mechanisms that replace uniform erosion
+with state-dependent processes (habituation, peaked response functions,
+Hill functions, coupled deposition). \emph{Every alternative failed} to
+produce edge-of-chaos dynamics, because state-dependent disorder is
+correlated with the field---it preferentially targets the structures that
+contribute most to the order parameter.
+
+% ----------------------------------------------------------------
+\subsection{Mapping to Stigmergic Attention}
+
+We now map the three ingredients to the neural architecture:
+
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}llll@{}}
+\toprule
+\textbf{Ingredient} & \textbf{Ant system} & \textbf{Neural analogue} & \textbf{Property} \\
+\midrule
+Amplification & Ants follow pheromone, & Field biases attention, & Positive feedback \\
+              & deposit more on trails & output generates deposits & ($\phi$-correlated) \\
+\addlinespace
+Injection     & All ants deposit & Token content produces & Uncorrelated \\
+              & unconditionally & deposits via $W_d$ & with $\phi$ \\
+\addlinespace
+Erosion       & Uniform evaporation & Exponential decay & Uncorrelated \\
+              & at rate $\lambda$ & at rate $\evap$ per position & with $\phi$ \\
+\bottomrule
+\end{tabular}
+\caption{Three-ingredient mapping from ant systems to stigmergic attention.}
+\label{tab:ingredients}
+\end{table}
+
+The critical question is whether the architecture implements
+\emph{amplification}---positive feedback between the field and the
+deposit process.
+
+% ----------------------------------------------------------------
+\subsection{The Non-Feedback Architecture (Negative Result)}
+\label{sec:nonfeedback}
+
+In the na\"ive implementation, deposits are computed from the
+\emph{input} to the attention layer:
+\begin{equation}
+    d_i^{(h)} = W_d^{(h)} \x_i
+    \label{eq:deposit_input}
+\end{equation}
+where $W_d^{(h)} \in \R^{1 \times d}$ is a learned projection and
+$\x_i \in \R^d$ is the input embedding at position $i$.
+
+\begin{proposition}[No positive feedback without output deposits]
+\label{prop:nofeedback}
+When deposits are computed from inputs via \Cref{eq:deposit_input},
+the deposit $d_i^{(h)}$ is independent of the field
+$\phi_0^{(h)}, \ldots, \phi_{i-1}^{(h)}$. The field is therefore
+a deterministic function of the input sequence alone:
+\begin{equation}
+    \phi_i^{(h)} = \sum_{j=0}^{i} \retain^{i-j} \cdot W_d^{(h)} \x_j
+\end{equation}
+This is a causally-weighted moving average of input projections---an
+exponentially-weighted positional encoding with no feedback mechanism.
+\end{proposition}
+
+Without amplification, the field cannot create or maintain
+structure beyond what the input sequence provides. No phase
+transition is possible because there is no mechanism for
+self-reinforcement.
+
+% ----------------------------------------------------------------
+\subsection{Closing the Feedback Loop}
+\label{sec:feedback}
+
+The fix is to compute deposits from the attention \emph{output}:
+
+\begin{definition}[Feedback stigmergic attention]
+\label{def:feedback}
+At each position $i$, the computation proceeds causally:
+\begin{enumerate}
+    \item Compute field bias from accumulated past deposits:
+    \begin{equation}
+        \phi_i^{(h)} = \retain \cdot \phi_{i-1}^{(h)} + d_{i-1}^{(h)}
+    \end{equation}
+    \item Compute attention weights with field bias:
+    \begin{equation}
+        a_{ij}^{(h)} = \text{softmax}_j\!\Bigl(
+            \frac{\q_i^{(h)\top} \K_j^{(h)}}{\sqrt{d_h}} + \phi_j^{(h)}
+        \Bigr) \quad \text{for } j \leq i
+    \end{equation}
+    \item Compute attention output at position $i$:
+    \begin{equation}
+        \bm{o}_i^{(h)} = \sum_{j \leq i} a_{ij}^{(h)} \vv_j^{(h)}
+    \end{equation}
+    \item Compute deposit from output:
+    \begin{equation}
+        d_i^{(h)} = W_d^{(h)} \bm{o}_i
+        \label{eq:deposit_output}
+    \end{equation}
+    where $\bm{o}_i = \text{Concat}_h(\bm{o}_i^{(h)}) \cdot W_O$.
+\end{enumerate}
+\end{definition}
+
+This creates the closed feedback loop:
+\begin{equation}
+    \phi \xrightarrow{\text{bias}} \text{attention}
+    \xrightarrow{\text{aggregate}} \text{output}
+    \xrightarrow{W_d} \text{deposit}
+    \xrightarrow{\text{accumulate}} \phi
+    \label{eq:feedback_loop}
+\end{equation}
+
+\begin{remark}[Causality]
+\label{rem:causality}
+Position $i$'s deposit $d_i^{(h)}$ depends on the field at positions
+$0, \ldots, i-1$ (through the attention bias) and on the values at
+positions $0, \ldots, i$ (through the attention output). The deposit
+at position $i$ only affects the field at positions $i+1, i+2, \ldots$.
+This maintains strict causality: no position can influence its own
+field bias, analogous to how an ant's deposit only affects future ants.
+\end{remark}
+
+\begin{remark}[Computational cost]
+The feedback architecture requires sequential processing over positions
+(an $O(T)$ loop) because each position's output depends on the field
+state, which depends on all previous outputs. In parallel mode
+(training), this can be amortized: the field recurrence is a single
+scan operation, and the attention computation at each step only
+requires the pre-computed $Q, K, V$ projections. The overhead per
+position is a single linear projection $W_d$ (size $d \to H$) and
+a scalar multiply-add per head for the field update.
+\end{remark}
+
+
+% ================================================================
+\section{Analysis}
+\label{sec:analysis}
+
+% ----------------------------------------------------------------
+\subsection{The Field as Modulated State-Space Model}
+
+In the non-feedback variant, the pheromone field is a standard linear
+SSM with fixed dynamics. In the feedback variant, the effective dynamics
+become input-dependent:
+
+\begin{proposition}[Feedback field as nonlinear SSM]
+\label{prop:nonlinear}
+The feedback field can be written as:
+\begin{equation}
+    \phi_i = \retain \cdot \phi_{i-1} + f_\theta(\x_{0:i}, \phi_{0:i-1})
+\end{equation}
+where $f_\theta$ is the composition of attention (with field-dependent
+weights) and the deposit projection. This is a nonlinear SSM: the
+transition function depends on both the input sequence and the state
+history through the attention mechanism.
+\end{proposition}
+
+This is qualitatively different from linear SSMs (S4, Mamba): the
+state dynamics are \emph{modulated} by the attention mechanism, which
+itself is modulated by the state. The field and attention co-evolve.
+
+% ----------------------------------------------------------------
+\subsection{Information-Theoretic Interpretation}
+
+The three ingredients admit an information-theoretic reading:
+
+\begin{itemize}
+    \item \textbf{Erosion} ($\retain < 1$): Implements an information
+          horizon. The contribution of position $j$ to the field at
+          position $i$ decays as $\retain^{i-j}$, creating an
+          exponential forgetting curve. The effective memory span is
+          $\tau_{\text{eff}} = -1/\!\ln(\retain) \approx 1/\evap$
+          for small $\evap$.
+
+    \item \textbf{Injection}: Ensures the field receives fresh signal
+          at every position, preventing collapse to a fixed point.
+          The deposit $d_i$ injects new information proportional to the
+          local content, maintaining exploration of the input space.
+
+    \item \textbf{Amplification}: Creates selective reinforcement.
+          Positions that receive high attention produce outputs that
+          generate deposits that increase future attention to
+          positions with similar patterns. This is a form of
+          \emph{iterated distillation}: the field accumulates a
+          compressed summary of what the attention mechanism has found
+          useful.
+\end{itemize}
+
+The evaporation rate $\evap$ controls the balance:
+\begin{itemize}
+    \item $\evap \to 0$ (frozen): infinite memory, field dominated by
+          early deposits, attention locked to initial patterns
+    \item $\evap \to 1$ (disordered): instant forgetting, field
+          reflects only the most recent deposit, no accumulation
+    \item $\evap$ at criticality: memory span matches the task's
+          relevant context window
+\end{itemize}
+
+
+% ----------------------------------------------------------------
+\subsection{Relationship to Existing Architectures}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+\textbf{Architecture} & \textbf{State dim.} & \textbf{Feedback} &
+\textbf{Attention} & \textbf{Decay} \\
+\midrule
+Standard Transformer & --- & --- & content-based & --- \\
+ALiBi               & --- & --- & content + static bias & --- \\
+Feedback Transformer & $d$ & nonlinear & content-based & --- \\
+RetNet              & $d$ & linear & via $\gamma$-mask & multiplicative \\
+S4 / Mamba          & $n$ & linear & selective (Mamba) & structured $A$ \\
+Linear Attention    & $d_k \times d_v$ & linear & via kernel & implicit \\
+\addlinespace
+Stigmergic (input)  & $H$ & none & content + field bias & additive \\
+Stigmergic (feedback) & $H$ & nonlinear & content + field bias & additive \\
+\bottomrule
+\end{tabular}
+\caption{Comparison of recurrent/attention architectures. $H$ = number
+of heads, $d$ = model dimension, $n$ = SSM state dimension.}
+\label{tab:architectures}
+\end{table}
+
+Stigmergic attention decomposes into three familiar components---a
+scalar recurrence, an additive logit bias, and output feedback---each
+of which appears independently in prior work.  The contribution is
+their specific combination, motivated by the three-ingredient theory
+rather than by architectural search.
+
+\paragraph{Additive logit biases.}
+ALiBi \cite{press2022alibi} adds a fixed, non-learned linear penalty
+to attention logits based on key--query distance, improving length
+generalization without positional embeddings.  T5 relative position
+biases \cite{raffel2020t5} learn a per-distance scalar bias.  Both
+are \emph{static}: the bias depends only on position, not on content
+or state.  The pheromone field replaces these fixed biases with a
+content-dependent recurrence---it is ``ALiBi where the slope is a
+running state driven by what attention has found useful.''
+
+\paragraph{Output feedback.}
+The Feedback Transformer \cite{fan2021feedback} feeds the full
+$d$-dimensional output of the top layer back as additional context
+for the next position's attention computation.  This implements
+the same principle of output-dependent state, but through a
+full-dimensional vector used as an extra key--value pair rather than
+a scalar logit bias.  The stigmergic field is a more constrained
+version: a single scalar per head, which makes the recurrence
+interpretable and cheap but limits expressivity.
+
+\paragraph{SSM--attention hybrids.}
+Jamba \cite{lieber2024jamba}, Griffin \cite{de2024griffin}, and
+RWKV \cite{peng2023rwkv} interleave SSM or linear-recurrence layers
+with attention layers.  In all cases the two mechanisms are
+\emph{decoupled}: the SSM layer processes its input independently,
+then passes its output to attention (or vice versa).  There is no
+feedback loop between the recurrent state and the attention weights.
+Mamba-2 \cite{dao2024mamba2} shows a formal duality between SSMs and
+structured attention, but replaces softmax attention with a linear
+variant rather than augmenting it.
+
+\paragraph{What is novel.}
+The specific wiring---a scalar recurrence whose output additively
+biases softmax attention logits, with the recurrence input derived
+from attention output---does not appear in prior work to our
+knowledge.  However, the individual components are not new, and a
+reviewer could fairly characterise the architecture as ``ALiBi with a
+content-dependent recurrence'' or ``a 1-d Mamba biasing attention
+logits.''  We do not claim the architecture itself as the primary
+contribution.  Rather, the value lies in the \emph{theoretical
+framework}: the three-ingredient recipe from ant trail phase
+transitions provides principled answers to design questions that
+would otherwise be arbitrary---why scalar (not vector)? why additive
+(not multiplicative)? why from output (not input)? why uniform decay
+(not state-dependent)?  Without this framework, the non-feedback
+variant (\Cref{sec:nonfeedback}) looks equally reasonable, and there
+is no theoretical reason to predict its failure.
+
+
+% ================================================================
+\section{Experiments}
+\label{sec:experiments}
+
+% ----------------------------------------------------------------
+\subsection{Setup}
+
+\paragraph{Model.}
+A micro-GPT with 2 layers, 4 heads, $d_{\text{model}} = 48$,
+ReLU activation, RMSNorm, and $\sim$58K parameters. This deliberately
+small scale allows exhaustive sweeps with multiple seeds.
+
+\paragraph{Task.}
+In-context modular arithmetic: each sequence presents 8 input-output
+pairs $(x_i, y_i)$ where $y_i = (ax_i + b) \bmod V$ for a random
+function $(a, b)$, followed by a query $x_q$. The model must predict
+$y_q$. Vocabulary $V = 16$, sequence length $T = 18$.
+Training and test function sets are disjoint (200 train / 40 test
+functions), ensuring evaluation measures out-of-distribution
+generalization.
+
+\paragraph{Training.}
+AdamW optimizer, learning rate $3 \times 10^{-3}$ with linear decay,
+weight decay 0.10, dropout 0.05, batch size 64, 5000 steps.
+Validation accuracy averaged over last 5 checkpoints (every 50 steps).
+
+% ----------------------------------------------------------------
+\subsection{Non-Feedback Field (Negative Result)}
+
+We first sweep evaporation rate $\evap \in [0, 0.40]$ with the
+non-feedback architecture (deposits from input, \Cref{eq:deposit_input}).
+
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}lccc@{}}
+\toprule
+$\evap$ & Val. accuracy & $\pm$ std & Seeds \\
+\midrule
+0.00 & 0.656 & 0.015 & 3 \\
+0.05 & 0.652 & 0.012 & 3 \\
+0.10 & 0.653 & 0.018 & 3 \\
+0.15 & 0.648 & 0.011 & 3 \\
+0.20 & 0.674 & 0.009 & 3 \\
+0.25 & 0.663 & 0.011 & 3 \\
+0.30 & 0.651 & 0.012 & 3 \\
+0.40 & 0.722 & 0.089 & 3 \\
+\addlinespace
+No field & 0.722 & --- & 3 \\
+\bottomrule
+\end{tabular}
+\caption{Non-feedback (decay) field: no $\evap$ value matches the
+no-field baseline. The field is inert.}
+\label{tab:decay_results}
+\end{table}
+
+As predicted by \Cref{prop:nofeedback}, the non-feedback field provides
+no benefit. All $\evap$ values produce validation accuracy at or below
+the no-field baseline. There is no phase transition---the field is a
+harmless but useless exponentially-weighted positional encoding.
+
+% ----------------------------------------------------------------
+\subsection{Feedback Field}
+
+We repeat the sweep with the feedback architecture (deposits from
+output, \Cref{eq:deposit_output}).
+
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}lccc@{}}
+\toprule
+$\evap$ & Val. accuracy & $\pm$ std & Seeds \\
+\midrule
+0.00 & 0.654 & 0.016 & 3 \\
+0.05 & \textbf{0.715} & 0.080 & 3 \\
+0.10 & 0.704 & 0.069 & 3 \\
+0.15 & 0.654 & 0.015 & 3 \\
+0.20 & 0.662 & 0.009 & 3 \\
+0.25 & 0.713 & 0.086 & 3 \\
+0.30 & 0.697 & 0.074 & 3 \\
+0.40 & 0.647 & 0.018 & 3 \\
+\addlinespace
+No field & 0.722 & 0.069 & 3 \\
+\bottomrule
+\end{tabular}
+\caption{Feedback field results: deposits computed from attention output.
+The feedback mode shows higher variance and seed-dependent bimodality
+(one seed consistently reaches $\sim$0.80--0.83 while others stay at
+$\sim$0.65), suggestive of a phase transition that the model can reach
+but does not reliably find.}
+\label{tab:feedback_results}
+\end{table}
+
+The feedback results are nuanced. The mean accuracy does not exceed
+the no-field baseline, but the \emph{variance structure} is qualitatively
+different from the decay mode. In the decay mode, all seeds cluster
+tightly around 0.65. In the feedback mode, seed 137 consistently reaches
+0.80--0.83 across multiple $\evap$ values while other seeds remain at
+$\sim$0.65. This bimodality is characteristic of systems near a phase
+transition: the feedback loop creates a basin of attraction that some
+initializations find and others miss.
+
+\begin{remark}[Seed-dependent bimodality]
+The high-variance points ($\evap = 0.05, 0.10, 0.25, 0.30$) all show
+the same pattern: one seed near 0.80, two seeds near 0.65. This is
+not random noise---it is consistent across $\evap$ values for the same
+seed. The feedback loop appears to create a useful attractor that
+requires specific initialization conditions to reach, suggesting that
+the optimization landscape has multiple basins separated by barriers.
+\end{remark}
+
+% ----------------------------------------------------------------
+\subsection{Length Generalization on State-Tracking Tasks}
+\label{sec:lengthgen}
+
+The modular arithmetic task is fundamentally about random-access
+pattern matching---the model looks at examples, spots the function, and
+applies it. Standard attention already excels at this. A more principled
+evaluation tests the field on tasks requiring \emph{sequential state
+accumulation}, evaluated on \emph{out-of-distribution sequence lengths}.
+
+We train on sequences of length $T = 34$ ($n = 16$ examples) and test
+on $T \in \{34, 66, 98, 130\}$, with three tasks:
+
+\begin{itemize}
+    \item \textbf{Parity}: given random tokens $x_0, \ldots, x_n \in
+          [0, V\!-\!1]$, predict the running parity
+          $(x_0 + \cdots + x_i) \bmod 2$ at each position. This is a
+          classic transformer limitation: parity requires aggregating
+          over \emph{all} previous inputs and is not reducible to
+          attending to a single position.
+    \item \textbf{Flip-flop}: a register machine where token $0$ is
+          a no-op and any other token $k$ sets the state to $k$. The
+          model must predict the current state---i.e., the last non-zero
+          write, which may be arbitrarily far back. This tests
+          long-range memory retention.
+    \item \textbf{Cumulative sum}: predict $(x_0 + \cdots + x_i)
+          \bmod V$ at each position. This requires precise modular
+          arithmetic, not just binary state.
+\end{itemize}
+
+All tasks are trivially solvable with a running state variable (a
+single register updated at each step) and all models achieve 1.000
+accuracy at the training length $T = 34$. The question is whether
+this capability \emph{generalizes} to unseen lengths.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+& $T = 34$ & $T = 66$ & $T = 98$ & $T = 130$ \\
+& (train) & (OOD) & (OOD) & (OOD) \\
+\midrule
+\multicolumn{5}{l}{\textbf{Parity}} \\
+\quad No field       & 1.000 & 0.542{\tiny $\pm$.021} & 0.512{\tiny $\pm$.010} & 0.514{\tiny $\pm$.013} \\
+\quad Feedback $\evap\!=\!0.05$ & 1.000 & \textbf{0.615}{\tiny $\pm$.065} & 0.526{\tiny $\pm$.029} & \textbf{0.554}{\tiny $\pm$.058} \\
+\quad Feedback $\evap\!=\!0.10$ & 1.000 & 0.540{\tiny $\pm$.045} & \textbf{0.536}{\tiny $\pm$.059} & 0.525{\tiny $\pm$.022} \\
+\quad Feedback $\evap\!=\!0.20$ & 1.000 & 0.540{\tiny $\pm$.045} & 0.535{\tiny $\pm$.049} & 0.521{\tiny $\pm$.013} \\
+\addlinespace
+\multicolumn{5}{l}{\textbf{Flip-flop}} \\
+\quad No field       & 1.000 & 0.524{\tiny $\pm$.007} & 0.516{\tiny $\pm$.002} & 0.521{\tiny $\pm$.003} \\
+\quad Feedback $\evap\!=\!0.05$ & 1.000 & \textbf{0.557}{\tiny $\pm$.011} & 0.518{\tiny $\pm$.004} & 0.524{\tiny $\pm$.009} \\
+\addlinespace
+\multicolumn{5}{l}{\textbf{Cumulative sum}} \\
+\quad No field       & 1.000 & 0.098{\tiny $\pm$.013} & 0.072{\tiny $\pm$.012} & 0.078{\tiny $\pm$.014} \\
+\quad Feedback $\evap\!=\!0.05$ & 1.000 & 0.083{\tiny $\pm$.012} & 0.076{\tiny $\pm$.027} & 0.054{\tiny $\pm$.008} \\
+\bottomrule
+\end{tabular}
+\caption{Length generalization: train on $T=34$, test on longer
+sequences. Random baseline is 0.5 for parity, $1/V \approx 0.063$ for
+cumsum, $\sim 1/V$ for flip-flop. Bold marks the best result per
+row where it exceeds no-field by $>$1$\sigma$. Three seeds per condition.}
+\label{tab:lengthgen}
+\end{table}
+
+The results reveal a clear task-dependent pattern:
+
+\paragraph{Parity (positive result).}
+The feedback field at $\evap = 0.05$ improves OOD accuracy from
+$0.542 \to 0.615$ at $T = 66$ and from $0.514 \to 0.554$ at
+$T = 130$. The baseline drops to random (0.50) immediately outside
+the training distribution, while the feedback field retains partial
+generalization. This is the first clean positive result: the scalar
+recurrence carries parity state---literally a running XOR---beyond
+what position-tied attention patterns can represent.
+
+\paragraph{Flip-flop (modest signal).}
+Feedback $\evap = 0.05$ shows a consistent improvement at $T = 66$
+($0.557$ vs $0.524$) but the effect fades at longer lengths. The
+flip-flop task requires \emph{selective overwriting}---the field must
+learn to replace its state when a non-zero token appears and maintain
+it through no-ops. A single scalar recurrence with fixed decay rate
+is a poor fit: the decay is unconditional, so the state fades even
+when it should persist.
+
+\paragraph{Cumulative sum (negative result).}
+Both modes collapse to near-random at $T = 66$. Cumulative sum mod
+$V = 16$ requires precise 4-bit modular arithmetic---a scalar field
+with continuous values cannot faithfully encode a discrete counter.
+The task demands \emph{multi-bit state} that exceeds the capacity of
+$H$ scalar channels.
+
+\paragraph{Why parity works and cumsum does not.}
+The key distinction is \emph{state complexity}. Parity has 1 bit of
+state (even/odd). A single scalar field head can encode this as the
+sign of the field value, and the sign is preserved under the
+exponential decay (positive stays positive, negative stays negative).
+Cumulative sum mod 16 has $\lceil \log_2 16 \rceil = 4$ bits of
+state. To encode this, the field would need to maintain 4 independent
+channels that evolve without interference---exactly what the $H = 4$
+heads could in principle provide, but the learned positional embeddings
+(which do not generalize to unseen positions) destroy the field's
+contribution at OOD lengths.
+
+This suggests a clear scaling law for stigmergic attention: the
+feedback field can track $O(H)$ bits of state, and should outperform
+standard attention on tasks whose state complexity is $\leq H$ bits,
+evaluated at lengths beyond the training distribution.
+
+
+% ================================================================
+\section{Discussion}
+\label{sec:discussion}
+
+\subsection{What the Bug Revealed}
+
+Our investigation began with a serendipitous bug: an inverted decay
+exponent that caused the decay matrix to \emph{amplify} old deposits
+($D_{ij} = \retain^{j-i}$ with $j < i$, giving $D_{ij} > 1$) rather
+than decay them. This buggy ``amplify'' mode produced a striking phase
+transition---but one driven by exponential growth rather than
+stigmergic dynamics. Fixing the bug eliminated the phase transition
+entirely, revealing that the correct-decay field was inert.
+
+The ant paper provided the explanation: the architecture had injection
+(content-dependent deposits) and erosion (uniform decay) but lacked
+\emph{amplification} (positive feedback). The buggy amplification
+accidentally provided a crude substitute---not through the stigmergic
+mechanism, but through raw exponential growth of the field values.
+
+\subsection{The Feedback Hypothesis}
+
+The feedback architecture (\Cref{def:feedback}) is the minimal change
+that closes the loop. It adds no parameters (same $W_d$ projection)
+and changes only the \emph{source} of deposits: from the attention
+input $\x_i$ to the attention output $\bm{o}_i$.
+
+This creates qualitatively different dynamics:
+\begin{itemize}
+    \item \textbf{Self-reinforcement}: positions that receive high
+          attention produce outputs that generate deposits, which
+          increase future attention to those positions.
+    \item \textbf{Trail formation}: repeatedly useful patterns create
+          persistent field structures that guide future attention.
+    \item \textbf{Competition}: uniform erosion ensures that only
+          actively reinforced structures persist---abandoned trails
+          fade.
+\end{itemize}
+
+\subsection{Limitations}
+
+\begin{itemize}
+    \item \textbf{Scale}: All experiments use a $\sim$58K parameter
+          model on a single synthetic task. The feedback mechanism's
+          value at transformer scale is unknown.
+    \item \textbf{Sequential bottleneck}: The feedback loop requires
+          position-by-position processing during training, losing the
+          parallelism advantage of standard attention. For long
+          sequences, this may be prohibitive without approximation.
+    \item \textbf{Task specificity}: In-context modular arithmetic is
+          a controlled but narrow evaluation. Natural language tasks
+          may not benefit from the same mechanism.
+\end{itemize}
+
+
+% ================================================================
+\section{Research Directions}
+\label{sec:directions}
+
+% ----------------------------------------------------------------
+\subsection{Finding the Right Task}
+\label{sec:right_task}
+
+The modular arithmetic task may be the wrong testbed. It is
+fundamentally about \emph{algebraic structure}---recognizing $(a, b)$
+from examples and applying a formula. Attention is already good at
+this: match the query $x$ against example $x$'s, retrieve the
+corresponding $y$, infer the pattern.
+
+A stigmergic field should shine on tasks where \textbf{sequential
+accumulation matters}---where the answer depends not on retrieving a
+single example but on building up a representation \emph{across} the
+sequence. Three candidate task families:
+
+\begin{itemize}
+    \item \textbf{Counting and frequency estimation}: ``Which token
+          appeared most often?'' requires accumulating evidence across
+          all positions, not just attending to one. The field naturally
+          accumulates; attention does not.
+
+    \item \textbf{Order-dependent state tracking}: ``Follow these
+          instructions in sequence''---where each step modifies a
+          state. A maze walk, a state machine, a sequence of edits.
+          The field's recurrence is literally a running state.
+
+    \item \textbf{Multi-hop reasoning with fading evidence}: ``A is
+          north of B, B is north of C, where is A relative to C?''
+          spread across many distractor tokens. The field can maintain
+          a decaying trace of B's location while processing
+          distractors, bridging the gap without needing to attend all
+          the way back.
+\end{itemize}
+
+The common thread: tasks where a \textbf{running summary} is more
+useful than \textbf{random-access retrieval}. Standard attention
+excels at random access (query any position). The field adds a
+complementary channel---a lossy, compressed, sequential summary. If
+the task does not need that, the field is dead weight.
+
+The modular arithmetic task is almost pure random access: look at the
+examples, spot the pattern, apply it. No wonder the field does not
+help.
+
+A concrete proposal: a \textbf{state-tracking task} such as ``given a
+sequence of $+1$ and $-1$ tokens, is the running sum positive or
+negative at the query position?'' This is trivially easy with a
+running state and provably hard for bounded-depth transformers. If
+the feedback field does not help \emph{there}, it is dead. If it
+does, we have found the right problem class.
+
+% ----------------------------------------------------------------
+\subsection{Alternative Architectural Framings}
+\label{sec:alt_arch}
+
+The feedback loop implements a general pattern:
+\begin{equation*}
+    \text{state} \to \text{modulate processing} \to \text{observe result}
+    \to \text{update state} \to \text{repeat}
+\end{equation*}
+This pattern appears in several architectural families beyond
+attention, suggesting alternative carriers for the stigmergic
+mechanism.
+
+\paragraph{Energy-based models.}
+The field can be interpreted as an energy landscape that attention
+navigates. Deposits lower energy at useful positions, erosion raises
+it everywhere, and attention follows the energy gradient. This maps
+to Hopfield networks---modern Hopfield layers \cite{ramsauer2021hopfield}
+already connect energy models to attention. The feedback field could
+be an \emph{asymmetric} Hopfield energy that evolves causally.
+
+\paragraph{Predictive coding.}
+Under the predictive coding hypothesis, each layer maintains a
+prediction of its input, computes prediction errors, and updates.
+The field serves as the prediction (running estimate of what is
+important), the attention output is the observation, and the deposit
+is the prediction error. This framing naturally explains why deposits
+should come from the \emph{output} not the \emph{input}---the
+deposit is the \emph{surprise}, not the stimulus.
+
+\paragraph{Recurrent attention.}
+Universal Transformers and PonderNet iterate the same attention layer
+multiple times. The feedback field is a lightweight version: instead
+of rerunning full attention, it carries forward a scalar summary per
+head. Much cheaper, but the same principle of iterative refinement.
+
+\paragraph{Diffusion models.}
+In diffusion models, a noisy signal is iteratively refined by
+predicting and removing noise. The pheromone field could be seen as a
+``structure estimate'' that gets refined position by position. However,
+diffusion operates in continuous space with a learned score function,
+while our field is a scalar per head. The analogy is suggestive but
+the mapping is loose.
+
+We note that the hypothesis is about the \emph{feedback mechanism},
+not the specific carrier. If positive feedback between a decaying
+state and a processing layer produces useful dynamics, the principle
+should transfer across architectures. We therefore resist switching
+carriers until the mechanism is validated on a suitable task.
+
+% ----------------------------------------------------------------
+\subsection{Theoretical Limitations of Transformers}
+\label{sec:limitations}
+
+The strongest motivation for stigmergic attention comes from known
+theoretical limitations of transformers that a feedback field directly
+addresses.
+
+\paragraph{State tracking.}
+Transformers are provably bad at simulating automata or tracking
+state over long sequences \cite{merrill2023transformers}. They cannot
+count, cannot maintain a running tally, cannot simulate a state
+machine beyond a few steps. The field IS a running state---a scalar
+recurrence per head. It does not give a full state machine, but it
+provides $H$ scalar channels of persistent state that attention can
+read and write. That is exactly what is missing.
+
+\paragraph{Length generalization.}
+Transformers trained on length $N$ fail at length $N + k$. This is
+because attention patterns are tied to absolute or relative positions.
+The field's decay creates a \emph{scale-invariant} memory---the
+exponential decay $\retain^{i-j}$ depends only on distance, not
+absolute position. A feedback field trained on short sequences might
+generalize to longer ones because the dynamics are
+position-independent.
+
+\paragraph{Compositional generalization.}
+Multi-step reasoning requires chaining intermediate results. Attention
+can only do this by allocating positions as ``scratchpad''
+(chain-of-thought). The field provides an implicit scratchpad---each
+position's output modifies the field, carrying forward a compressed
+result without consuming a token position.
+
+\medskip
+
+The clearest theoretical pitch: \textbf{transformers are memoryless
+between positions}---each position's computation is independent given
+the input. The field adds causal memory. The feedback loop makes that
+memory \emph{adaptive} (content-dependent, not just positional). This
+is the one thing attention provably cannot do and the field provably
+can.
+
+
+% ================================================================
+\section{Other Perspectives: Multi-Scale and Hierarchical Fields}
+\label{sec:perspectives}
+
+The single-scale, single-layer field presented so far is the minimal
+instantiation of stigmergic dynamics.  But the three-ingredient
+recipe is a \emph{local} constraint---it specifies the conditions for
+edge-of-chaos dynamics within a single field.  This raises a natural
+question: what happens when multiple fields interact across timescales
+or across layers?  We argue that the uncoupling requirements
+(injection and erosion uncorrelated with the field) need only hold
+\emph{within} a scale, not \emph{between} scales.  Signals arriving
+from a different timescale or a different layer are, from the
+perspective of the receiving field, external inputs---structurally
+analogous to injection, not to self-correlated feedback.
+
+% ----------------------------------------------------------------
+\subsection{Multi-Scale Fields}
+\label{sec:multiscale}
+
+Instead of a single field per head, assign each head a
+\emph{different} evaporation rate, or equip each head with multiple
+fields at distinct timescales.  In the simplest version, head $h$
+operates at retention rate $\retain_h$, and the collection of heads
+spans a range from fast (small $\retain$, local pattern tracking)
+to slow (large $\retain$, global structure).
+
+A richer variant couples a fast field and a slow field per head:
+\begin{align}
+    \phi_i^{\text{fast}} &= \retain_f \cdot \phi_{i-1}^{\text{fast}} + d_i
+    \label{eq:fast_field} \\
+    \phi_i^{\text{slow}} &= \retain_s \cdot \phi_{i-1}^{\text{slow}} + h(\phi_i^{\text{fast}})
+    \label{eq:slow_field}
+\end{align}
+where $\retain_s \gg \retain_f$ and $h$ is a learned scalar
+projection.  The fast field tracks recent attention patterns via
+output deposits as before.  The slow field accumulates a summary of
+\emph{which fast-field patterns persist}---it is a distillation of
+the distillation.  Both fields contribute additive biases to the
+attention logits:
+\begin{equation}
+    \ell_{ij}^{(h)} = \frac{\q_i^{(h)\top} \K_j^{(h)}}{\sqrt{d_h}}
+    + \phi_j^{\text{fast}} + \phi_j^{\text{slow}}
+    \label{eq:multiscale_logit}
+\end{equation}
+
+The biological analogue is direct: social insects use multiple
+pheromone species with different volatilities.  Trail pheromone
+(fast) marks recent paths and evaporates in minutes; colony
+pheromone (slow) marks established routes and persists for hours.
+The slow pheromone does not respond to individual ant decisions---it
+integrates over the fast pheromone's history.
+
+\paragraph{Why the three-ingredient recipe still holds.}
+Consider the slow field in isolation.  Its deposit source is
+$h(\phi^{\text{fast}})$, which depends on the fast field but
+\emph{not} on $\phi^{\text{slow}}$ itself.  From the slow field's
+perspective, this is injection: an external signal uncorrelated with
+its own state.  Its erosion ($\retain_s < 1$) is uniform.  Its
+amplification comes indirectly: the slow field biases attention,
+which shapes the output, which feeds the fast field, which eventually
+feeds the slow field---but this loop passes through the fast field's
+own dynamics, maintaining the separation of scales.  The
+uncoupling constraints hold \emph{within each scale} even though the
+scales are coupled \emph{between} each other.
+
+This is analogous to how weather (slow) affects pheromone evaporation
+rates without violating the local dynamics of trail formation: the
+weather is external to the ant--pheromone system even though it
+modulates it.
+
+% ----------------------------------------------------------------
+\subsection{Cross-Layer Fields}
+\label{sec:crosslayer}
+
+In a multi-layer transformer, each layer currently maintains an
+independent field with no memory of previous layers.  A natural
+extension passes field state \emph{vertically}.  For a network with
+layers $L = 1, \ldots, \mathcal{L}$, the field at layer $L$ evolves
+as:
+\begin{align}
+    \phi_i^{(L)} &= \retain^{(L)} \cdot \phi_{i-1}^{(L)} + d_i^{(L)},
+    \qquad d_i^{(L)} = W_d^{(L)} \bm{o}_i^{(L)}
+    \label{eq:crosslayer_recurrence}
+\end{align}
+with the cross-layer initial condition:
+\begin{equation}
+    \phi_0^{(L+1)} = g^{(L)}\!\bigl(\phi_T^{(L)}\bigr)
+    \label{eq:crosslayer_init}
+\end{equation}
+where $\phi_T^{(L)}$ is the terminal field state of layer $L$ and
+$g^{(L)}$ is a learned scalar projection.  Layer $L+1$ inherits a
+landscape shaped by layer $L$'s attention patterns and refines it
+with its own deposits.
+
+This creates \textbf{hierarchical feature accumulation}: layer~1's
+field summarises token-level patterns (which tokens were attended
+to), layer~2's field summarises layer~1's abstractions (which
+\emph{patterns of attention} recurred), and so on.  Each layer
+refines the previous layer's trail map at a higher level of
+abstraction.  Unrolling the full cross-layer field at layer $L+1$:
+\begin{equation}
+    \phi_i^{(L+1)} = (\retain^{(L+1)})^i \cdot g^{(L)}\!\bigl(\phi_T^{(L)}\bigr)
+    + \sum_{j=0}^{i} (\retain^{(L+1)})^{i-j} \cdot d_j^{(L+1)}
+    \label{eq:crosslayer_unrolled}
+\end{equation}
+The first term is the inherited landscape, decaying as the new
+layer processes the sequence; the second term is the new layer's own
+deposits.  The relative influence of inheritance vs.\ fresh deposits
+is controlled by the retention rate and sequence length.
+
+The same within-scale uncoupling argument applies.  Layer $L+1$'s
+field receives $g(\phi_T^{(L)})$ as an initial condition---a
+one-time injection from an external source.  The field's own
+recurrence, deposits, and erosion then proceed independently.  The
+cross-layer signal is structurally identical to an initial deposit:
+external, uncorrelated with the receiving field's future state.
+
+\paragraph{Combining multi-scale and cross-layer.}
+The two extensions compose naturally.  Each layer $L$ maintains fast
+and slow fields; the slow field's terminal state seeds the next
+layer's slow field:
+\begin{align}
+    \phi_i^{(L,f)} &= \retain_f^{(L)} \cdot \phi_{i-1}^{(L,f)} + d_i^{(L)}
+    \label{eq:combined_fast} \\
+    \phi_i^{(L,s)} &= \retain_s^{(L)} \cdot \phi_{i-1}^{(L,s)} + h^{(L)}\!\bigl(\phi_i^{(L,f)}\bigr)
+    \label{eq:combined_slow} \\
+    \phi_0^{(L+1,s)} &= g^{(L)}\!\bigl(\phi_T^{(L,s)}\bigr)
+    \label{eq:combined_cross}
+\end{align}
+with the attention logit at layer $L$:
+\begin{equation}
+    \ell_{ij}^{(L,h)} = \frac{\q_i^{(L,h)\top} \K_j^{(L,h)}}{\sqrt{d_h}}
+    + \phi_j^{(L,f)} + \phi_j^{(L,s)}
+    \label{eq:combined_logit}
+\end{equation}
+This gives the network a hierarchy along two axes:
+\emph{temporal} (fast vs.\ slow within a layer) and
+\emph{representational} (shallow vs.\ deep across layers).  The
+result is a lattice of interacting fields, each governed locally by
+the three-ingredient recipe, coupled only through external channels
+that preserve the uncoupling constraints.
+
+% ----------------------------------------------------------------
+\subsection{Adaptive Criticality}
+\label{sec:adaptive_crit}
+
+A more speculative extension treats the evaporation rate itself as a
+field.  A \emph{volatility field} $\psi_i$ modulates the primary
+field's retention:
+\begin{align}
+    \phi_i &= \retain(\psi_i) \cdot \phi_{i-1} + d_i
+    \label{eq:adaptive_phi} \\
+    \psi_i &= \retain_\psi \cdot \psi_{i-1} + d_i^{(\psi)}
+    \label{eq:volatility_field}
+\end{align}
+where $\retain(\psi) = \sigma(\psi)$ maps the volatility field to a
+retention rate via a sigmoid, and $\retain_\psi \approx 1$ ensures
+$\psi$ evolves on a much slower timescale than $\phi$.
+
+This directly raises the question of whether the three-ingredient
+recipe tolerates inter-scale coupling at all.  The lattice ant model
+tested state-dependent erosion and found that it destroys
+edge-of-chaos dynamics in every case---but those tests modulated
+erosion as a function of the field's \emph{own} value at the
+\emph{same} position and timescale.  The multi-scale and cross-layer
+extensions proposed above involve a different structure: modulation
+by a signal that is external to the receiving field's dynamics.  We
+state this distinction as a hypothesis.
+
+\begin{quote}
+\textbf{Hypothesis (Scale-local uncoupling).}
+\emph{The three-ingredient conditions for edge-of-chaos
+dynamics---amplification, uncorrelated injection, and uncorrelated
+erosion---are scale-local: they must hold within a single field's
+characteristic timescale $\tau_{\emph{eff}}$, but may be violated by
+signals arriving from a sufficiently separated timescale.}
+\end{quote}
+
+\paragraph{Why this might be correct.}
+The argument is an adiabatic approximation.  If the volatility field
+$\psi$ varies on a timescale $\tau_\psi \gg \tau_\phi$, then over
+any window of length $\sim\!\tau_\phi$ the retention rate
+$\retain(\psi)$ is effectively constant.  The fast field experiences
+locally uniform erosion at every instant, which is exactly what the
+recipe requires.  The slow modulation shifts the fast field's
+operating point over time but does not introduce within-scale
+correlation between the erosion rate and the field value.  This is
+the same reasoning that allows thermodynamics to treat temperature as
+a constant in chemical kinetics even though temperature is itself
+changing: the reaction timescale is fast relative to the thermal
+timescale.  In biological terms, weather modulates pheromone
+evaporation rates without violating the local trail-formation
+dynamics---rain is external to the ant--pheromone system even though
+it changes the evaporation rate everywhere.
+
+The same logic extends to cross-layer fields
+(\Cref{sec:crosslayer}): the inherited initial condition
+$g(\phi_T^{(L)})$ is a one-time injection from an external source.
+And to multi-scale fields (\Cref{sec:multiscale}): the slow field's
+deposit $h(\phi^{\text{fast}})$ depends on the fast field, not on
+the slow field's own state.  In each case, the inter-scale signal is
+structurally external to the receiving field.
+
+\paragraph{Why this might be wrong.}
+Three concerns deserve scrutiny:
+\begin{enumerate}
+    \item \textbf{The ant paper did not test this.}  All seven failed
+          mechanisms in \cite{antpaper} involved within-scale
+          state dependence.  Slowly varying external modulation was
+          not tested.  The hypothesis is an extrapolation, not an
+          established result.
+
+    \item \textbf{Bifurcation crossings.}  The adiabatic
+          approximation fails when the slow variable passes through a
+          bifurcation point of the fast system.  If $\psi$ drifts
+          through the critical evaporation rate $\evap^*$, the fast
+          field undergoes an abrupt phase transition rather than a
+          smooth parameter change.  The fast dynamics cannot track a
+          discontinuity adiabatically.  In the neural setting this
+          might be benign (the network learns to avoid the critical
+          point) or catastrophic (training becomes unstable near the
+          transition).  This is an empirical question.
+
+    \item \textbf{``Sufficiently separated'' is vague.}  How large
+          must $\tau_\psi / \tau_\phi$ be?  The adiabatic
+          approximation is a continuum of accuracy, not a binary
+          condition.  At moderate separation the fast field
+          experiences erosion that is \emph{approximately} uniform
+          but not exactly so---enough correlation to degrade
+          edge-of-chaos dynamics without obviously breaking them.
+          The required separation ratio is likely task-dependent and
+          must be determined empirically.
+\end{enumerate}
+
+\paragraph{A testable prediction.}
+The lattice ant model provides a direct testbed.  Modulate the
+evaporation rate $\lambda$ sinusoidally at period $P$ and measure the
+edge-of-chaos order parameter as a function of $P / \tau_\phi$.  The
+hypothesis predicts that edge-of-chaos dynamics survive when $P \gg
+\tau_\phi$ and collapse when $P \sim \tau_\phi$.  The crossover
+point would quantify the required timescale separation.  If
+confirmed, this would establish scale-local uncoupling as a general
+principle for stigmergic systems; if falsified, it would constrain
+the multi-scale and adaptive extensions to purely static
+(non-state-dependent) parameter choices.
+
+% ----------------------------------------------------------------
+\subsection{Experimental Feasibility at Current Scale}
+\label{sec:feasibility}
+
+The micro-GPT used in \Cref{sec:experiments} (2 layers, 4 heads,
+$d_{\text{model}} = 48$, $T = 18$) is sufficient to test some of
+the proposed extensions but not all.  We summarise the feasibility
+constraints to guide the experimental programme.
+
+\paragraph{Multi-scale fields (\Cref{sec:multiscale}).}
+\emph{Feasible.}  With 4 heads, the simplest test assigns different
+evaporation rates per head---e.g., 2 fast heads ($\evap_f$) and 2
+slow heads ($\evap_s$)---and compares against uniform $\evap$ across
+all heads.  This requires no architectural changes beyond making
+$\evap$ a per-head parameter.  The coupled fast--slow variant
+(\Cref{eq:fast_field,eq:slow_field}) adds one scalar projection $h$
+per head, a negligible parameter increase.
+
+However, the short sequence length ($T = 18$) constrains the range
+of useful timescales.  A slow field with $\retain_s = 0.99$ has
+effective memory $\tau_{\text{eff}} = -1/\!\ln(0.99) \approx 100$,
+far exceeding the sequence---it is effectively frozen, accumulating
+all deposits with near-zero decay.  A fast field with $\retain_f =
+0.90$ has $\tau_{\text{eff}} \approx 10$, covering most of the
+sequence.  Meaningful separation requires:
+\begin{equation}
+    1 \ll \tau_{\text{eff}}^{\text{fast}} < T \ll \tau_{\text{eff}}^{\text{slow}}
+    \label{eq:timescale_constraint}
+\end{equation}
+At $T = 18$ there is limited dynamic range for the fast field to
+operate in a non-trivial regime while leaving room for a separated
+slow field.
+
+\paragraph{Cross-layer fields (\Cref{sec:crosslayer}).}
+\emph{Feasible at minimum depth.}  Two layers provide exactly one
+cross-layer handoff: layer~1's terminal field state $\phi_T^{(1)}$
+seeds layer~2's initial condition via \Cref{eq:crosslayer_init}.
+This is the minimal test of whether field inheritance helps at all.
+It cannot show whether the effect compounds over depth.  A 4-layer
+model provides three cross-layer handoffs---enough to observe whether
+hierarchical accumulation compounds or saturates.
+
+\paragraph{Adaptive criticality (\Cref{sec:adaptive_crit}).}
+\emph{Not feasible at current scale.}  The volatility field $\psi$
+must vary meaningfully \emph{during} the sequence for the adaptive
+mechanism to differ from a static $\evap$.  At $T = 18$, a slowly
+varying $\psi$ with $\retain_\psi \approx 1$ is effectively constant
+across the sequence---indistinguishable from a learned fixed
+$\evap$.  Testing adaptive criticality requires sequences long enough
+for the slow field to traverse a non-trivial trajectory, suggesting
+$T \geq 128$.
+
+\paragraph{Recommended progression.}
+The experimental programme proceeds in three stages:
+\begin{enumerate}
+    \item \textbf{Validate the base mechanism} on a task that requires
+          sequential accumulation (state tracking: running sum of
+          $\pm 1$ tokens, as proposed in \Cref{sec:right_task}).  If
+          the single-scale feedback field does not help here, the
+          hierarchical extensions are moot.
+    \item \textbf{Test multi-scale and cross-layer} on the same task
+          at $T = 18$.  Per-head evaporation rates and one cross-layer
+          handoff are cheap additions.  Compare: (a) uniform $\evap$
+          feedback, (b) per-head $\evap$ feedback, (c) cross-layer
+          feedback, (d) both.
+    \item \textbf{Scale up} to $T \in [128, 256]$ with a 4-layer
+          model ($d_{\text{model}} \geq 96$) to test adaptive
+          criticality and deep cross-layer accumulation.  At this
+          scale, the timescale separation
+          constraint (\Cref{eq:timescale_constraint}) admits a
+          meaningful range, and the bifurcation-crossing concern
+          becomes empirically testable.
+\end{enumerate}
+
+
+% ================================================================
+\section{Conclusion}
+\label{sec:conclusion}
+
+We presented stigmergic attention, an architecture that augments
+transformer attention with a decaying pheromone field. Guided by the
+phase transition theory of lattice ant models, we identified that the
+critical ingredient for non-trivial dynamics is \emph{positive
+feedback}---computing deposits from attention output, not input.
+
+The non-feedback variant is provably inert: a causally-weighted
+moving average that adds nothing beyond positional information.
+The feedback variant closes the loop between field and attention,
+creating a nonlinear state-space model coupled to the attention
+mechanism.
+
+The length generalization experiments (\Cref{sec:lengthgen}) provide
+the clearest evidence for the mechanism. On parity---a canonical
+state-tracking task---the feedback field improves out-of-distribution
+accuracy from $0.54 \to 0.62$ at $2\times$ the training length and
+from $0.51 \to 0.55$ at $4\times$, while all models achieve 1.000
+at the training length. The effect is task-specific: it appears on
+parity (1-bit state, within the field's capacity) but not on
+cumulative sum mod 16 (4-bit state, exceeding scalar capacity).
+This pattern suggests a \emph{state-complexity scaling law}: the
+field should help when the task's state fits in $O(H)$ scalar
+channels.
+
+The results are modest in absolute terms but directionally clear:
+the feedback field provides a form of intrinsic memory that
+standard attention lacks, and this memory transfers to unseen
+sequence lengths because the exponential decay $\retain^{i-j}$
+depends on distance, not absolute position. The mechanism maps
+cleanly to existing architectural concepts---it is simultaneously a
+content-dependent ALiBi, a minimal SSM coupled to attention, and
+a neural instantiation of the ant trail recipe.
+
+A fundamental limitation of the scalar-bias architecture is its
+expressivity: a single scalar per head can bias \emph{how much}
+attention a position receives, but cannot modulate \emph{what kind}
+of matching occurs. The field says ``attend more here'' but not
+``attend in this direction.'' Real pheromone trails encode
+\emph{gradients}---ants follow concentration differentials, not
+absolute levels. The neural analogue would be a field that modulates
+the geometry of the attention space itself---producing vectors that
+reshape keys or queries rather than scalars that nudge logits. This
+suggests a successor architecture where the field is a co-equal
+routing mechanism, not an additive decoration, decomposing attention
+into structured content matching and experiential trail following.
+This direction is explored in a companion paper.
+
+\paragraph{Note: from scalar bias to multiscale vector fields.}
+Two companion papers develop the successor architecture.  The
+dual-channel paper replaces the scalar logit bias with a vector
+social field that modulates key geometry, dramatically increasing
+state capacity (cumsum mod 16 at $2\times$: 0.999 vs 0.279 baseline).
+The hierarchical coupling paper further shows that a single timescale
+is insufficient on natural language: adding a second, slow field
+with learnable retention produces a 36.6\% ablation delta at late
+positions, compared to 2.18\% for the single field, and the model
+spontaneously discovers the scale separation that the edge-of-chaos
+theory here predicts is necessary---fast field for local dynamics,
+slow field for long-range memory, with the evaporation rate
+controlling the transition between ordered and disordered phases
+exactly as in the lattice ant model.
+
+
+\bibliographystyle{plain}
+\begin{thebibliography}{9}
+
+\bibitem{antpaper}
+Pheromone trail formation at the edge of chaos: Phase diagrams of a
+lattice ant model.
+\emph{Research paper}, 2024.
+
+\bibitem{vaswani2017attention}
+A.~Vaswani, N.~Shazeer, N.~Parmar, J.~Uszkoreit, L.~Jones,
+A.~N.~Gomez, \L.~Kaiser, and I.~Polosukhin.
+Attention is all you need.
+In \emph{NeurIPS}, 2017.
+
+\bibitem{gu2022s4}
+A.~Gu, K.~Goel, and C.~R\'{e}.
+Efficiently modeling long sequences with structured state spaces.
+In \emph{ICLR}, 2022.
+
+\bibitem{gu2023mamba}
+A.~Gu and T.~Dao.
+Mamba: Linear-time sequence modeling with selective state spaces.
+\emph{arXiv:2312.00752}, 2023.
+
+\bibitem{sun2023retnet}
+Y.~Sun, L.~Dong, S.~Huang, S.~Ma, Y.~Xia, J.~Xue, J.~Wang, and F.~Wei.
+Retentive network: A successor to transformer for large language models.
+\emph{arXiv:2307.08621}, 2023.
+
+\bibitem{ramsauer2021hopfield}
+H.~Ramsauer, B.~Sch\"{a}fl, J.~Lehner, P.~Seidl, M.~Widrich,
+T.~Adler, L.~Gruber, M.~Holzleitner, M.~Pavlovi\'{c}, G.~K.~Sandve,
+V.~Greiff, D.~Kreil, M.~Kopp, G.~Klambauer, J.~Brandstetter, and
+S.~Hochreiter.
+Hopfield networks is all you need.
+In \emph{ICLR}, 2021.
+
+\bibitem{merrill2023transformers}
+W.~Merrill and A.~Sabharwal.
+The parallelism tradeoff: Limitations of log-precision transformers.
+\emph{Transactions of the Association for Computational Linguistics},
+11:531--545, 2023.
+
+\bibitem{press2022alibi}
+O.~Press, N.~Smith, and M.~Lewis.
+Train short, test long: Attention with linear biases enables input
+length extrapolation.
+In \emph{ICLR}, 2022.
+
+\bibitem{raffel2020t5}
+C.~Raffel, N.~Shazeer, A.~Roberts, K.~Lee, S.~Narang, M.~Matena,
+Y.~Zhou, W.~Li, and P.~J.~Liu.
+Exploring the limits of transfer learning with a unified text-to-text
+transformer.
+\emph{JMLR}, 21(140):1--67, 2020.
+
+\bibitem{fan2021feedback}
+A.~Fan, T.~Lavril, E.~Grave, A.~Joulin, and S.~Sukhbaatar.
+Addressing some limitations of transformers with feedback memory.
+\emph{arXiv:2002.09402}, 2021.
+
+\bibitem{lieber2024jamba}
+O.~Lieber, B.~Lenz, H.~Bata, G.~Cohen, J.~Osin, I.~Dalmedigos,
+E.~Safahi, S.~Meirom, Y.~Belinkov, S.~Shalev-Shwartz, and
+O.~Shoham.
+Jamba: A hybrid transformer-mamba language model.
+\emph{arXiv:2403.19887}, 2024.
+
+\bibitem{de2024griffin}
+S.~De, S.~L.~Smith, A.~Fernando, A.~Botev, G.~Cristian-Muraru,
+A.~Gu, R.~Harber, L.~Hazan, Y.-H.~Hsu, et~al.
+Griffin: Mixing gated linear recurrences with local attention for
+efficient language models.
+\emph{arXiv:2402.19427}, 2024.
+
+\bibitem{peng2023rwkv}
+B.~Peng, E.~Alcaide, Q.~Anthony, A.~Albalak, S.~Arcadinho,
+H.~Cao, X.~Cheng, M.~Chung, et~al.
+RWKV: Reinventing RNNs for the transformer era.
+In \emph{EMNLP Findings}, 2023.
+
+\bibitem{dao2024mamba2}
+T.~Dao and A.~Gu.
+Transformers are SSMs: Generalized models and efficient algorithms
+through structured state space duality.
+In \emph{ICML}, 2024.
+
+\end{thebibliography}
+
+\end{document}

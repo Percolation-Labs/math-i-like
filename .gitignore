@@ -23,3 +23,33 @@ Cargo.lock
 # OS
 .DS_Store
 Thumbs.db
+
+# WIP papers
+**/paper/wip/
+**/docs/
+!**/docs/*.tex
+!**/docs/*.pdf
+
+# Simulation results / outputs
+**/results/
+**/output/
+**/experiments/results/
+**/experiments/*/results/
+**/sim_sweeps/
+**/sweep/
+**/sweep_simple/
+**/sweep_antisocial/
+
+# Test outputs and model checkpoints
+**/learn/
+**/checkpoints/
+*.pth
+*.pt
+*.ckpt
+
+# Large data
+*.csv
+*.parquet
+*.npy
+*.npz
+

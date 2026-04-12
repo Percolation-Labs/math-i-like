@@ -1,0 +1,1361 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{bm}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage[margin=1in]{geometry}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{subcaption}
+\usepackage{xcolor}
+\usepackage{cleveref}
+
+\newtheorem{definition}{Definition}
+\newtheorem{proposition}{Proposition}
+\newtheorem{theorem}{Theorem}
+\newtheorem{remark}{Remark}
+
+\newcommand{\field}{\bm{\phi}}
+\newcommand{\evap}{\varepsilon}
+\newcommand{\retain}{\alpha}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\x}{\bm{x}}
+\newcommand{\q}{\bm{q}}
+\newcommand{\K}{\bm{k}}
+\newcommand{\vv}{\bm{v}}
+
+\title{Dual-Channel Attention:\\
+Critical Phase Transitions and Trail Fields\\
+in Neural Sequence Processing}
+
+\author{Research Notes}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Systems poised at a critical phase transition---between quiescent and
+runaway-active regimes---exhibit maximal dynamic range, information
+transmission, and adaptability.  Neuronal avalanches in cortex and
+pheromone trail formation in ant colonies both belong to the directed
+percolation universality class, governed by the same three minimal
+ingredients: \emph{amplification} (positive feedback),
+\emph{injection} (activity-dependent deposition), and \emph{erosion}
+(uniform decay)---subject to the constraint, demonstrated in a
+companion lattice ant study, that erosion must be \emph{uncoupled}
+from the field it erodes.  We ask whether importing these ingredients
+and this constraint into transformer attention produces measurable
+computational benefits.  We
+propose \emph{dual-channel attention}, which decomposes the attention
+mechanism into a \emph{structured channel} (content-based Q/K
+matching) and a \emph{social channel}: a per-head vector recurrence
+whose output modulates the key geometry of attention, reshaping
+\emph{what} the model matches against rather than merely biasing
+\emph{how much} attention each position receives.  The social channel
+implements all three critical ingredients within the attention
+computation itself, providing intrinsic sequential memory that is
+architecturally distinct from content matching.  We ground this
+design in the neurobiology of synaptic tagging, volume transmission,
+and activity-dependent myelination---mechanisms that are functionally
+stigmergic---and frame the architecture as an exploration of
+criticality in learned sequence processing.
+\end{abstract}
+
+
+% ================================================================
+\section{Introduction}
+\label{sec:intro}
+
+% ----------------------------------------------------------------
+\subsection{Criticality in Learning Systems}
+
+A growing body of evidence suggests that biological neural systems
+operate near a \emph{critical phase transition}---the boundary between
+a quiescent regime (activity dies out) and a runaway-active regime
+(activity explodes).  At this critical point, systems exhibit maximal
+dynamic range, maximal information transmission, and maximal
+sensitivity to input \cite{beggs2003,shew2013,chialvo2010}.
+
+Beggs and Plenz~\cite{beggs2003} showed that spontaneous activity in
+cortical slices produces \emph{neuronal avalanches} whose size
+distribution follows a power law with exponent $-3/2$---the signature
+of the \emph{mean-field directed percolation} (DP) universality
+class.  The branching parameter $\sigma$ converges to $\sim\!1$:
+below 1, activity dies; above 1, it explodes; at exactly 1, it
+persists at all scales.
+
+This is not unique to neurons.  Munoz~\cite{munoz2018}, in a
+comprehensive review in \emph{Reviews of Modern Physics}, shows that
+the same critical scaling laws appear across living systems---from
+gene regulatory networks to bird flocks to insect colony foraging.
+The Janssen--Grassberger conjecture \cite{janssen1981,grassberger1982}
+provides the theoretical bridge: \emph{any} system with (1)~a
+continuous phase transition into an absorbing state, (2)~a
+one-component order parameter, (3)~short-range interactions, and
+(4)~no additional symmetries belongs to the DP universality class.
+
+% ----------------------------------------------------------------
+\subsection{The Three Ingredients}
+
+The simplest lattice model in the DP universality class is the
+\emph{contact process} \cite{harris1974}: sites on a grid are active
+or inactive; active sites activate neighbors at rate $\lambda$ and
+deactivate at rate~1.  The all-inactive state is absorbing.  At
+critical $\lambda_c$, the system undergoes a continuous phase
+transition with DP exponents.
+
+What are the minimal ingredients for this transition?  Following
+Deneubourg et al.~\cite{deneubourg1990} and the ant trail literature,
+we identify three:
+
+\begin{enumerate}
+    \item \textbf{Amplification} (positive feedback): activity at a
+          site increases the probability of future activity at that
+          site or its neighbors.
+    \item \textbf{Injection} (content-dependent deposition): active
+          sites deposit a trace into a shared medium---a signal that
+          persists beyond the lifetime of the activity that created it.
+    \item \textbf{Erosion} (uniform decay): traces fade at a constant
+          rate, preventing runaway accumulation and enabling the system
+          to forget.
+\end{enumerate}
+
+These three ingredients are necessary and sufficient for the DP phase
+transition.  Remove any one and the transition vanishes: without
+amplification, traces have no effect; without injection, there is
+nothing to amplify; without erosion, the system saturates.
+
+A crucial additional constraint, revealed by systematic study of
+our lattice ant model, is that \textbf{erosion must be uncoupled from
+the field it erodes}.  Of nine model variants tested, only those with
+uniform, field-independent decay produced edge-of-chaos dynamics.
+Every variant that introduced decay or noise \emph{correlated} with
+the pheromone concentration---follow-probability modulation,
+habituation, sensory saturation, coupled deposition---destroyed the
+critical ridge entirely.  The mechanism is intuitive: field-correlated
+perturbations feed back into the amplification loop, creating a
+self-cancelling cycle that prevents the system from reaching the
+delicate balance between growth and decay that defines criticality.
+In stigmergic systems, the hard problem is not \emph{producing}
+edge-of-chaos dynamics but \emph{not destroying} them.  We therefore
+treat \textbf{field-independent erosion} as a fourth design
+requirement, equal in importance to the three ingredients themselves.
+
+% ----------------------------------------------------------------
+\subsection{Ant Trails as the Simplest Illustration}
+
+Ant trail formation is the most intuitive system exhibiting these
+ingredients.  Ants deposit pheromone (injection), subsequent ants
+preferentially follow stronger trails (amplification), and pheromone
+evaporates (erosion).  Deneubourg's bifurcation model
+\cite{deneubourg1990} shows that above a critical interaction
+frequency, symmetry breaks and coherent trails emerge---a continuous
+phase transition with the same mathematical structure as neuronal
+avalanches.
+
+We emphasize: the ant model is not the \emph{motivation} for our
+architecture.  It is the simplest system that makes the critical
+ingredients visible.  The motivation comes from the shared
+universality class connecting ant dynamics and neural dynamics.
+
+% ----------------------------------------------------------------
+\subsection{Neural Biological Parallels}
+
+Biological neurons possess mechanisms that are functionally
+stigmergic---activity leaves traces in a shared medium that modulate
+future activity:
+
+\begin{itemize}
+    \item \textbf{Synaptic tagging} \cite{frey1997}: A weak stimulus
+          creates a short-lived, protein-synthesis-independent ``tag''
+          at a synapse.  A strong stimulus at \emph{any} tagged synapse
+          triggers plasticity-related protein synthesis captured by
+          \emph{all} tagged synapses.  Tags decay without reinforcement
+          (erosion), activity creates them (injection), and they bias
+          future plasticity (amplification).
+
+    \item \textbf{Nitric oxide volume transmission}
+          \cite{bhatt2000,philippides2005}: NO diffuses isotropically
+          through tissue, affecting neurons with no active synaptic
+          connection to the source.  This is four-dimensional
+          environmental signaling---a diffuse field, not a directed
+          synapse.
+
+    \item \textbf{Perineuronal nets}: Extracellular matrix structures
+          surrounding neurons are modified by experience, physically
+          constraining future plasticity---a literal environmental
+          trace.
+
+    \item \textbf{Activity-dependent myelination}: Heavily used axons
+          receive more myelin, increasing conduction speed.  Use
+          modifies the physical substrate, which modifies future signal
+          propagation---trail reinforcement.
+\end{itemize}
+
+None of these mechanisms are typically called ``stigmergic'' in the
+neuroscience literature, but they satisfy the definition precisely:
+indirect coordination through modification of a shared environment.
+The term \emph{stigmergy} (Grass\'{e}, 1959) was coined for termite
+construction, but the mathematical structure---injection, amplification,
+erosion leading to a DP-class phase transition---appears to be a
+universal motif in biological information processing.
+
+% ----------------------------------------------------------------
+\subsection{From Criticality to Architecture}
+
+Our hypothesis: importing the three critical ingredients---plus the
+uncoupling constraint---into transformer attention should produce
+measurable computational benefits, particularly for tasks requiring
+sequential state maintenance---where standard attention's memoryless
+query/key matching is provably limited.
+
+In a companion paper \cite{stigmergic2024}, we tested this with the
+simplest possible implementation: a \emph{scalar} pheromone field
+biasing attention logits.  The results established that the feedback
+loop matters (deposits must come from attention \emph{output}, not
+input, to close the amplification loop), but the scalar field proved
+too weak.  The effect was directional: $+0.07$ accuracy on parity
+length generalization, modest improvement on flipflop, no effect on
+cumulative sum.  A scalar field decoupled from the attention geometry
+cannot express state-dependent routing---it can only say ``attend more
+here,'' not ``attend \emph{differently} here.''  Softmax
+normalization absorbs most of the scalar signal.
+
+This paper proposes \emph{dual-channel attention}: a vector social
+field that modulates the \emph{geometry} of key space, not just the
+magnitude of attention scores.  The field operates in the same
+representational space as Q/K matching, making it a co-equal routing
+mechanism rather than a decorative bias.  Crucially, the social
+field's decay is \emph{uniform}---a fixed retention factor $\retain$
+applied identically regardless of the field's current magnitude---in
+accordance with the uncoupling constraint.  Content-dependent gating
+controls what is \emph{deposited}; erosion remains content-blind.
+
+
+% ================================================================
+\section{Why Scalar Biases Are Insufficient}
+\label{sec:motivation}
+
+Consider two positions $j_1, j_2$ with raw attention scores $s_1,
+s_2$ and scalar field values $\phi_1, \phi_2$.  The relative
+attention ratio is:
+\begin{equation}
+    \frac{a_{j_1}}{a_{j_2}}
+    = \frac{\exp(s_1 + \phi_1)}{\exp(s_2 + \phi_2)}
+    = \frac{\exp(s_1)}{\exp(s_2)} \cdot \exp(\phi_1 - \phi_2)
+\end{equation}
+Only the \emph{difference} $\phi_1 - \phi_2$ matters.  If the field
+encodes a running state (e.g., parity), all positions receive similar
+accumulated values, making the difference small and the bias
+negligible.
+
+A scalar bias per position can only say ``attend more here'' or
+``attend less here.''  It cannot say:
+\begin{itemize}
+    \item ``The sequence so far contains an odd count---match against
+          keys that encode parity-sensitivity.''
+    \item ``The last state-changing event was a \texttt{SET 5}
+          command---adjust the key space to surface positions carrying
+          that register value.''
+\end{itemize}
+
+These require modulating the \emph{geometry} of attention, not its
+\emph{magnitude}.  A vector field that modulates keys changes which
+\emph{dimensions} of the key space matter, creating orthogonal
+routing channels that softmax normalization cannot absorb.
+
+
+% ================================================================
+\section{Why Start with Attention}
+\label{sec:why_attention}
+
+The three critical ingredients could in principle be added to any
+differentiable computation: MLPs, convolutions, SSMs.  We target
+attention specifically for three reasons.
+
+First, attention is \emph{memoryless between positions}.  Each
+position computes its output from scratch via Q/K matching, with no
+carried state.  This is precisely the property that makes standard
+attention fail at sequential state-tracking tasks (parity, counting,
+register maintenance)---tasks where biological neural systems, which
+\emph{do} have environmental traces (synaptic tags, NO fields),
+succeed.  Attention is where the gap between biological and artificial
+computation is largest.
+
+Second, attention already has the \emph{amplification} ingredient in
+nascent form.  The softmax nonlinearity creates winner-take-all
+dynamics: small score differences produce large attention
+differences.  What is missing is \emph{injection} (activity leaving a
+persistent trace) and \emph{erosion} (traces decaying).  Adding these
+two ingredients to a system that already amplifies should be the
+minimal intervention needed to reach the critical regime.
+
+Third, attention has a natural \emph{geometric structure}---the Q/K
+dot-product space---that a social field can modulate.  Unlike scalar
+activations in MLPs, attention keys are vectors in a learned
+representation space.  A vector social field can reshape this space,
+creating content-and-history-dependent routing that operates in the
+same representational language as the structured lookup.  This is
+qualitatively different from adding a recurrence alongside attention
+(as in Mamba or RWKV): the field is \emph{inside} the attention
+computation, not parallel to it.
+
+
+% ================================================================
+\section{Three Architectures}
+\label{sec:architecture}
+
+Standard attention is purely \emph{individual}: each position
+performs its own content-based lookup, with no memory of what prior
+positions found useful.  In the ant analogy, this is an ant following
+only its own sensory gradient---functional, but ignorant of the
+colony's experience.
+
+We augment attention with a \emph{social field}: a shared,
+decaying, vector-valued signal that accumulates deposits from
+attention outputs and feeds back into future attention computations.
+The social field is the colony's pheromone---an environmental medium
+that carries the collective processing history of the sequence.  Each
+position reads the social field (what has worked before?) and writes
+to it (what did I find?), creating the feedback loop required for
+criticality.
+
+We propose three architectures that implement this social field
+within attention, ordered by expressivity.  All three share the same
+field recurrence but differ in how the field couples to the attention
+geometry.  Together they form a progression from the minimal
+intervention to a fully content-dependent modulation of the key
+manifold.
+
+% ----------------------------------------------------------------
+\subsection{Shared Component: The Social Field}
+
+\begin{definition}[Social field]
+\label{def:trail_field}
+For head $h$, the social field at position $i$ is a vector
+$\field_i^{(h)} \in \R^{d_f}$ defined by the recurrence:
+\begin{equation}
+    \field_i^{(h)} = \retain \cdot \field_{i-1}^{(h)} + \bm{d}_i^{(h)},
+    \quad \field_{-1}^{(h)} = \bm{0}
+    \label{eq:trail_recurrence}
+\end{equation}
+where:
+\begin{itemize}
+    \item $\retain = 1 - \evap \in (0, 1)$ is the retention rate
+          (erosion---the field forgets without reinforcement)
+    \item $\bm{d}_i^{(h)} \in \R^{d_f}$ is the deposit at
+          position $i$, computed from the attention output
+          (injection---processing leaves a trace):
+          \begin{equation}
+              \bm{d}_i^{(h)} = W_{\text{dep}}^{(h)} \bm{o}_i
+              \label{eq:vector_deposit}
+          \end{equation}
+          with $W_{\text{dep}}^{(h)} \in \R^{d_f \times d}$ and
+          $\bm{o}_i$ the attention output at position $i$
+    \item $d_f$ is the \emph{field dimension}, controlling the
+          information capacity of the social channel
+\end{itemize}
+The field implements two of the three critical ingredients directly.
+Amplification---the third ingredient---arises from the coupling: the
+field modulates attention, which changes the output, which changes
+the deposit, which changes the field.
+\end{definition}
+
+The term \emph{social} is deliberate.  In attention, queries and keys
+are \emph{individual}---each position's private representation.  The
+social field is \emph{collective}---it belongs to no single position
+but accumulates the processing history of the entire sequence so far.
+An individual position reads the social field to discover what prior
+processing found useful and writes to it to inform future positions.
+This is precisely the stigmergic coordination loop: indirect
+communication through a shared, decaying environmental medium.
+
+The field dimension $d_f$ controls state capacity.  In the scalar
+case ($d_f = 1$), this reduces to the stigmergic attention bias of
+our companion paper.  We set $d_f = d_h$ (the head dimension) so the
+social field and keys live in the same representational space.
+
+\begin{remark}[State capacity]
+Each head carries $d_f$ continuous values of social state.  With $H$
+heads, the total social state is $H \times d_f$---compared to 0 for
+standard attention and $n$ for SSMs with state dimension $n$.  For
+$H = 4, d_f = 12$, this is 48 values of persistent state, vastly
+more than the $H = 4$ scalars of the stigmergic architecture.
+\end{remark}
+
+\begin{remark}[Why modulate keys, not queries?]
+\label{rem:keys_not_queries}
+Keys are the \emph{offerings} of past positions; queries are the
+\emph{demands} of the current position.  The social field modulates
+offerings, not demands: it reshapes \emph{what information is
+available} based on collective processing history.  This preserves
+the individual nature of queries---each position's sensory state
+remains purely content-driven---while making the key landscape
+socially informed.  In the ant analogy: pheromone marks where ants
+\emph{have walked} (keys), not where they \emph{want to go}
+(queries).
+\end{remark}
+
+% ----------------------------------------------------------------
+\subsection{Architecture I: Additive Key Shift}
+\label{sec:arch_additive}
+
+The simplest proposal.  The social field is projected to key dimension
+and added to keys before Q/K matching:
+\begin{equation}
+    \K_j'^{(h)} = \K_j^{(h)} + W_{\text{mod}}^{(h)} \field_j^{(h)}
+    \label{eq:additive_mod}
+\end{equation}
+where $W_{\text{mod}}^{(h)} \in \R^{d_h \times d_f}$.
+
+\paragraph{Interpretation.}  The attention score decomposes cleanly
+into two channels:
+\begin{align}
+    \text{score}(i, j) &= \frac{1}{\sqrt{d_h}} \q_i^{(h)\top}
+    \K_j'^{(h)} \notag \\
+    &= \underbrace{\frac{\q_i^{(h)\top} \K_j^{(h)}}{\sqrt{d_h}}}_%
+    {\text{structured (content match)}}
+    + \underbrace{\frac{\q_i^{(h)\top} W_{\text{mod}}
+    \field_j^{(h)}}{\sqrt{d_h}}}_{\text{social (history match)}}
+    \label{eq:score_decomp}
+\end{align}
+Unlike the scalar bias of stigmergic attention, the social term is a
+\emph{full dot product} between the query and a field-derived
+vector---it cannot be absorbed by softmax normalization because it
+varies across the $d_h$ dimensions.
+
+\paragraph{Parameters.}  $W_{\text{dep}}$ ($d_f \times d$ per head)
++ $W_{\text{mod}}$ ($d_h \times d_f$ per head).  With $d_f = d_h$:
+$\sim\!25\%$ overhead on the attention layer.
+
+\paragraph{Why start here.}  This is the minimal intervention that
+gives the field access to the geometric structure of attention.  If
+additive modulation shows no effect, the problem is not expressivity
+but something more fundamental (e.g., the sequential bottleneck
+prevents learning, or the tasks don't benefit from social state).
+
+% ----------------------------------------------------------------
+\subsection{Architecture II: Gating Modulation}
+\label{sec:arch_gating}
+
+The social field produces per-dimension gates that amplify or suppress
+key dimensions:
+\begin{equation}
+    \K_j'^{(h)} = \K_j^{(h)} \odot \sigma\!\bigl(
+        W_{\text{gate}}^{(h)} \field_j^{(h)} + \bm{b}_g\bigr)
+    \label{eq:gating_mod}
+\end{equation}
+where $\sigma$ is the sigmoid function and $\odot$ is elementwise
+multiplication.
+
+\paragraph{Interpretation.}  Rather than shifting keys, gating
+\emph{selects} which dimensions of the key space are active.  The
+field controls which semantic features are matchable at each
+position.  A gate near 0 on dimension $k$ effectively removes that
+feature from the key; a gate near 1 preserves it.  This is a
+multiplicative interaction---qualitatively stronger than additive
+because it can \emph{silence} dimensions, not just nudge them.
+
+\paragraph{Parameters.}  Same as additive plus a bias vector
+$\bm{b}_g \in \R^{d_h}$ per head.  Negligible overhead beyond
+Architecture~I.
+
+\paragraph{When to prefer over I.}  Gating is appropriate when the
+task requires \emph{selective attention}---attending to different
+aspects of keys depending on accumulated state.  For example: in
+bracket matching, the field might gate out ``nesting depth''
+dimensions when the stack is empty and gate them in when brackets
+are open.
+
+% ----------------------------------------------------------------
+\subsection{Architecture III: Rotational Modulation}
+\label{sec:arch_rotational}
+
+The field produces a content-and-state-dependent rotation of the key
+vector:
+\begin{equation}
+    \K_j'^{(h)} = \K_j^{(h)} + W_{\text{rot}}^{(h)}
+    (\field_j^{(h)} \otimes \K_j^{(h)})
+    \label{eq:rotational_mod}
+\end{equation}
+where $\otimes$ denotes a bilinear interaction (outer product
+projected back to $\R^{d_h}$) and
+$W_{\text{rot}}^{(h)} \in \R^{d_h \times d_f \cdot d_h}$.
+
+\paragraph{Interpretation.}  This is the most expressive variant.
+The modulation depends on \emph{both} the field state and the key
+content---different keys at the same position are rotated differently.
+This creates a content-and-history-dependent routing that can
+implement arbitrary learned transformations of the key manifold.
+
+\paragraph{Parameters.}  $W_{\text{rot}}$ is $d_h \times (d_f \cdot
+d_h)$ per head, which is $O(d_h^2 \cdot d_f)$.  This is expensive:
+for $d_h = d_f = 12$, it is $12 \times 144 = 1728$ parameters per
+head versus 144 for additive.  A low-rank factorization
+$W_{\text{rot}} = U V^\top$ with rank $r \ll d_f$ can reduce this.
+
+\paragraph{When to prefer over I--II.}  Rotational modulation is
+appropriate when the task requires the field to implement different
+transformations depending on key content---e.g., when the same
+accumulated state should affect ``parity-encoding'' keys differently
+from ``register-encoding'' keys.  We expect this to matter primarily
+at scale, where different heads specialize.
+
+% ----------------------------------------------------------------
+\subsection{Shared Forward Pass}
+
+All three architectures share the same forward pass structure.  At
+each position $i$:
+\begin{enumerate}
+    \item \textbf{Project} input to queries, keys, values:
+          $\q_i, \K_i, \vv_i = \text{QKV}(\x_i)$
+    \item \textbf{Read social field}: retrieve accumulated
+          $\field_j^{(h)}$ for all $j < i$
+    \item \textbf{Modulate keys}: $\K_j'^{(h)} = f(\K_j^{(h)},
+          \field_j^{(h)})$ using one of the three strategies
+    \item \textbf{Attend}: compute attention weights using modulated
+          keys
+          \begin{equation}
+              a_{ij}^{(h)} = \text{softmax}_j\!\Bigl(
+              \frac{\q_i^{(h)\top} \K_j'^{(h)}}{\sqrt{d_h}}
+              \Bigr) \quad j \leq i
+          \end{equation}
+    \item \textbf{Aggregate}: $\bm{o}_i^{(h)} = \sum_{j \leq i}
+          a_{ij}^{(h)} \vv_j^{(h)}$
+    \item \textbf{Deposit}: $\bm{d}_i^{(h)} = W_{\text{dep}}^{(h)}
+          \bm{o}_i$ \quad (injection)
+    \item \textbf{Update field}: $\field_i^{(h)} = \retain \cdot
+          \field_{i-1}^{(h)} + \bm{d}_i^{(h)}$ \quad (erosion)
+\end{enumerate}
+
+The feedback loop closes the amplification ingredient:
+\begin{equation}
+    \field \xrightarrow{\text{modulate } K}
+    \text{attention} \xrightarrow{\text{aggregate}}
+    \text{output} \xrightarrow{W_{\text{dep}}}
+    \text{deposit} \xrightarrow{\text{accumulate}} \field
+\end{equation}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+& \textbf{I: Additive} & \textbf{II: Gating}
+& \textbf{III: Rotational} \\
+\midrule
+Modulation type & shift & selection & rotation \\
+Field--key interaction & linear & multiplicative & bilinear \\
+Extra params / head & $d_h d_f + d_f d$ & same + $d_h$ &
+$d_h^2 d_f + d_f d$ \\
+Content-dependent & no & no & yes \\
+Can silence dimensions & no & yes & yes \\
+Expressivity & low & medium & high \\
+\bottomrule
+\end{tabular}
+\caption{Summary of the three proposed architectures.  All share the
+same social field recurrence and forward pass; they differ only in
+how the field modulates keys.  We recommend starting experiments
+with Architecture~I (additive) as the simplest test of whether
+social fields provide computational benefit.}
+\label{tab:architectures}
+\end{table}
+
+% ----------------------------------------------------------------
+\subsection{The Individual/Social Decomposition}
+
+Standard attention performs a single type of lookup---purely
+individual, purely content-based:
+\begin{equation}
+    \text{score}(i, j) = \q_i^\top \K_j / \sqrt{d_h}
+    \quad \text{(``what content at $j$ matches my query?'')}
+\end{equation}
+
+All three architectures decompose this into an individual channel
+and a social channel.  For Architecture~I (additive), the
+decomposition is exact (cf.~\cref{eq:score_decomp}):
+\begin{align}
+    \text{individual}(i, j) &= \q_i^\top \K_j / \sqrt{d_h}
+    \quad \text{(``what content matches?'')}
+    \label{eq:structured} \\
+    \text{social}(i, j) &= \q_i^\top
+    (W_{\text{mod}} \field_j) / \sqrt{d_h}
+    \quad \text{(``what has the sequence learned?'')}
+    \label{eq:social}
+\end{align}
+The individual channel is memoryless: it depends only on the current
+query and the static key.  The social channel carries history: it
+depends on the accumulated social field, which encodes what prior
+attention computations found productive.  For Architectures~II and
+III, the decomposition is implicit but the principle is the same:
+one channel routes by content, the other by collective experience.
+
+This is the core architectural claim: attention conflates individual
+and social information processing into a single dot product.
+Separating them---giving each its own mechanism, its own
+parameters, its own representational capacity---should allow the
+model to learn both more effectively.
+
+
+% ================================================================
+\section{Relationship to Existing Architectures}
+\label{sec:related}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+\textbf{Architecture} & \textbf{Modulation} & \textbf{State}
+& \textbf{Feedback} & \textbf{Mechanism} \\
+\midrule
+Standard Transformer & none & --- & --- & Q/K matching \\
+ALiBi \cite{press2022alibi} & logit bias & --- & --- & fixed distance penalty \\
+T5 relative bias & logit bias & --- & --- & learned per-distance \\
+RoPE \cite{su2024rope} & query/key rotation & --- & --- & fixed rotation \\
+\addlinespace
+Stigmergic (scalar) & logit bias & $H$ scalars & nonlinear & output $\to$ scalar field \\
+\addlinespace
+RetNet \cite{sun2023retnet} & key decay & $d$ & linear & $\gamma$-mask on keys \\
+Mamba \cite{gu2023mamba} & separate path & $n$ & linear & selective SSM \\
+RWKV \cite{peng2023rwkv} & separate path & $d$ & linear & linear attention \\
+Feedback Transformer & extra KV & $d$ & nonlinear & top-layer output \\
+\addlinespace
+\textbf{Dual-channel} & \textbf{key modulation} & $\bm{H \times d_f}$
+& \textbf{nonlinear} & \textbf{output $\to$ vector field} \\
+\bottomrule
+\end{tabular}
+\caption{Architectural comparison.  Dual-channel attention is unique
+in using a \emph{vector} recurrence to modulate \emph{keys}, creating
+a content-dependent routing channel that operates in the same
+representational space as Q/K matching.}
+\label{tab:comparison}
+\end{table}
+
+\paragraph{ALiBi and RoPE} modify attention geometry but
+\emph{statically}---the modification depends on position, not on
+content or processing history.  Dual-channel attention is ``ALiBi
+where the bias is a learned vector field driven by what attention
+has found useful.''
+
+\paragraph{RetNet} applies a multiplicative $\gamma^{i-j}$ decay to
+keys, which is structurally similar to our decaying field.  But
+RetNet's decay is \emph{fixed and content-independent}---it provides
+exponential forgetting but no feedback.  The social field's deposits
+are content-dependent and output-derived, creating adaptive decay.
+
+\paragraph{Mamba and RWKV} maintain recurrent state but in a
+\emph{separate pathway} from attention.  The SSM and attention do not
+interact---they are stacked, not coupled.  In dual-channel attention,
+the recurrent state (social field) directly modulates the attention
+computation, and the attention output directly feeds the recurrence.
+The two mechanisms are co-dependent, not independent.
+
+\paragraph{Feedback Transformer \cite{fan2021feedback}} is the
+closest prior work.  It feeds the top layer's output as an
+additional key-value pair for the next position.  This provides
+output feedback but through a \emph{single vector} added to the
+key-value set, not through modulation of \emph{all} keys.  The
+social field modulates every key at every position through a
+decaying recurrence, providing graded, history-dependent routing
+rather than a single feedback signal.
+
+\paragraph{What is novel.}
+The specific combination---a vector recurrence that modulates keys
+via additive/gating/rotational transforms, with deposits derived
+from attention output---does not appear in prior work to our
+knowledge.  More fundamentally, the architecture is not motivated by
+analogy but by universality: the three ingredients
+(amplification, injection, erosion) are the minimal recipe for DP-class
+phase transitions, and we import them into attention to test whether
+criticality confers computational advantages in learned sequence
+processing, as it does in biological neural systems
+\cite{beggs2003,shew2013}.
+
+
+% ================================================================
+\section{Analysis}
+\label{sec:analysis}
+
+% ----------------------------------------------------------------
+\subsection{Parameter Cost}
+
+For additive modulation with $d_f = d_h$:
+\begin{itemize}
+    \item Deposit projection: $W_{\text{dep}} \in \R^{d_f \times d}$,
+          adding $d_f \times d$ parameters per head
+    \item Modulation projection: $W_{\text{mod}} \in
+          \R^{d_h \times d_f}$, adding $d_h \times d_f$ per head
+    \item Total per head: $d_f(d + d_h)$. With $d_f = d_h = d/H$:
+          $\frac{d}{H}\bigl(d + \frac{d}{H}\bigr)
+          = \frac{d^2}{H} + \frac{d^2}{H^2}$
+    \item Total for $H$ heads: $d^2 + d^2/H$
+    \item Compared to QKV projection ($3d^2$) and output projection
+          ($d^2$): the social field adds $\sim 25\%$ parameters to
+          the attention layer (for typical $H$)
+\end{itemize}
+
+Gating adds bias terms ($d_h$ per head = $d$ total).  Rotational
+adds a bilinear interaction, roughly $d_h^2 \times d_f$ per head,
+which can be expensive.
+
+% ----------------------------------------------------------------
+\subsection{Computational Cost}
+
+The sequential bottleneck remains: the feedback loop requires
+position-by-position processing because position $i$'s deposit
+depends on the field state from positions $0, \ldots, i-1$.
+
+\paragraph{Training.}  During training on sequences of length $T$,
+the forward pass requires a sequential scan of $T$ steps.  At each
+step: one matrix-vector multiply for the deposit ($O(d_f \times d)$),
+one for the modulation ($O(d_h \times d_f)$), and a vector add for
+the field update ($O(d_f)$).  The attention computation itself
+($O(T \times d_h)$ per position) dominates.  Total cost is
+$O(T^2 d_h)$ same as standard attention, but the constant factor
+increases and parallelism across positions is lost.
+
+\paragraph{Inference.}  In autoregressive inference, standard
+attention is already sequential.  The social field adds only
+$O(d_f)$ work per position for the field update and $O(d_h
+\times d_f)$ for key modulation---negligible compared to the
+$O(T \times d_h)$ attention computation.  \textbf{At inference
+time, the social field is essentially free.}
+
+\paragraph{Potential acceleration.}  The sequential constraint
+during training could be relaxed via:
+\begin{itemize}
+    \item \emph{Chunked processing}: process chunks of $C$ positions
+          in parallel (using only the field state at the chunk
+          boundary), then update the field.  This trades accuracy for
+          parallelism.
+    \item \emph{Truncated backpropagation}: detach the field from the
+          computation graph every $K$ positions, allowing parallel
+          chunks of length $K$ with approximate gradients.
+    \item \emph{Linear attention within chunks}: use linear attention
+          (which supports parallel scan) for the field-dependent
+          component, keeping softmax attention for the structured
+          channel.
+\end{itemize}
+
+% ----------------------------------------------------------------
+\subsection{Length Generalization}
+
+The social field recurrence $\field_i = \retain \cdot \field_{i-1}
++ \bm{d}_i$ is position-independent: it depends only on the
+previous field state and the current deposit, not on absolute
+position.  This means the field dynamics are \emph{identical} at
+position 50 during training and position 500 during inference---the
+recurrence does not know where it is in the sequence.
+
+Combined with a position-independent attention mechanism (RoPE
+or no positional encoding), the entire dual-channel system is
+position-independent.  The structured channel matches by content,
+the social channel routes by accumulated history, and neither
+requires knowing the absolute position.  This is the architectural
+basis for length generalization.
+
+Our prior work showed that even a scalar field (stigmergic
+attention) provides measurable length generalization on parity,
+despite using learned positional embeddings that break at unseen
+positions.  With vector key modulation and position-independent
+encoding, the advantage should be substantially larger: the field
+carries more state (vectors vs scalars), modulates geometry (not
+just magnitude), and the attention mechanism itself still functions
+at OOD lengths.
+
+
+% ================================================================
+\section{Experimental Design}
+\label{sec:experiments}
+
+We propose experiments targeting the specific capabilities that
+dual-channel attention provides beyond standard attention:
+sequential state tracking and length generalization.
+
+\subsection{Tasks}
+
+\paragraph{Parity (1-bit state).}
+The simplest state-tracking task, previously shown to benefit from
+scalar feedback.  Dual-channel attention should show a larger effect
+because the vector field can encode parity as a \emph{direction} in
+key space, not just a scalar magnitude.
+
+\paragraph{Cumulative sum mod $V$ ($\log_2 V$-bit state).}
+Previously failed with scalar field because the state exceeds scalar
+capacity.  With $d_f = d_h = 12$ and $H = 4$ heads, the field has
+48 continuous values of state---far more than the 4 bits needed for
+mod-16 arithmetic.
+
+\paragraph{Bracket matching (counter + stack).}
+Given sequences of open/close brackets with possible nesting, predict
+whether the sequence is balanced at each position.  This requires a
+counter (nesting depth) and implicit stack (which bracket type to
+match).  The field could encode depth as a vector magnitude and
+bracket type as a vector direction.
+
+\paragraph{Evaluation protocol.}
+For all tasks: train on sequences of length $T$, evaluate on
+$T, 2T, 3T, 4T$.  Use RoPE or no positional encoding to isolate
+the field's contribution to length generalization.  Compare:
+standard attention, scalar stigmergic attention, and dual-channel
+attention with additive and gating modulation.
+
+
+% ================================================================
+\section{Scaling Considerations}
+\label{sec:scaling}
+
+\paragraph{The sequential bottleneck is the primary concern.}
+At training time, the feedback loop forces sequential processing.
+For long sequences ($T > 1000$), this makes training prohibitively
+slow compared to standard parallel attention.  However:
+\begin{itemize}
+    \item At inference time (autoregressive generation), processing
+          is already sequential---the social field adds negligible cost.
+    \item For encoder models processing fixed-length inputs, the
+          sequential constraint applies, but can be mitigated by
+          chunked processing.
+    \item The field could be applied to only a subset of layers
+          (e.g., every 4th layer), reducing the sequential burden
+          while maintaining most of the benefit.
+\end{itemize}
+
+\paragraph{Field dimension scaling.}
+Setting $d_f = d_h$ means the field scales with model size
+automatically.  A model with $d = 768, H = 12$ gets $d_f = 64$
+per head, providing $12 \times 64 = 768$ values of persistent
+state.  This is comparable to Mamba's state dimension and
+should be sufficient for complex state tracking.
+
+\paragraph{Gradient flow through the recurrence.}
+The field recurrence $\field_i = \retain \field_{i-1} + \bm{d}_i$
+has gradient $\partial \field_i / \partial \field_j = \retain^{i-j}$.
+For $\retain = 0.95$ and $i - j = 100$: $0.95^{100} \approx 0.006$.
+Gradients through the field decay exponentially, potentially causing
+vanishing gradient problems for long-range dependencies.  Possible
+mitigations:
+\begin{itemize}
+    \item \emph{Learnable retention}: let $\retain$ be a learned
+          parameter per head, initialized near 1.0
+    \item \emph{Multi-scale fields}: different heads at different
+          retention rates, spanning timescales
+    \item \emph{Gated update}: $\field_i = g_i \odot \field_{i-1}
+          + (1 - g_i) \odot \bm{d}_i$ with learned gate $g_i$,
+          allowing selective persistence (cf.\ GRU)
+\end{itemize}
+
+\paragraph{Interaction with existing optimizations.}
+Flash Attention exploits the fact that softmax attention is
+block-decomposable.  Key modulation preserves this property---the
+modulated keys $\K'$ can be precomputed (for non-feedback variants)
+or computed per-chunk (for chunked feedback).  KV caching at
+inference time extends naturally: cache the \emph{modulated} keys
+$\K'_j$ along with values.
+
+
+% ================================================================
+\section{Discussion}
+\label{sec:discussion}
+
+\subsection{The Individual/Social Decomposition}
+
+The core claim is that attention performs two conceptually distinct
+operations that benefit from separate mechanisms:
+
+\begin{enumerate}
+    \item \textbf{Individual lookup}: ``Given what I'm looking for
+          (query) and what's available (key), how relevant is each
+          position?''  This is \emph{content-addressed} and
+          \emph{memoryless}---it depends only on the current
+          position's private state.
+
+    \item \textbf{Social routing}: ``Given the collective processing
+          history of the sequence, which directions in key space are
+          worth attending to?''  This is \emph{history-dependent}
+          and \emph{collectively derived}---it comes from the social
+          field, not from any single position.
+\end{enumerate}
+
+Standard attention collapses these into a single Q/K dot product.
+Learned positional encodings partially separate them (position
+provides structure-dependent routing) but are static and
+length-limited.  The social field provides \emph{dynamic},
+\emph{experience-derived}, \emph{length-independent} routing that
+adapts to each sequence individually---the collective intelligence
+of the sequence's own processing history.
+
+\subsection{What the Social Field Learns}
+
+In biological stigmergic systems, environmental traces encode three
+types of information:
+
+\begin{enumerate}
+    \item \textbf{Recency}: recent deposits are stronger (exponential
+          decay).  In the social field: $\retain^{i-j}$ weighting.
+    \item \textbf{Frequency}: frequently productive paths accumulate
+          more signal.  In the social field: positions that
+          consistently produce useful outputs accumulate deposits.
+    \item \textbf{Direction}: field gradients indicate which way to
+          go.  In the vector social field: the field encodes a
+          \emph{direction} in key space, not just a magnitude.
+\end{enumerate}
+
+The scalar stigmergic field of our companion paper captured recency
+and frequency but not direction.  The vector social field captures
+all three, which is why we expect qualitatively different behavior:
+the social channel can steer attention through a learned geometry,
+not merely amplify or suppress it.
+
+\subsection{Limitations and Open Questions}
+
+\begin{itemize}
+    \item \textbf{Training speed}: The sequential bottleneck is real
+          and significant.  Chunked approximations trade accuracy for
+          speed, and the optimal tradeoff is unknown.
+    \item \textbf{Task generality}: State-tracking tasks are
+          constructed to favor recurrent mechanisms.  Whether the
+          social field helps on natural language tasks---where the
+          ``state'' is diffuse and high-dimensional---is unknown.
+    \item \textbf{Optimization difficulty}: The feedback loop creates
+          long gradient paths through the recurrence and the
+          attention mechanism.  This may make training unstable or
+          slow to converge.  The seed-dependent bimodality observed
+          in scalar experiments suggests the optimization landscape
+          has multiple basins.
+    \item \textbf{Redundancy with existing mechanisms}: Multi-layer
+          transformers already build up sequential context through
+          layer composition.  The social field may provide redundant
+          state-tracking that deeper networks achieve anyway.
+\end{itemize}
+
+\subsection{Isn't the Residual Stream Already a Social Field?}
+\label{sec:already_social}
+
+A natural objection: deep transformers already exhibit the three
+critical ingredients, so why add another mechanism?  The residual
+stream \emph{is} a shared medium.  Each layer deposits into it
+(injection).  Softmax creates winner-take-all dynamics that compound
+across layers (amplification).  LayerNorm rescales activations,
+preventing runaway accumulation (erosion of a sort).  The critic
+concludes: the transformer is already a stigmergic system, and the
+social field reinvents what depth provides for free.
+
+This objection is half right, and engaging it precisely clarifies what
+the social field actually contributes.
+
+\paragraph{The residual stream is social across layers, not across
+positions.}
+At any given layer, each position's attention computation is memoryless
+with respect to other positions' \emph{processing outcomes}.
+Position~$i$ sees the raw keys and values of positions $j < i$, but it
+does not see what positions $j\!-\!1, j\!-\!2, \ldots$ found useful
+when \emph{they} attended.  The residual stream carries information
+forward through depth (layers) but not through sequence (positions
+within a layer).  The social field carries information forward through
+the sequence dimension---precisely the dimension where standard
+attention has no memory.  This is why state-tracking tasks (parity,
+counting, register maintenance) are hard for standard transformers:
+they must emulate sequential accumulation using combinatorial
+depth$\,\times\,$width, rather than having an architectural primitive
+for it.
+
+\paragraph{Depth is fixed; the social field scales with sequence
+length.}
+A 12-layer transformer has exactly 12 opportunities for inter-layer
+coordination, whether the input is 10 tokens or 10{,}000.  The social
+field accumulates deposits proportional to sequence length---it has
+\emph{more} collective memory for longer sequences.  This is the
+architectural basis for length generalisation: the field's recurrence
+is position-independent and naturally extends to unseen lengths, while
+depth-based state emulation is capacity-bounded.
+
+\paragraph{The residual stream does not modulate the geometry of
+attention.}
+Information in the residual stream enters the next layer's attention
+through generic QKV projections.  The stream changes what gets
+projected, but through a learned linear transform that treats the
+residual vector as undifferentiated input.  The social field
+specifically modulates \emph{keys}---it operates in the same
+representational space as the Q/K dot product, reshaping the matching
+geometry rather than merely providing different input features.  This
+is the difference between ``information flows forward'' (trivially true
+of any deep network) and ``a decaying field reshapes which directions
+in key space are matchable.''
+
+\paragraph{The uncoupling constraint: where the ant model builds
+intuition.}
+The most non-obvious distinction concerns erosion.  LayerNorm's
+rescaling is \emph{field-correlated}: it responds to the magnitude of
+the activations it normalises, shrinking large values and expanding
+small ones.  Our lattice ant study provides direct intuition for why
+this matters.  Of nine model variants we tested, every variant whose
+decay was correlated with the pheromone field---follow-probability
+modulation, habituation, sensory saturation---destroyed the critical
+ridge entirely.  Only variants with uniform, field-independent decay
+preserved edge-of-chaos dynamics.  The mechanism is intuitive once seen
+in the ant system: field-correlated perturbations feed back into the
+amplification loop, creating a self-cancelling cycle that prevents the
+delicate balance between growth and decay that defines criticality.
+LayerNorm does exactly this---it is a field-correlated erosion that
+actively counteracts the very accumulation patterns that would
+otherwise self-organise.  The social field's uniform $\retain$ decay,
+by contrast, satisfies the uncoupling constraint.  This distinction
+would be purely theoretical without the ant model; the lattice
+simulations make it concrete and testable.
+
+\paragraph{The honest assessment.}
+Multi-layer transformers \emph{do} track state through depth---modern
+large models handle parity, counting, and bracket matching.  But they
+do so by learning to emulate sequential state maintenance, not by
+having a native mechanism for it.  The social field makes sequential
+state explicit.  Whether this leads to faster learning, better
+generalisation, or mere redundancy is exactly what the experimental
+programme (\cref{sec:experiments}) is designed to test.  The
+architectural argument is that three specific properties---positional
+memory, uncoupled erosion, and geometric modulation---are absent from
+the residual stream and present in the social field.  Whether those
+properties \emph{matter} computationally is an empirical question.
+
+\subsection{Lessons from the Ant Model: Uncoupled Fields and Criticality}
+
+A striking result from our lattice ant study is that
+\emph{edge-of-chaos dynamics require the decay (erosion) channel to be
+uncoupled from the pheromone field itself}.  Of nine model variants
+tested, only those with uniform, field-independent decay produced a
+critical ridge; every variant that introduced disorder correlated with
+the pheromone concentration---follow-probability modulation,
+habituation, sensory saturation, coupled deposition---destroyed
+criticality by feeding field-dependent noise back into the
+amplification loop.  In short: the hard problem is not \emph{producing}
+edge-of-chaos dynamics but \emph{not destroying} them with
+field-correlated perturbations.
+
+This has a direct architectural implication for dual-channel attention.
+The social field's decay parameter $\retain$ should act as a
+\emph{uniform} exponential forgetting factor, independent of the
+field's current magnitude.  If decay were made content-dependent
+(e.g.\ stronger erasure where the field is large, or gated by the
+field's own values), the ant model predicts that the system would lose
+its ability to self-organise near criticality.  The separation of
+concerns---individual attention handles content-dependent computation,
+while the social field evolves under content-\emph{independent}
+erosion---may therefore be essential, not merely convenient.  Uniform
+decay preserves the directed-percolation structure that enables
+critical dynamics; field-coupled decay collapses it.
+
+
+\subsection{Reflections: Sociality as Structure Discovery}
+
+A useful way to distinguish the individual and social channels is by
+what kind of knowledge they encode.  Individual lookup is literal: given
+this query, find the matching key---a direct content-addressed
+retrieval.  The social field does something qualitatively different.  By
+accumulating deposits across positions, it builds a \emph{compressed
+record of which directions in key space were collectively productive}.
+This is not a lookup table but a structural prior: things shaped like
+\emph{this} tend to benefit from rules shaped like \emph{that}.  Where
+individual attention asks ``what should I do here?'', the social field
+asks ``what kind of situation is this, and what has worked for situations
+like it?''
+
+This is, in a sense, the hard version of the problem.  Finding literal
+associations is cheap; discovering that two superficially different
+contexts share hidden structure---that they are instances of the same
+\emph{metaphor}---requires the system to compress over its own
+processing history.  But the hypothesis motivating this architecture is
+that the world is full of such reusable structure, and this is precisely
+what makes it learnable.  Biological systems exploit this ruthlessly:
+evolution builds on older solutions without relearning from scratch,
+reusing regulatory motifs, signalling cascades, and body plans across
+wildly different contexts.  The social field is a minimal mechanism for
+the same principle---finding and propagating structural regularities
+rather than storing each situation individually.
+
+% ================================================================
+\section{Conclusion}
+\label{sec:conclusion}
+
+We have argued that the three ingredients governing critical phase
+transitions in the directed percolation universality
+class---amplification, injection, erosion---appear in both ant trail
+formation and biological neural plasticity mechanisms (synaptic
+tagging, volume transmission, activity-dependent myelination).  The
+ant trail model is the simplest system that makes these ingredients
+and their phase transition visible; we use it as an illustration,
+not a metaphor.
+
+Our companion paper \cite{stigmergic2024} tested the simplest
+possible import of these ingredients into attention: a scalar
+pheromone field biasing logits.  The results confirmed that the
+feedback loop matters (deposits must come from output, closing the
+amplification loop) but showed that a scalar field decoupled from
+key geometry is too weak---softmax normalization absorbs most of
+the signal.  This motivated the present architecture.
+
+Dual-channel attention decomposes the attention mechanism into
+individual lookup (content-based Q/K matching) and social routing
+(vector field key modulation).  The social field provides
+intrinsic sequential memory---$H \times d_f$ continuous values of
+persistent, decaying, content-dependent state per layer---without
+introducing a separate recurrent pathway.  It operates in the same
+representational space as Q/K matching, modulating the \emph{geometry}
+of attention rather than its magnitude.
+
+The deeper question is whether criticality plays a functional role
+in learned sequence processing---whether there exists a regime where
+the social field's feedback dynamics self-organize to a critical
+point, and whether this criticality confers the same computational
+advantages (maximal dynamic range, information transmission,
+sensitivity) observed in biological neural systems at criticality.
+The architecture is designed to make this question empirically
+testable.
+
+
+\appendix
+
+\section{Research Notes: Unifying Learning and Inference}
+\label{app:learning-inference}
+
+\subsection{The Separation in Standard Attention}
+
+In a vanilla transformer, there is a clean division of labour:
+\emph{training} learns the projections $W_Q$, $W_K$, $W_V$---essentially
+a filing system for where to put information and how to retrieve it.  At
+\emph{inference} time, those projections are frozen, and the model
+executes retrieval.  ``In-context learning'' in standard transformers is
+somewhat misleadingly named: the model is not learning anything during
+the forward pass.  It is recognising patterns it already learned to
+recognise during training.  The weights do not change.  It is retrieval
+all the way down.
+
+\subsection{What the Social Field Changes}
+
+The social field actually \emph{does} modify itself during the forward
+pass.  As it processes positions $1, 2, 3, \ldots$, it accumulates
+deposits that reshape the attention geometry for all subsequent
+positions.  Position~50 attends in a key space that has been sculpted by
+the collective processing outcomes of positions~1--49.  This is
+genuinely different: the field is building temporary structure
+\emph{during inference} that did not exist before and was not hardcoded
+in the weights.
+
+Standard attention learns \emph{where to file}, then retrieves.  The
+social field learns \emph{what structure exists in this particular
+sequence} as it processes it, and that structure modifies how it
+processes what comes next.  The deposit--accumulate--modulate loop is
+functionally a learning algorithm operating at inference time.
+
+\subsection{Three Timescales}
+
+The deeper point concerns what ``learning'' means at different
+timescales:
+
+\begin{enumerate}
+    \item \textbf{Training} (slow): learn $W_Q$, $W_K$, $W_V$,
+          $W_{\mathrm{deposit}}$---the rules of the game.
+    \item \textbf{Social field accumulation} (fast): discover the
+          structure of \emph{this particular sequence}---the shape of
+          this game.
+    \item \textbf{Individual attention} (instantaneous): make a single
+          retrieval given the current state.
+\end{enumerate}
+
+Standard transformers have only the slow and instantaneous timescales.
+The social field introduces the \emph{middle} timescale---slower than a
+single attention operation, faster than weight updates.  This is exactly
+the timescale that is missing, and it is the timescale at which
+biological plasticity operates: synaptic tagging, short-term
+potentiation, neuromodulatory volume transmission---all happening during
+``inference'' in the brain.
+
+\subsection{The Biological Parallel}
+
+Biological brains do not have a train/infer separation at all---plasticity
+is continuous.  What they \emph{do} have is multiple timescales of
+plasticity: fast (ion channel states, milliseconds), medium (synaptic
+tagging, minutes to hours), slow (structural plasticity, days to weeks).
+The social field is a minimal version of this: it adds one intermediate
+plasticity timescale to an architecture that otherwise only has ``frozen
+weights'' and ``instantaneous computation.''
+
+The presupposition that the world has countable order is important here.
+The social field can only help if the structure it discovers early in a
+sequence is \emph{predictive} of structure later in the sequence---which
+is exactly the assumption that the world has reusable regularities.  If
+every position were independently random, the social field would
+accumulate noise.  That it accumulates \emph{signal} is a bet on the
+world being structured, and this is the same bet that makes evolution
+possible: old solutions remain useful because the world's structure is
+stable enough to reuse.
+
+\subsection{A Testable Provocation}
+
+The social field brings learning and inference closer, but they are not
+fully unified---the field resets between sequences.  True unification
+would mean the field persists and the system improves across sequences,
+not just within one.  The social field is more like ``inference that
+remembers its own recent history'' than ``learning.''  But this may be
+exactly the right intermediate step, and it is notable that biological
+short-term plasticity also resets: synaptic facilitation decays, working
+memory clears---and yet it is clearly doing something different from pure
+retrieval.
+
+The really provocative version of this claim: \emph{the reason
+transformers need so many parameters and so much training data is that
+they are forced to compile all sequential structure into static weights,
+because they lack a mechanism for discovering structure at inference
+time}.  The social field could, in principle, let a smaller model with
+less training discover structure on-the-fly that a standard transformer
+would need to have memorised.  This is testable, and is the direction we
+are chipping away at.
+
+\paragraph{Note: multiscale validation on natural language.}
+Preliminary experiments training the vector social field on TinyStories
+(11.7M parameter GPT, 512-token context, chunk size 128) reveal that the
+single-timescale architecture described here---while functional---is
+severely limited by its fixed decay rate ($\evap = 0.05$, half-life
+$\sim$13 tokens).  Extending the architecture with a second, slow field
+(learnable retention converging to half-life $\sim$120 tokens) produces a
+36.6\% perplexity increase at late positions when ablated, compared to
+2.18\% for the single field, and is the only variant to improve aggregate
+perplexity.  The model spontaneously discovers scale separation, with the
+slow field spanning the full context window while the fast field retains
+local dynamics.  These results, detailed in the companion hierarchical
+coupling paper, confirm that the social field's capacity for long-range
+influence is real but requires temporal scale structure to be drawn out
+by standard next-token training.
+
+
+\bibliographystyle{plain}
+\begin{thebibliography}{99}
+
+% --- Criticality and universality ---
+
+\bibitem{beggs2003}
+J.~M.~Beggs and D.~Plenz.
+Neuronal avalanches in neocortical circuits.
+\emph{Journal of Neuroscience}, 23(35):11167--11177, 2003.
+
+\bibitem{shew2013}
+W.~L.~Shew and D.~Plenz.
+The functional benefits of criticality in the cortex.
+\emph{The Neuroscientist}, 19(1):88--100, 2013.
+
+\bibitem{chialvo2010}
+D.~R.~Chialvo.
+Emergent complex neural dynamics.
+\emph{Nature Physics}, 6:744--750, 2010.
+
+\bibitem{munoz2018}
+M.~A.~Mu\~{n}oz.
+Colloquium: Criticality and dynamical scaling in living systems.
+\emph{Reviews of Modern Physics}, 90:031001, 2018.
+
+\bibitem{janssen1981}
+H.-K.~Janssen.
+On the nonequilibrium phase transition in reaction-diffusion systems
+with an absorbing stationary state.
+\emph{Zeitschrift f\"{u}r Physik B}, 42:151--154, 1981.
+
+\bibitem{grassberger1982}
+P.~Grassberger.
+On phase transitions in Schl\"{o}gl's second model.
+\emph{Zeitschrift f\"{u}r Physik B}, 47:365--374, 1982.
+
+\bibitem{harris1974}
+T.~E.~Harris.
+Contact interactions on a lattice.
+\emph{The Annals of Probability}, 2(6):969--988, 1974.
+
+\bibitem{hesse2014}
+J.~Hesse and T.~Gross.
+Self-organized criticality as a fundamental property of neural systems.
+\emph{Frontiers in Systems Neuroscience}, 8:166, 2014.
+
+% --- Ant trails and stigmergy ---
+
+\bibitem{deneubourg1990}
+J.-L.~Deneubourg, S.~Aron, S.~Goss, and J.-M.~Pasteels.
+The self-organizing exploratory pattern of the Argentine ant.
+\emph{Journal of Insect Behavior}, 3(2):159--168, 1990.
+
+% --- Neural stigmergy ---
+
+\bibitem{frey1997}
+U.~Frey and R.~G.~M.~Morris.
+Synaptic tagging and long-term potentiation.
+\emph{Nature}, 385:533--536, 1997.
+
+\bibitem{bhatt2000}
+D.~K.~Bhatt, S.~Bhatt, and N.~J.~Abbott.
+Four-dimensional neuronal signaling by nitric oxide: A computational
+analysis.
+\emph{Journal of Neuroscience}, 20(3):1199--1207, 2000.
+
+\bibitem{philippides2005}
+A.~Philippides, P.~Husbands, and M.~O'Shea.
+From synaptically localized to volume transmission by nitric oxide.
+\emph{Journal of Physiology}, 2005.
+
+% --- Companion paper ---
+
+\bibitem{stigmergic2024}
+Stigmergic attention: Closing the feedback loop between pheromone
+fields and neural attention.
+\emph{Companion paper}, 2024.
+
+% --- Transformers and attention variants ---
+
+\bibitem{vaswani2017attention}
+A.~Vaswani, N.~Shazeer, N.~Parmar, J.~Uszkoreit, L.~Jones,
+A.~N.~Gomez, \L.~Kaiser, and I.~Polosukhin.
+Attention is all you need.
+In \emph{NeurIPS}, 2017.
+
+\bibitem{press2022alibi}
+O.~Press, N.~Smith, and M.~Lewis.
+Train short, test long: Attention with linear biases enables input
+length extrapolation.
+In \emph{ICLR}, 2022.
+
+\bibitem{su2024rope}
+J.~Su, M.~Ahmed, Y.~Lu, S.~Pan, W.~Bo, and Y.~Liu.
+RoFormer: Enhanced transformer with rotary position embedding.
+\emph{Neurocomputing}, 568:127063, 2024.
+
+\bibitem{sun2023retnet}
+Y.~Sun, L.~Dong, S.~Huang, S.~Ma, Y.~Xia, J.~Xue, J.~Wang, and F.~Wei.
+Retentive network: A successor to transformer for large language models.
+\emph{arXiv:2307.08621}, 2023.
+
+\bibitem{gu2023mamba}
+A.~Gu and T.~Dao.
+Mamba: Linear-time sequence modeling with selective state spaces.
+\emph{arXiv:2312.00752}, 2023.
+
+\bibitem{peng2023rwkv}
+B.~Peng, E.~Alcaide, Q.~Anthony, et~al.
+RWKV: Reinventing RNNs for the transformer era.
+In \emph{EMNLP Findings}, 2023.
+
+\bibitem{fan2021feedback}
+A.~Fan, T.~Lavril, E.~Grave, A.~Joulin, and S.~Sukhbaatar.
+Addressing some limitations of transformers with feedback memory.
+\emph{arXiv:2002.09402}, 2021.
+
+\bibitem{ramsauer2021hopfield}
+H.~Ramsauer, B.~Sch\"{a}fl, J.~Lehner, et~al.
+Hopfield networks is all you need.
+In \emph{ICLR}, 2021.
+
+\end{thebibliography}
+
+\end{document}

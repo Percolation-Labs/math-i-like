@@ -1,0 +1,620 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=2.3cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[round,authoryear]{natbib}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{enumitem}
+
+\hypersetup{colorlinks=true,linkcolor=blue!60!black,
+  citecolor=green!50!black,urlcolor=blue!70!black}
+
+\newcommand{\ee}{\mathrm{e}}
+\newcommand{\dd}{\mathrm{d}}
+\newcommand{\psit}{\tilde\psi}
+\newcommand{\phit}{\tilde\phi}
+
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+
+\title{The CFAC Theorem:\\[4pt]
+  \large Doi--Peliti Generating Functions Are Lagrange Equations}
+\author{S. Amarteifio\\
+  \small\textit{Percolation Labs}}
+\date{April 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+For any chemical reaction network with polynomial vertex
+structure, the Doi--Peliti dressed-propagator generating
+function satisfies a Lagrange equation in the sense of
+Flajolet--Sedgewick analytic combinatorics.  The recognition is
+an elementary rewriting; the consequences are the transfer
+theorem for all-orders coefficient asymptotics, classification of
+mean-field universality by Puiseux exponent, and a branch-gap
+contour integral for non-perturbative nucleation rates.  We call
+the resulting framework Coupled Field Analytic Combinatorics
+(CFAC).  This note states the theorem, gives the proof, and lists
+what can be read off from any reaction network.
+\end{abstract}
+
+% ══════════════════════════════════════════════════════════════════
+\section{Definitions}
+\label{sec:defs}
+% ══════════════════════════════════════════════════════════════════
+
+\begin{definition}[Chemical reaction network]
+A chemical reaction network (CRN) is a finite collection of
+species $\{A_1, \ldots, A_s\}$ and reactions
+$\bigl\{\sum_i k_{r i}\,A_i \to \sum_i l_{r i}\,A_i\bigr\}_{r}$
+with nonnegative integer stoichiometry
+$k_{r i}, l_{r i} \in \mathbb{Z}_{\geq 0}$ and rates
+$k_r > 0$.
+\end{definition}
+
+\begin{definition}[Liouvillian of a CRN]
+Associated to each reaction $r$ are Heisenberg--Weyl creation and
+annihilation variables $\psit_i, \psi_i$ for each species $A_i$,
+and an operator
+\begin{equation}\label{eq:Q-ordinary}
+  \widehat{Q}_r
+  = k_r\,
+  \Bigl[\prod_i \psit_i^{\,l_{r i}}
+    - \prod_i \psit_i^{\,k_{r i}}\Bigr]
+  \prod_i \psi_i^{\,k_{r i}}
+\end{equation}
+in the ``ordinary'' (non-Doi-shifted) form, or equivalently
+\begin{equation}\label{eq:Q-doi}
+  Q_r
+  = k_r\,
+  \Bigl[\prod_i (1 + \psit_i)^{l_{r i}}
+    - \prod_i (1 + \psit_i)^{k_{r i}}\Bigr]
+  \prod_i \psi_i^{\,k_{r i}}
+\end{equation}
+in the Doi-shifted form.  The Liouvillian of the CRN is
+$Q = \sum_r Q_r$ (or $\widehat{Q} = \sum_r \widehat{Q}_r$).
+\end{definition}
+
+The two forms~\eqref{eq:Q-ordinary}--\eqref{eq:Q-doi} are related
+by the Doi shift $\psit_i \to 1 + \psit_i$~\citep{Doi1976,Peliti1985,Tauber}.
+Expanding any product $\prod_i (1+\psit_i)^{l_{ri}}$ or
+$\prod_i \psit_i^{l_{ri}}$ and collecting like terms gives a
+\emph{vertex dictionary}:
+\begin{equation}\label{eq:vertex-dict}
+  Q \;=\; \sum_{(m_1 + n_1 \geq 1,\ldots)}
+    g_{\{m\},\{n\}}\,
+    \prod_i \psit_i^{m_i}\,\psi_i^{n_i},
+\end{equation}
+with coupling coefficients $g_{\{m\},\{n\}}$ determined
+algorithmically by the stoichiometry and rates~\citep{Amarteifio2019Thesis}.
+Each term $\prod_i \psit_i^{m_i}\psi_i^{n_i}$ is an interaction
+vertex; its $n_\partial$ value is zero unless spatial gradients
+are added by hand (e.g.\ to model drift or chemotaxis).
+
+\begin{definition}[Polynomial vertex structure]
+A CRN has \emph{polynomial vertex structure} if the Liouvillian,
+after the Doi shift~\eqref{eq:Q-doi} and possibly the projection
+to zero spatial dimensions (replacing $\psi_i(\mathbf{x},t) \to
+\psi_i(t)$), expands into a finite sum of monomials
+$g_{\{m\},\{n\}}\prod_i\psit_i^{m_i}\psi_i^{n_i}$ with no
+momentum-dependent couplings.
+\end{definition}
+
+Every CRN with finite stoichiometry has polynomial vertex
+structure in this sense.  Continuous gradient vertices (e.g.\ the
+chemotaxis term $\chi\,\psit(\nabla\phi)(\nabla\psi)$) are
+\emph{not} of this form at nonzero momentum; their
+zero-momentum / well-mixed projections are.
+
+\begin{definition}[Dressed-propagator generating function]
+Fix a species $A$ with self-coupling vertices only (multi-species
+cases are handled by resultants; see~\S\ref{sec:multi}).  The
+dressed propagator is
+$G(z) = \sum_{n \geq 0} G_n z^n$, where $G_n$ is the sum over
+connected 1PI diagrams contributing to the two-point function at
+order $n$ in the bare propagator $z$.  The \emph{vertex function}
+is
+\begin{equation}\label{eq:phi-def}
+  \phi(G) \;=\; 1 + \sum_{m+n\,\geq\,3}
+    g_{m n}\,G^{\,m + n - 2},
+\end{equation}
+summing over all vertices $g_{m n}\psit^{m}\psi^{n}$ of the
+Liouvillian with $m + n \geq 3$.  (Two-leg vertices $m + n = 2$
+are mass terms absorbed into $z$.)
+\end{definition}
+
+% ══════════════════════════════════════════════════════════════════
+\section{The CFAC theorem}
+\label{sec:theorem}
+% ══════════════════════════════════════════════════════════════════
+
+\begin{theorem}[CFAC recognition]
+\label{thm:cfac}
+For any CRN with polynomial vertex structure, the
+dressed-propagator generating function $G(z)$ and the vertex
+function $\phi(G)$ of Eq.~\eqref{eq:phi-def} satisfy
+\begin{equation}\label{eq:lagrange}
+  \boxed{\;G(z) \;=\; z \cdot \phi\bigl(G(z)\bigr)\;}
+\end{equation}
+as a closed functional equation over formal power series in $z$.
+Equation~\eqref{eq:lagrange} is a \emph{Lagrange equation} in the
+sense of analytic combinatorics~\citep{FlajoletSedgewick}.
+
+Consequently, for any such CRN the following quantities are
+determined directly by the polynomial $\phi$:
+\begin{enumerate}[leftmargin=1.8em, itemsep=-0.1em, label=(C\arabic*)]
+\item \emph{All-orders coefficient asymptotics.}
+  If $z_*$ is the radius of convergence of $G(z)$, with
+  Puiseux exponent $p/q$ at $z_*$, then by the transfer theorem
+\begin{equation}\label{eq:transfer}
+  [z^n]\,G(z)
+  \;\sim\;
+  \frac{C}{\Gamma(-p/q)}\,n^{-p/q - 1}\,z_*^{-n},
+  \qquad n \to \infty,
+\end{equation}
+  with $C$ set by the local behaviour of $\phi$ near
+  $(G_*, z_*)$.
+\item \emph{Mean-field universality class.}
+  The rational Puiseux exponent $p/q$ at the dominant branch
+  point of~\eqref{eq:lagrange} classifies the mean-field scaling:
+  $1/2$ is the directed-percolation / pair-annihilation class,
+  $1/3$ is the compact-DP / triple-root class, higher-order
+  mergers give further multi-critical classes.
+\item \emph{Non-perturbative nucleation barrier.}
+  When $\phi$ produces a bistable effective dynamics, the
+  nucleation barrier is the contour integral
+\begin{equation}\label{eq:branchgap}
+  S \;=\; \int_1^{z_*}
+    \frac{G_{\mathrm{unst}}(z) - G_{\mathrm{stab}}(z)}{z}\,\dd z,
+\end{equation}
+  equal to the Freidlin--Wentzell / WKB quasi-potential
+  $\int_{x_1}^{x_2}\ln[w^-/w^+]\,\dd y$ by change of variables.
+\item \emph{UV divergence structure.}
+  At spatial dimension $d$, the superficial degree of divergence
+  of a 1PI graph with $L$ loops, $I$ internal lines, and
+  $n_\partial^{\mathrm{tot}}$ gradient insertions is
+  $\omega = dL - 2I + n_\partial^{\mathrm{tot}}$.  Power counting
+  on the finite enumeration of 1PI graphs consistent with the
+  vertex dictionary is then purely algebraic.
+\end{enumerate}
+\end{theorem}
+
+\paragraph{Scope.}
+The theorem as stated holds when $\phi$ is a polynomial in $G$
+alone.  This covers every CRN with finite stoichiometry at zero
+spatial dimensions or after integrating out additional field
+variables at steady state.  When gradient vertices carry
+momentum-dependent couplings, $\phi$ becomes a functional of
+momentum-dependent propagators; the recognition extends, but the
+transfer-theorem machinery becomes functional-analytic.  All
+applications in this note stay within the polynomial scope.
+
+\begin{corollary}[CFAC pipeline]
+\label{cor:pipeline}
+For any CRN with polynomial vertex structure, the following chain
+is purely algebraic and mechanical:
+\begin{center}
+\small
+stoichiometry $\to$ Liouvillian $Q$
+$\to$ vertex dictionary $\{g_{m n}\}$
+$\to$ vertex function $\phi(G)$
+$\to$ Lagrange equation $G = z\phi(G)$
+$\to$ (C1)\,asymptotics, (C2)\,universality, (C3)\,nucleation, (C4)\,divergences.
+\end{center}
+No loop integral, no saddle-point of an action, no WKB trajectory
+is required to reach any of (C1)--(C4).
+\end{corollary}
+
+\begin{corollary}[Rare-event scaling]
+\label{cor:rare}
+For a bistable CRN with polynomial vertex structure and effective
+system size $V$, the mean first-passage time from the metastable
+state to the unstable barrier is
+\begin{equation}\label{eq:tau}
+  \tau(V) \;=\; C\,\ee^{V S} \,\bigl[1 + O(1/V)\bigr],
+\end{equation}
+with barrier $S$ given by the branch-gap
+integral~\eqref{eq:branchgap} of $\phi(G)$ and prefactor $C$
+determined by the local Puiseux data at the branch point via the
+transfer theorem~\eqref{eq:transfer}.  Neither direct stochastic
+simulation nor action saddle-pointing is required to extract $S$.
+\end{corollary}
+
+\begin{proof}[Proof]
+Equation~\eqref{eq:tau} is the large-deviation form of the
+Freidlin--Wentzell escape rate~\citep{FreidlinWentzell}.  By
+(C3), $S$ equals the branch-gap integral of the Lagrange
+equation~\eqref{eq:lagrange}.  The prefactor $C$ comes from the
+Gaussian fluctuations around the instanton trajectory; in the
+Lagrange-equation language these fluctuations are controlled by
+the local coefficients of the Puiseux expansion at $(G_*, z_*)$,
+which feed into~\eqref{eq:transfer}.  The two pieces of data
+$(S, C)$ are thus both read off from the polynomial $\phi$
+without simulation or WKB.  (In practice, as in
+\citep{CFACpaper}, $C$ is often calibrated from small-$V$
+simulation; the in-principle route via~\eqref{eq:transfer} is
+the one guaranteed by Theorem~\ref{thm:cfac}.)
+\end{proof}
+
+\begin{corollary}[Coupled field extension via resultant]
+\label{cor:coupled}
+For a CRN on $s$ species with polynomial vertex structure across
+all species, the system of Dyson--Schwinger equations
+$G_i = z_i\,\phi_i(\{G_j\})$ for $i = 1, \ldots, s$ admits a
+univariate reduction: the resultant
+$\mathcal{R}(G_1, z_1; \{z_j\}_{j \neq 1})$ obtained by
+eliminating $G_2, \ldots, G_s$ from the system is a polynomial in
+$G_1$ whose roots $G_1(z_1)$ inherit a Lagrange-equation
+structure.  Theorem~\ref{thm:cfac} applies to the resultant with the
+following scope:
+\begin{itemize}[leftmargin=1.5em,itemsep=-0.1em]
+\item Consequences (C1), (C2), (C4)---coefficient asymptotics,
+  Puiseux classification of mean-field universality, and UV
+  divergence structure---hold with $\phi$ replaced by
+  $\mathcal{R}$, directly and unconditionally.
+\item Consequence (C3)---the branch-gap instanton integral---holds
+  when the physical nucleation saddle is a real branch point of
+  $\mathcal{R}$.  It can fail when the saddle migrates into the
+  complex analytic continuation of the resultant.
+\end{itemize}
+\end{corollary}
+
+\begin{proof}[Proof sketch and scope]
+The resultant of a polynomial system is itself polynomial in the
+retained variable~\citep{CLO}; (C1), (C2), (C4) apply mechanically.
+For (C3), a numerical test on a 3-site coupled ring reported
+in \citep{CFACpaper} shows that the branch-gap formula on the
+resultant agrees with direct simulation in the decoupled limit
+(2.6\%), under-predicts the barrier by $\sim$20\% in a weakly
+coupled regime, and has no real branch point at all in a
+moderately coupled regime, even though the simulated nucleation
+rate remains exponential.  The nucleation saddle has left the
+real algebraic variety.  Establishing (C3) in that regime
+requires complex-analytic continuation of the resultant, outside
+the polynomial-vertex scope of Theorem~\ref{thm:cfac}.
+\end{proof}
+
+\begin{corollary}[One-loop algebraic bridge via tropical geometry]
+\label{cor:tropical}
+For any one-loop two-propagator integral arising in a CRN with
+polynomial vertex structure, the bridge integral (C4) admits a
+\emph{closed algebraic form}: the Arkani-Hamed--Hillman--Salvatori
+leading-facet-plus-Hessian evaluation of the Schwinger representation
+is \emph{exact}, not asymptotic.  Explicitly, with first Symanzik
+polynomial $F = m_1^2 u_1^2 + (p^2+m_1^2+m_2^2) u_1 u_2 + m_2^2 u_2^2$,
+\begin{equation}\label{eq:tropical-bridge}
+  I_{\mathrm{DP}}(p;m_1,m_2)
+  \;=\; \frac{1}{\sqrt{\lambda_E}}\,
+    \ln\!\left[
+       \frac{\bigl(\sqrt{\lambda_E} + p^2 + m_1^2 + m_2^2\bigr)^{2}}
+            {4\,m_1^2\,m_2^2}
+    \right],
+\end{equation}
+with $\lambda_E = (p^2+m_1^2-m_2^2)^2 + 4 p^2 m_2^2$ the Euclidean
+K\"all\'en discriminant (equivalently, the determinant of the
+tropical Hessian at the interior saddle).  The branch cut
+$\lambda_E = 0$ locates the Minkowski threshold
+$s = (m_1{+}m_2)^2$ directly on the Newton polytope.
+\end{corollary}
+
+\begin{proof}[Proof sketch]
+$F$ is homogeneous of degree $L+1 = 2$ in the Schwinger parameters;
+on the projective simplex it is a non-degenerate quadratic form with
+constant Hessian.  The Schwinger integral of $F^{-d/2}$ is Gaussian
+against the leading-facet saddle, evaluated exactly by the
+saddle-plus-Hessian prescription~\citep{AHHSalvatori2022,Borinsky2020}:
+no higher Taylor corrections arise because $\ln F$ terminates at
+second order around the saddle up to a total derivative.  Details,
+numerical verification across 14 orders of magnitude in $p^2/m^2$
+and $m_1^2/m_2^2$, and the extension to the coupled DP--MSR bridge
+appear in~\citep{CFACpaper}.~\qed
+\end{proof}
+
+Corollary~\ref{cor:tropical} sharpens (C4): at one loop, the bridge
+step of the CFAC pipeline (Corollary~\ref{cor:pipeline}) is not a
+numerical dictionary but a closed algebraic expression.
+Combined with the recognition theorem, the consequence is that for
+any CRN with polynomial vertex structure, the entire one-loop
+beta function is determined by symbolic manipulation of two
+polynomials: $\phi(G)$ (from the vertex dictionary) and $F$ (the
+first Symanzik of the relevant topology).  Higher loops require
+genuine multi-facet sums over Newton polytopes, for which
+Borinsky's tropical Monte Carlo~\citep{Borinsky2020,Borinsky2025}
+gives an exact integration procedure.
+
+\paragraph{Why one loop is often enough.}
+The restriction of Corollary~\ref{cor:tropical} to one loop is
+less severe than it appears, because (C4) itself is typically
+\emph{one-loop-exact} for CRNs of interest.  A CRN is one-loop
+exact when the ω-enumeration gives $\omega(L) < 0$ for every
+topology with $L \geq 2$---meaning no higher-loop UV divergences
+arise.  This is the situation for pair annihilation, pure DP,
+BARW, chemotaxis \citep{GelimsonGolestanian2015}, the KS
+Doi--Peliti/MSR coupling sector \citep{PruessnerGarciaMillan2025,CFACpaper},
+and more generally for any CRN whose vertex content is
+sufficiently constrained by finite stoichiometry that the
+enumeration collapses.  In those cases Corollary~\ref{cor:tropical}
+and (C4) combine to close the \emph{entire} perturbative
+pipeline in symbolic form: reaction network $\to$ vertex
+dictionary $\to$ Lagrange equation $\to$ Puiseux exponent +
+branch-gap + closed-form bridge integral, with no numerical
+quadrature anywhere.  The restricted class where this fails
+(e.g.\ active-birth $\psi^4$ sectors with persistent two-loop
+divergences) is exactly the class where ε-expansion resummation
+is also required in the standard direct-RG route; CFAC neither
+helps nor hurts there, and Borinsky's algorithm remains the
+available exact evaluator.
+
+\paragraph{What these corollaries are (and are not).}
+Corollary~\ref{cor:rare} is a statement about the large-$V$ form
+of the MFPT, using the standard large-deviation
+structure~\citep{FreidlinWentzell}.  The novelty is that
+\emph{both} the exponent $S$ and the prefactor $C$ are read off
+from $\phi$; the present paper gives $S$ rigorously and notes
+that $C$ is in-principle determined by the transfer theorem.
+Corollary~\ref{cor:coupled} is the technical observation that
+polynomial vertex structure across multiple species admits a
+univariate reduction by resultant, to which Theorem~\ref{thm:cfac}
+applies unconditionally for (C1), (C2), (C4).  For the nucleation
+consequence (C3), the reduction holds only when the physical
+saddle is a real branch point of the resultant; a 3-site lattice
+test in~\citep{CFACpaper} finds this fails at moderate coupling,
+where the saddle is complex.  Extending (C3) to that regime is
+an open problem and requires machinery beyond the polynomial
+scope of Theorem~\ref{thm:cfac}.
+
+% ══════════════════════════════════════════════════════════════════
+\section{Proof}
+\label{sec:proof}
+% ══════════════════════════════════════════════════════════════════
+
+\begin{proof}[Proof of Theorem~\ref{thm:cfac}]
+The Dyson--Schwinger equation for the dressed propagator of a
+field theory with vertex content $\{g_{m n}\psit^{m}\psi^{n}\}$
+is obtained by summing 1PI insertions into the bare propagator:
+$G = z + z\,\Sigma(G)\,G$, where the self-energy $\Sigma$ is a
+sum over 1PI vertex insertions.  A 1PI insertion of the vertex
+$g_{m n}\psit^{m}\psi^{n}$ contracts $(m{-}1)$ of its $\psit$-legs
+and $n$ of its $\psi$-legs to internal dressed propagators,
+contributing $g_{m n}\,G^{m+n-2}$.  Summing these plus the
+identity gives~\eqref{eq:phi-def}.  Substituting into the DSE:
+\[
+  G \;=\; z + z\,\Sigma(G)\,G
+    \;=\; z\bigl[1 + \Sigma(G)\,G\bigr]
+    \;=\; z\,\phi(G),
+\]
+which is~\eqref{eq:lagrange}.  The identification of this as a
+Lagrange equation over formal power series is definitional
+\citep[Ch.~VII]{FlajoletSedgewick}.  Consequences (C1)--(C4)
+then follow directly: (C1) is the transfer theorem; (C2) is the
+Newton-polygon analysis of~\eqref{eq:lagrange} at the
+discriminant zero; (C3) is proved by change of variables $y \to z
+= w^-(y)/w^+(y)$ in the quasi-potential integral; (C4) is
+standard QFT power counting applied to the 1PI graph list
+produced by the algebraic formalism~\citep{Amarteifio2019Thesis}.
+\end{proof}
+
+The proof of (C3) is worth spelling out explicitly because the
+form~\eqref{eq:branchgap} appears to be new.  Let $w^{\pm}(y)$
+denote the effective forward and backward rates for the
+order-parameter $y$ (concentration of $A$, obtained by taking the
+mean-field reduction of the CRN).  The WKB
+quasi-potential~\citep{FreidlinWentzell,ElgartKamenev,Meerson} is
+$\varphi(y) = \int_{x_1}^{y}\ln[w^-/w^+]\,\dd y'$, and the
+nucleation barrier is $S = \varphi(x_2)$ between metastable state
+$x_1$ and unstable barrier $x_2$ (both satisfying $w^+ = w^-$).
+Substituting $z(y) = w^-(y)/w^+(y)$ gives
+$\dd\varphi = (\ln z)\,(\dd y/\dd z)\,\dd z$.  Both
+endpoints $x_1, x_2$ map to $z = 1$ (fixed points), but the
+integration path switches from the stable branch of $y(z)$ to the
+unstable branch at the branch point $z_*$.  Integration by parts,
+$\int (\ln z)\,y'(z)\,\dd z = [y(z)\ln z] - \int y(z)/z\,\dd z$,
+kills the boundary terms ($\ln 1 = 0$; branch values agree at
+$z_*$), leaving~\eqref{eq:branchgap}. $\qed$
+
+% ══════════════════════════════════════════════════════════════════
+\section{Background}
+\label{sec:background}
+% ══════════════════════════════════════════════════════════════════
+
+Two bodies of work make the recognition trivial to state.
+
+\paragraph{The algebraic formalism for CRNs}
+\citep{Amarteifio2019Thesis} maps any chemical reaction network
+to the Liouvillian~\eqref{eq:Q-doi} (or~\eqref{eq:Q-ordinary})
+algorithmically via the stoichiometry matrix, building on Doi's
+second-quantised representation~\citep{Doi1976}, Peliti's
+coherent-state path integral~\citep{Peliti1985}, and T\"auber's
+systematic treatment~\citep{Tauber}.  The key algorithmic step is
+that the expansion of $\prod_i (1 + \psit_i)^{l_{r i}}$ into
+monomials is closed-form (multinomial expansion), so the vertex
+dictionary $\{g_{m n}\}$ is determined exactly by the
+stoichiometry and rates.  No field-theoretic insight is required
+once the CRN is written down; the construction is mechanical.
+
+\paragraph{Analytic combinatorics}
+\citep{FlajoletSedgewick} is the asymptotic theory of generating
+functions developed for enumerative combinatorics.  Its central
+machinery is: Lagrange equations $G = z\phi(G)$ and Lagrange
+inversion for their coefficients; singularity analysis (branch
+points, poles, Puiseux expansions) to extract the radius of
+convergence and local behaviour; and the \emph{transfer theorem}
+to convert local singularity data into asymptotic coefficient
+growth via~\eqref{eq:transfer}.  These results are standard but
+rarely invoked in stochastic-field-theory practice; the
+classification of universality classes by a rational invariant
+($p/q$) is foreign to the case-by-case RG tradition.
+
+\paragraph{The recognition is the bridge.}
+For a reader who knows Doi--Peliti well (generator
+construction~\eqref{eq:Q-doi}, propagator, vertices, Feynman
+diagrams), the Lagrange-equation form~\eqref{eq:lagrange} is the
+same object written in different notation.  What is \emph{not}
+usually known is that the Flajolet--Sedgewick theorem apparatus
+transfers wholesale: the transfer theorem, Puiseux classification,
+and branch-gap instanton integral are all available without any
+further derivation.  Theorem~\ref{thm:cfac} makes the transfer
+explicit.
+
+% ══════════════════════════════════════════════════════════════════
+\section{What can be read off from any CRN}
+\label{sec:readoff}
+% ══════════════════════════════════════════════════════════════════
+
+For a CRN with polynomial vertex structure, the CFAC pipeline
+(Corollary~\ref{cor:pipeline}) produces, from the stoichiometry
+matrix alone:
+
+\begin{itemize}[leftmargin=1.5em, itemsep=-0.2em]
+\item The Liouvillian $Q$ in closed form
+  (Eqs.~\eqref{eq:Q-doi}--\eqref{eq:Q-ordinary}).
+\item The vertex dictionary $\{g_{m n}\}$ by expansion.
+\item The vertex function $\phi(G)$ by Eq.~\eqref{eq:phi-def}.
+\item The Lagrange equation $G = z\phi(G)$ by substitution.
+\item The branch point $(G_*, z_*)$ by solving
+  $1 - z_*\phi'(G_*) = 0$ together with $G_* = z_*\phi(G_*)$.
+\item The Puiseux exponent $p/q$ by the Newton polygon
+  of~\eqref{eq:lagrange} at the branch point.
+\item The all-orders perturbative coefficient asymptotics
+  by Eq.~\eqref{eq:transfer}.
+\item The universality class via $p/q$ (mean-field).
+\item The nucleation barrier $S$ for bistable systems
+  by the branch-gap integral~\eqref{eq:branchgap}.
+\item The upper critical dimension $d_c$ from the engineering
+  dimensions of the vertices.
+\item The UV divergence structure at any loop order by
+  power counting on the finite 1PI graph enumeration.
+\item \textbf{The one-loop bridge integrals} in closed algebraic
+  form (Corollary~\ref{cor:tropical}): each one-loop two-propagator
+  integral equals
+  $(1/\sqrt{\lambda_E})\ln\!\bigl[(\sqrt{\lambda_E}+p^2+m_1^2+m_2^2)^2/(4m_1^2m_2^2)\bigr]$
+  with $\lambda_E$ the Euclidean K\"all\'en discriminant of the
+  graph---no numerical quadrature, branch cuts read off the Newton
+  polytope.
+\end{itemize}
+
+At higher loops the bridge integrals are no longer closed-form
+symbolic but are tabulated once~\citep{BognerWeinzierl}
+and evaluated exactly by tropical Monte
+Carlo~\citep{Borinsky2020,Borinsky2025}, reused across CRNs.  When
+the $\omega$-enumeration of the final bullet establishes one-loop
+UV-exactness---the standard situation for reaction networks of
+physical interest---the whole pipeline is therefore closed-form
+symbolic end-to-end: no quadrature, no table lookup, no Monte
+Carlo.
+
+% ══════════════════════════════════════════════════════════════════
+\section{Worked example: pair annihilation}
+\label{sec:example}
+% ══════════════════════════════════════════════════════════════════
+
+Single-species pair annihilation $2A \to \varnothing$ with rate
+$\lambda$ has stoichiometry $k_A = 2$, $l_A = 0$.  The Liouvillian
+\eqref{eq:Q-doi} is
+$Q = \lambda\bigl[1 - (1+\psit)^2\bigr]\psi^2 =
+-2\lambda\,\psit\psi^2 - \lambda\,\psit^2\psi^2$.
+Vertex dictionary: $g_{12} = -2\lambda$, $g_{22} = \lambda$.
+Vertex function by~\eqref{eq:phi-def}:
+\begin{equation}
+  \phi(G) \;=\; 1 + g_{12}\,G + g_{22}\,G^2
+  \;=\; 1 - 2\lambda\,G + \lambda\,G^2.
+\end{equation}
+Lagrange equation~\eqref{eq:lagrange}:
+$G(z) = z\bigl[1 - 2\lambda G + \lambda G^2\bigr]$, a quadratic
+in $G$.  Branch point:
+$(G_*, z_*) = (1/\lambda, 1/\lambda)$; Puiseux exponent
+$p/q = 1/2$.  Transfer theorem~\eqref{eq:transfer}:
+$[z^n]G(z) \sim n^{-3/2}\lambda^n$.
+
+Weyl's law on an arbitrary graph with spectral dimension $d_s$
+converts this to the density decay $\rho(t) \sim t^{-d_s/2}$ for
+$d_s \geq 2$, with its well-known mean-field breakdown for
+$d_s < 2$~\citep{Tauber}.  No loop integral was evaluated at any
+point.  A fully worked example for the Gribov/BRW process is given
+in a companion note~\citep{AmarteifioBRW}.
+
+% ══════════════════════════════════════════════════════════════════
+\section{Coupled particle-field extension}
+\label{sec:multi}
+% ══════════════════════════════════════════════════════════════════
+
+For coupled systems (Doi--Peliti particles + Martin--Siggia--Rose
+field with interaction vertices), the DSE becomes a
+\emph{system} of Lagrange equations $G_i = z_i\,\phi_i(\{G_j\})$.
+Eliminating auxiliary variables by resultant gives a univariate
+polynomial to which Corollary~\ref{cor:coupled} applies.  The
+perturbative consequences (C1), (C2), (C4) of
+Theorem~\ref{thm:cfac} extend unconditionally to the coupled
+setting; the non-perturbative nucleation consequence (C3) extends
+only while the nucleation saddle remains a real branch point of
+the resultant.  A detailed development---including the
+demonstrations of one-loop perturbative exactness, a branch-gap
+instanton formula verified to six digits on seven parameter sets
+in the well-mixed limit, and a three-loop two-colour Kirchhoff
+factorisation, together with a 3-site lattice test that
+identifies the failure mode of (C3) at moderate spatial
+coupling---appears in~\citep{CFACpaper}.
+
+% ══════════════════════════════════════════════════════════════════
+\section{Discussion}
+\label{sec:disc}
+% ══════════════════════════════════════════════════════════════════
+
+The content of Theorem~\ref{thm:cfac} is structural.  It does not
+shorten any \emph{single} Doi--Peliti calculation---the construction
+of $Q$, the extraction of vertices, the writing down of the DSE
+are all standard.  What it changes is what you can \emph{read off}
+once you have $\phi(G)$: the transfer theorem gives all-orders
+asymptotics that the usual iterative loop expansion does not
+produce; the Puiseux exponent classifies mean-field universality
+as a rational invariant rather than a case-by-case RG result;
+the branch-gap contour integral gives non-perturbative nucleation
+rates from the same polynomial that controls the perturbative
+series.  The apparatus was always available in analytic
+combinatorics; what was missing in the stochastic-field-theory
+literature was the recognition that it applies.
+
+Two structural consequences deserve emphasis.  First, the
+coincidence of the branch point in (C1) and (C3) implies that
+perturbative and non-perturbative physics sit at the same
+singularity of the same generating function---a connection
+obscured in the direct-RG route, which treats loop corrections
+and instantons with distinct technology.  Second, universality
+classification by Puiseux exponent $p/q$ is a statement about
+the polynomial $\phi$ alone; two CRNs with the same $\phi$ share
+a universality class regardless of the reactions that produced
+them.  This makes the mapping from biology to physics (which CRN
+belongs to which class) a question of polynomial equivalence.
+
+% ══════════════════════════════════════════════════════════════════
+\begin{thebibliography}{99}
+
+\bibitem[Amarteifio(2019)]{Amarteifio2019Thesis} Amarteifio, S., 2019. \textit{Field-theoretic formulation and empirical tracking of spatial processes}. PhD dissertation (supervised by G.~Pruessner), Imperial College London.
+\bibitem[Arkani-Hamed et al.(2022)]{AHHSalvatori2022} Arkani-Hamed, N., Hillman, A., and Salvatori, S., 2022. Tropical amplitudes and the method of regions. \textit{arXiv:2202.12296}.
+\bibitem[Borinsky(2020)]{Borinsky2020} Borinsky, M., 2020. Tropical Monte Carlo quadrature for Feynman integrals. \textit{arXiv:2008.12310}. [Published 2023, \textit{Ann.\ Inst.\ H.\ Poincar\'e D} 10, 635.]
+\bibitem[Borinsky et al.(2025)]{Borinsky2025} Borinsky, M., Munch, H.J., and Tellander, F., 2025. Tropical Feynman integration for massive scalar theories. \textit{J.\ High Energy Phys.} (to appear).
+\bibitem[Amarteifio(2026a)]{AmarteifioBRW} Amarteifio, S., 2026a. \textit{BRW via Analytic Combinatorics: Complete Worked Example}. Companion note, Percolation Labs.
+\bibitem[Amarteifio(2026b)]{CFACpaper} Amarteifio, S., 2026b. \textit{Factoring the Counting Problem Out of Coupled Particle-Field Renormalisation}. Percolation Labs.
+\bibitem[Bogner and Weinzierl(2010)]{BognerWeinzierl} Bogner, C.\ and Weinzierl, S., 2010. Feynman graph polynomials. \textit{Int.\ J.\ Mod.\ Phys.\ A} 25, 2585.
+\bibitem[Doi(1976)]{Doi1976} Doi, M., 1976. Second quantization representation for classical many-particle systems. \textit{J.\ Phys.\ A} 9, 1465.
+\bibitem[Elgart and Kamenev(2004)]{ElgartKamenev} Elgart, V.\ and Kamenev, A., 2004. Rare event statistics in reaction-diffusion systems. \textit{Phys.\ Rev.\ E} 70, 041106.
+\bibitem[Flajolet and Sedgewick(2009)]{FlajoletSedgewick} Flajolet, P.\ and Sedgewick, R., 2009. \textit{Analytic Combinatorics}. Cambridge Univ.\ Press.
+\bibitem[Freidlin and Wentzell(2012)]{FreidlinWentzell} Freidlin, M.\ and Wentzell, A., 2012. \textit{Random Perturbations of Dynamical Systems}. Springer.
+\bibitem[Assaf and Meerson(2017)]{Meerson} Assaf, M.\ and Meerson, B., 2017. WKB theory of large deviations in stochastic populations. \textit{J.\ Phys.\ A} 50, 263001.
+\bibitem[Peliti(1985)]{Peliti1985} Peliti, L., 1985. Path integral approach to birth-death processes on a lattice. \textit{J.\ Physique} 46, 1469.
+\bibitem[T\"auber(2014)]{Tauber} T\"auber, U.~C., 2014. \textit{Critical Dynamics}. Cambridge Univ.\ Press.
+\bibitem[Cox et al.(2007)]{CLO} Cox, D.~A., Little, J., and O'Shea, D., 2007. \textit{Ideals, Varieties, and Algorithms}, 3rd ed., Springer.
+
+\end{thebibliography}
+
+\end{document}
