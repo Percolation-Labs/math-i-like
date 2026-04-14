@@ -774,6 +774,59 @@ hypothesis formation (parity-conserving branching annihilation
 random walks, for instance).
 
 % ==================================================================
+\appendix
+% ==================================================================
+\section{Related coupled-field systems: ants (TODO)}
+\label{app:ants}
+% ==================================================================
+
+A natural sibling of CDP/Manna in the CFAC programme is the
+chemotactic ant colony, treated in~\citep{AmarteifioAnts2026} as the
+canonical coupled-field system: a Doi--Peliti particle sector
+(ants in two states $S \rightleftharpoons R$) coupled to an
+MSR continuous-field sector (pheromone density).  The ant
+construction shares the multi-field, non-equilibrium structure that
+made CDP/Manna the test case in this paper.
+
+The two systems sit on \emph{different} Puiseux strata, however:
+\begin{itemize}[leftmargin=1.2em,itemsep=1pt]
+  \item CDP/Manna: $\Cstr{3}$ (skeleton $\tau_0 = 4/3$, this paper).
+  \item Ants: $\Cstr{2}$ saddle-node, with order parameter
+    exponent $\beta = 1/2$ verified to $2.7\%$ by simulation
+    (\citep[\S 4]{AmarteifioAnts2026}).  Conservation enters
+    differently --- the ant ``conservation'' is the total particle
+    number, which fixes $\langle S + R\rangle$ but does not generate
+    the same Ward identity that promotes CDP from $\Cstr{2}$ to
+    $\Cstr{3}$.
+\end{itemize}
+
+The two cases together would be a stronger test of the codimension
+argument (Proposition~\ref{prop:codim}) than either alone:
+\begin{itemize}[leftmargin=1.2em,itemsep=1pt]
+  \item \textbf{TODO 1.}  Apply the \texttt{conserved\_2.py} (and
+    eventual \texttt{conserved\_3.py}) machinery to the ant DSE
+    and verify that it returns $\Cstr{2}$ dominant, with $\beta = 1/2$
+    falling out of the rank-2 bridge as in standard DP.
+  \item \textbf{TODO 2.}  Identify the precise reason the ant
+    conservation does \emph{not} promote to $\Cstr{3}$: is it that
+    the ant's $S+R$ conservation is an exact lattice constraint
+    rather than a Ward identity at the field-theoretic level?
+    Or that the conservation acts on the activity sector itself
+    rather than coupling activity to a separate conserved background?
+  \item \textbf{TODO 3.}  Construct a modified ant model that adds a
+    \emph{second} conservation law (e.g., a conserved environmental
+    field) and check whether the codimension argument predicts $\Cstr{4}$
+    promotion, observing what numerical $\beta$ emerges.
+\end{itemize}
+
+These cross-tests would either strengthen the slotting framework
+(by showing it correctly predicts \emph{which} coupled-field systems
+sit on which strata) or expose its failure mode (a coupled-field
+system with conservation that nonetheless does not slot as
+predicted).  Both outcomes are informative.  We defer this work to a
+follow-up note.
+
+% ==================================================================
 \begin{thebibliography}{9}
 
 \bibitem[Amarteifio(2026a)]{AmarteifioCFAC2026}
@@ -826,6 +879,12 @@ random walks, for instance).
   Multi-Loop Feynman Integrals as Counting Problems.
   Percolation Labs preprint
   (\texttt{paper/two\_loop\_worked/main.tex}).
+
+\bibitem[Amarteifio(2026e)]{AmarteifioAnts2026}
+  Amarteifio, S., 2026.
+  Ant Colonies as Canonical Coupled-Field Systems: A CFAC Recipe Book.
+  Percolation Labs preprint
+  (\texttt{paper/cfac/ac\_ants.tex}).
 
 \bibitem[Corwin and Ghosal(2020)]{CorwinGhosal2020}
   Corwin, I.\ and Ghosal, P., 2020.
