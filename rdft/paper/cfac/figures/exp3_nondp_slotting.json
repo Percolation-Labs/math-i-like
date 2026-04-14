@@ -1,0 +1,132 @@
+[
+  {
+    "class": "DP (directed percolation)",
+    "d": 1,
+    "tau": 1.5,
+    "k_implied": 2.0,
+    "k_nearest": 2,
+    "distance": 0.0,
+    "BD_status": "allowed (dyadic)",
+    "ref": "\u00d3dor 2004 (3/2 for Gribov/Reggeon)"
+  },
+  {
+    "class": "DP (directed percolation)",
+    "d": 2,
+    "tau": 1.5,
+    "k_implied": 2.0,
+    "k_nearest": 2,
+    "distance": 0.0,
+    "BD_status": "allowed (dyadic)",
+    "ref": "\u00d3dor 2004 (3/2 for Gribov/Reggeon)"
+  },
+  {
+    "class": "Manna",
+    "d": 1,
+    "tau": 1.286,
+    "k_implied": 3.4965034965034962,
+    "k_nearest": 3,
+    "distance": 0.49650349650349623,
+    "BD_status": "FORBIDDEN (non-dyadic)",
+    "ref": "Manna 1991; Vespignani et al. 1998"
+  },
+  {
+    "class": "Manna",
+    "d": 2,
+    "tau": 1.27,
+    "k_implied": 3.7037037037037033,
+    "k_nearest": 4,
+    "distance": 0.2962962962962967,
+    "BD_status": "allowed (dyadic)",
+    "ref": "Manna 1991; Vespignani et al. 1998"
+  },
+  {
+    "class": "C-Manna (conserved Manna)",
+    "d": 1,
+    "tau": 1.29,
+    "k_implied": 3.4482758620689653,
+    "k_nearest": 3,
+    "distance": 0.4482758620689653,
+    "BD_status": "FORBIDDEN (non-dyadic)",
+    "ref": "Bonachela-Mu\u00f1oz 2008"
+  },
+  {
+    "class": "C-Manna (conserved Manna)",
+    "d": 2,
+    "tau": 1.3,
+    "k_implied": 3.333333333333333,
+    "k_nearest": 3,
+    "distance": 0.33333333333333304,
+    "BD_status": "FORBIDDEN (non-dyadic)",
+    "ref": "Bonachela-Mu\u00f1oz 2008"
+  },
+  {
+    "class": "Parity-conserving BARW",
+    "d": 1,
+    "tau": 1.17,
+    "k_implied": 5.882352941176473,
+    "k_nearest": 6,
+    "distance": 0.11764705882352722,
+    "BD_status": "FORBIDDEN (non-dyadic)",
+    "ref": "Cardy-T\u00e4uber 1996"
+  },
+  {
+    "class": "Parity-conserving BARW",
+    "d": 2,
+    "tau": 1.04,
+    "k_implied": 24.99999999999998,
+    "k_nearest": 25,
+    "distance": 2.1316282072803006e-14,
+    "BD_status": "FORBIDDEN (non-dyadic)",
+    "ref": "Cardy-T\u00e4uber 1996"
+  },
+  {
+    "class": "Pair contact process (PCPD)",
+    "d": 1,
+    "tau": 1.2,
+    "k_implied": 5.000000000000001,
+    "k_nearest": 5,
+    "distance": 8.881784197001252e-16,
+    "BD_status": "FORBIDDEN (non-dyadic)",
+    "ref": "Carlon et al. 2001"
+  },
+  {
+    "class": "Pair contact process (PCPD)",
+    "d": 2,
+    "tau": 1.3,
+    "k_implied": 3.333333333333333,
+    "k_nearest": 3,
+    "distance": 0.33333333333333304,
+    "BD_status": "FORBIDDEN (non-dyadic)",
+    "ref": "Carlon et al. 2001"
+  },
+  {
+    "class": "Infinitely many absorbing states",
+    "d": 1,
+    "tau": 1.15,
+    "k_implied": 6.6666666666666705,
+    "k_nearest": 7,
+    "distance": 0.3333333333333295,
+    "BD_status": "FORBIDDEN (non-dyadic)",
+    "ref": "Mu\u00f1oz et al. 1998"
+  },
+  {
+    "class": "Lee-Yang (Parisi-Sourlas)",
+    "d": 1,
+    "tau": 2.5,
+    "k_implied": 0.6666666666666666,
+    "k_nearest": 1,
+    "distance": 0.33333333333333337,
+    "BD_status": "allowed (dyadic)",
+    "ref": "Parisi-Sourlas 1981"
+  },
+  {
+    "class": "Lee-Yang (Parisi-Sourlas)",
+    "d": 2,
+    "tau": 2.5,
+    "k_implied": 0.6666666666666666,
+    "k_nearest": 1,
+    "distance": 0.33333333333333337,
+    "BD_status": "allowed (dyadic)",
+    "ref": "Parisi-Sourlas 1981"
+  }
+]

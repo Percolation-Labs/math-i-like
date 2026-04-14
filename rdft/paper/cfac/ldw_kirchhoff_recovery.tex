@@ -882,47 +882,38 @@ derivation chain is verified by a passing pytest class
 
 \paragraph{What CFAC establishes here.}
 \begin{itemize}
-  \item The Kirchhoff--Symanzik pipeline correctly classifies all
-    diagrams at two loops: two factorise (dbl-bubble, tadpole),
-    one is irreducible but becomes rational after BPHZ + sector decomposition of $J$
-    (sunset).
-  \item The first Symanzik polynomial $\Psi_{\text{sun}}$
-    \emph{is} the denominator in the LDWC integral $J$.
-    LDWC compute $J$ by splitting at $\beta=1$; CFAC identifies why
-    that split works: $\beta=1$ is the symmetry point of $\Psi_{\text{sun}}$.
-    This is a structural identification, not a coincidence.
-  \item The analytic proof $J_1 = \ln 2$ is derived from
-    $\Psi_{\text{sun}}$, not assumed from LDWC.
-  \item The residual count $\Nres = 1$ is a precise claim:
-    exactly one 1D integral ($\gamma$) is needed; everything else
-    is algebra.
+  \item Class-selection filters (causal contraction, bridge
+    factorisation) discard LDWC classes B and C without invoking
+    FRG-specific cancellations.
+  \item The first Symanzik polynomial $\Psi_{\text{sun}}$ is the
+    denominator of the LDWC integral $J$; $\beta=1$ is its
+    symmetry point, explaining why LDWC's domain split works.
+  \item $J_1 = \ln 2$ is derived from multilinearity of $\Psi_{\text{sun}}$.
+  \item $J_2 = -\ln 2$ is derived from the $\beta\leftrightarrow 1/\beta$
+    symmetry of $\Psi_{\text{sun}}$.
+  \item $J_3|_{\rm finite} = 1$ is derived from the Schwinger
+    asymptotic of $\Psi_{\text{sun}}$ (Section~\ref{sec:jsplit}).
+  \item The prefactor $9 = \zeta_1^{-2}$ is derived from the
+    integrated one-loop FRG equation
+    (Section~\ref{sec:assembly}).
+  \item The residual count $\Nres = 1$: exactly one 1D integral
+    ($\gamma$) is needed; everything else is algebra.
 \end{itemize}
 
-\paragraph{What is taken from LDWC.}
+\paragraph{What is still taken from LDWC.}
 \begin{itemize}
-  \item $J_2 = -\ln 2$: the change-of-variables argument is standard
-    but not rederived here.
-  \item $J_3|_{\rm finite} = 1$: this requires dimensional
-    regularisation of the $\beta\in[1,\infty)$ UV region.
-    We accept LDWC's result; independent rederivation from our
-    $\Psi_{\text{sun}}$ is straightforward but deferred.
-  \item The prefactor $1/(9\sqrt{2})$: derived in full in
-    Section~\ref{sec:assembly}.  Both factors of $3$ in $9=3^2$ come
-    from the one-loop roughness $\zeta_1 = 1/3$; they are not from
-    two-loop diagram topology.
-  \item $J_2 = -\ln 2$: derivable from the $\beta\leftrightarrow 1/\beta$
-    symmetry of $\Psi_{\text{sun}}$.  The explicit step-by-step
-    computation by LDWC integrates $\beta$ first and obtains the
-    same result through partial fractions and logarithmic
-    cancellations~\citep[eq.~A.16]{LDWC2002}.
+  \item The FRG Feynman rules (propagators, vertices) for the
+    elastic-manifold theory.  This is physics input for any
+    field-theory calculation.
+  \item The enumeration of raw 2-loop diagrams before filtering.
+    Class A/B/C classification as drawn in LDWC
+    figs.~III.2--III.5.
+  \item The one-loop fixed-point function $y_1(u)$ and its
+    normalisation $y_1'(0^+) = -1$, which give
+    $\Delta'(0^+) = -\eps/3$ (LDWC eqs.~IV.5--IV.12).
+    The ODE itself \emph{is} rederived here;
+    only LDWC's specific scaling convention is adopted.
 \end{itemize}
-
-\paragraph{Open: complete independence.}
-A fully self-contained derivation would compute $J_2$ and
-$J_3|_{\rm finite}$ from $\Psi_{\text{sun}}$ using the
-Schwinger parametric machinery developed here.
-The integrals are tractable (they reduce to 1D quadratures)
-and the result would close the gap.
 
 % ==================================================================
 \section{Open directions}

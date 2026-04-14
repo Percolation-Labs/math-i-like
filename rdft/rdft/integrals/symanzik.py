@@ -95,67 +95,65 @@ class SymanzikPolynomials:
 
     def _compute_Psi(self) -> sp.Expr:
         """
-        Compute Ψ via the matrix determinant formula (Amarteifio eq. 2.39a).
+        Compute Ψ = Σ_{T ∈ spanning 1-trees} Π_{e ∉ T} α_e.
 
-        Ψ = det(D_α) · det(L̃)
+        Self-loop edges are NEVER in any spanning tree, so their Schwinger
+        parameters always appear in Ψ as a multiplicative prefactor.
 
-        where L̃ is a specific matrix built from the incidence matrix
-        and the alpha parameters.
+        Strategy:
+          1. Separate self-loop internal edges from regular (non-self-loop) edges.
+          2. Compute K = Σ_T Π_{e ∈ T} α_e using only regular edges via the
+             Kirchhoff polynomial (which gives 0 for self-loop rows anyway).
+          3. Take edge complement to get Ψ for regular edges.
+          4. Multiply by the self-loop alpha product.
 
-        More directly from Amarteifio eq. 2.35:
-            L_RS = E_{[Γ]} D_α E_{[Γ]}^T
-
-        and Ψ = det(L_RS) evaluated on the reduced (v_∞-deleted) matrix.
-
-        But this equals the Kirchhoff polynomial! The Kirchhoff polynomial
-        gives the k-trees; the 1-trees correspond to spanning trees.
-
-        Actually the relationship is:
-            Kirchhoff K(z) → terms of order L give spanning trees via cutsets
-            Ψ = Σ_{spanning trees T} Π_{e ∉ T} α_e
-
-        We compute via the Kirchhoff polynomial of the internal subgraph,
-        then take edge complements.
+        For a pure-self-loop graph (e.g. tadpole), the only spanning tree is
+        the empty set, giving Ψ = Π_{all α_e} = product of all internal alphas.
         """
-        K = self.graph.kirchhoff_polynomial()
-        alphas = self.graph._alpha_syms
-        n_int = self.graph.n_internal_edges
-
-        # K is a polynomial in alphas.
-        # Each monomial α_{i1}^{k1} · α_{i2}^{k2} · ... of degree d
-        # in K corresponds to a spanning d-tree (d-forest).
-        # The spanning 1-trees (spanning trees) appear as degree n_int - L
-        # monomials in K (each spanning tree uses n_int - L edges,
-        # corresponding to L loops cut).
-
-        # For Ψ: we want the complement — the edges NOT in the spanning tree.
-        # For a spanning tree T of n_int edges with L loops,
-        # the complement has L edges, each contributing one α_e.
-        # So Ψ = Σ_T Π_{e ∉ T} α_e is degree L.
-
-        # Method: enumerate spanning trees from K, take edge complements
-        # This is the relationship noted in Amarteifio §2.3 between
-        # K(p) and S^{(p)} (the edge complements).
+        graph = self.graph
+        alphas = graph._alpha_syms
+        n_int = graph.n_internal_edges
+        int_edges = graph.internal_edge_indices
 
         if n_int == 0:
             return sp.S.One
 
-        # K(α) = Σ_T Π_{e ∈ T} α_e  (edges IN spanning tree)
-        # Ψ(α) = Σ_T Π_{e ∉ T} α_e  (edges NOT in spanning tree)
-        # Ψ is the "complement polynomial" of K.
-        # Each monomial in K → replace {edges in tree} by {edges NOT in tree}.
+        # Partition internal edges into self-loops and regular edges
+        self_loop_alphas = []
+        regular_alphas = []
+        for i, old_e in enumerate(int_edges):
+            src, tgt, _ = graph.edges[old_e]
+            if src == tgt:
+                self_loop_alphas.append(alphas[i])
+            else:
+                regular_alphas.append(alphas[i])
+
+        # Self-loop factor: these always appear in Ψ (never in any spanning tree)
+        self_loop_factor = sp.Mul(*self_loop_alphas) if self_loop_alphas else sp.S.One
+
+        if not regular_alphas:
+            # All edges are self-loops: one spanning tree = empty set, weight 1
+            # Ψ = Π_{all α_e} (every edge is in the complement of the empty tree)
+            return self_loop_factor
+
+        # K(α) = Σ_T Π_{e ∈ T} α_e  for non-self-loop edges only
+        # (kirchhoff_polynomial excludes self-loop contributions automatically)
+        K = graph.kirchhoff_polynomial()
+
         try:
-            poly = sp.Poly(K, *alphas)
+            poly = sp.Poly(K, *regular_alphas)
         except Exception:
-            return K
+            return self_loop_factor * K
 
-        Psi = sp.S.Zero
+        # Ψ_{regular} = complement polynomial of K
+        Psi_regular = sp.S.Zero
         for monom, coeff in zip(poly.monoms(), poly.coeffs()):
-            # complement: take α_e for all e where exponent is 0
-            complement = sp.Mul(*[alphas[i] for i, k in enumerate(monom) if k == 0])
-            Psi += coeff * complement
+            # complement: α_e for every regular edge NOT in this spanning tree
+            complement = sp.Mul(*[regular_alphas[i]
+                                   for i, k in enumerate(monom) if k == 0])
+            Psi_regular += coeff * complement
 
-        return sp.expand(Psi)
+        return sp.expand(self_loop_factor * Psi_regular)
 
     # ------------------------------------------------------------------ #
     #  Second Symanzik polynomial Φ                                        #

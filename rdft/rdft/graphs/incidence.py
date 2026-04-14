@@ -194,6 +194,10 @@ class FeynmanGraph:
         E_int = sp.zeros(len(int_edges), len(int_verts))
         for new_e, old_e in enumerate(int_edges):
             src, tgt, _ = self.edges[old_e]
+            if src == tgt:
+                # Self-loop: contributes zero to the incidence matrix
+                # (a self-loop neither enters nor leaves any vertex)
+                continue
             if src in int_verts:
                 E_int[new_e, int_verts.index(src)] = -1
             if tgt in int_verts:
@@ -427,6 +431,79 @@ class FeynmanGraph:
 
         return count
 
+    def cut_vertices(self) -> List[int]:
+        """
+        Find cut vertices (articulation points) of the INTERNAL subgraph.
+
+        A cut vertex is an internal vertex whose removal disconnects the
+        internal subgraph.  If one exists, the Kirchhoff polynomial K
+        factorises as K = K₁(A₁) · K₂(A₂) where A₁ ∩ A₂ = ∅.
+
+        This is the CFAC bridge-decomposition criterion: K factorises iff
+        the internal subgraph has a cut vertex.
+
+        Returns list of internal vertex indices that are cut vertices.
+        """
+        import networkx as nx
+        G = nx.MultiGraph()
+        G.add_nodes_from(range(self.n_vertices_int))
+        for old_e in self.internal_edge_indices:
+            src, tgt, _ = self.edges[old_e]
+            if src != tgt and src < self.n_vertices_int and tgt < self.n_vertices_int:
+                G.add_edge(src, tgt, key=old_e)
+        return list(nx.articulation_points(G))
+
+    def kirchhoff_factorisation(self) -> Optional[List[Tuple[List[int], List[int]]]]:
+        """
+        If the Kirchhoff polynomial K = K₁(A₁) · K₂(A₂) factorises,
+        return the list of (edge_set_1, edge_set_2) pairs (one per cut vertex).
+
+        Each pair partitions the internal edges into two disjoint subsets,
+        corresponding to the two components after removing a cut vertex.
+
+        Returns None if K does not factorise (bridgeless / 2-connected graph).
+
+        The factorisation is: K(G) = K(component_1) · K(component_2)
+        where each component includes the cut vertex.
+
+        This determines when I(G) = I(G₁) · I(G₂) exactly.
+        """
+        import networkx as nx
+        G_nx = nx.MultiGraph()
+        G_nx.add_nodes_from(range(self.n_vertices_int))
+        int_edges = self.internal_edge_indices
+        for old_e in int_edges:
+            src, tgt, _ = self.edges[old_e]
+            if src != tgt and src < self.n_vertices_int and tgt < self.n_vertices_int:
+                G_nx.add_edge(src, tgt, key=old_e)
+
+        cut_verts = list(nx.articulation_points(G_nx))
+        if not cut_verts:
+            return None
+
+        # For each cut vertex, find the two component edge sets
+        result = []
+        for cv in cut_verts:
+            H = nx.MultiGraph(G_nx)
+            H.remove_node(cv)
+            components = list(nx.connected_components(H))
+            if len(components) < 2:
+                continue
+            # Assign edges to components (cut vertex belongs to both)
+            edge_sets = []
+            for comp_verts in components:
+                # Include the cut vertex in this component
+                comp_with_cv = comp_verts | {cv}
+                edge_set = [
+                    old_e for old_e in int_edges
+                    if (self.edges[old_e][0] in comp_with_cv and
+                        self.edges[old_e][1] in comp_with_cv)
+                ]
+                edge_sets.append(edge_set)
+            result.append(tuple(edge_sets))
+
+        return result if result else None
+
     def degree_of_divergence(self, d: sp.Expr = None) -> sp.Expr:
         """
         Superficial degree of divergence:
@@ -517,6 +594,37 @@ class FeynmanGraph:
                 (2, 0, False),  # p2 (closing the triangle)
                 (3, 0, True),   # q0 (external)
                 (2, 3, True),   # q1 (external)
+            ]
+        )
+
+    @classmethod
+    def double_bubble(cls) -> 'FeynmanGraph':
+        """
+        Double-bubble (two bubbles sharing a cut vertex):
+            Va --{e0,e1}-- Vc --{e2,e3}-- Vb
+
+        2 loops, 4 internal edges, 3 internal vertices.
+
+        The Kirchhoff polynomial factorises:
+            K = (α₀+α₁)(α₂+α₃)
+
+        because Vc is a cut vertex.  Therefore:
+            I(double_bubble; d) = I(bubble; d)²  (exact)
+
+        This is the CFAC bridge-decomposition for a 2-loop graph:
+        a cut vertex implies K factorises implies the integral is a
+        product of lower-loop integrals.
+        """
+        # v0=Va, v1=Vc, v2=Vb (internal); v3=v_∞
+        return cls(
+            n_internal_vertices=3,
+            edges=[
+                (0, 1, False),  # alpha0: Va-Vc
+                (0, 1, False),  # alpha1: Va-Vc
+                (1, 2, False),  # alpha2: Vc-Vb
+                (1, 2, False),  # alpha3: Vc-Vb
+                (0, 3, True),   # external: Va
+                (2, 3, True),   # external: Vb
             ]
         )
 

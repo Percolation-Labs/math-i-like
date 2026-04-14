@@ -18,6 +18,23 @@ The coproduct decomposes Γ into sub-divergences:
 
     Δ(Γ) = Γ ⊗ 1 + 1 ⊗ Γ + Σ_{∅ ≠ γ ⊊ Γ, 1PI} γ ⊗ Γ/γ
 
+KEY DESIGN CHOICE — edge-subset enumeration.
+
+  A sub-divergence is defined by a proper non-empty SUBSET OF INTERNAL EDGES
+  that induces a 1PI subgraph with L ≥ 1 loops.  Vertex-subset enumeration
+  (the previous implementation) misses sub-divergences in multi-edge graphs:
+  for the sunset (3 parallel edges between 2 vertices), the bubble
+  sub-divergence uses any 2 of the 3 edges — its vertex set equals the full
+  graph vertex set, so vertex enumeration finds nothing.
+
+  Edge-subset enumeration handles this correctly:
+    sunset:   3 sub-divergences (each pair of 2 edges forms a bubble)
+    bubble:   0 sub-divergences (primitive)
+    triangle: 0 sub-divergences (primitive)
+
+  For a graph with n internal edges the enumeration is O(2^n); practical
+  for all graphs with n ≤ ~20 (sufficient for 3-loop and beyond).
+
 In the minimal subtraction (MS-bar) scheme, the counterterm C(γ) is the
 pole part of the amplitude:
 
@@ -25,17 +42,11 @@ pole part of the amplitude:
 
 This gives the renormalisation Z-factors.
 
-Implementation:
-  - A 1PI sub-divergence γ of Γ is identified by its vertex subset
-  - Graph contraction Γ/γ: collapse all vertices of γ to a single vertex
-    in the incidence matrix representation
-  - The antipode is computed recursively on the Hopf algebra grading
-    (graded by |V| or by loop order)
-
 Mathematical reference:
     Connes & Kreimer (1998) Commun. Math. Phys. 199:203-242
     Amarteifio (2019) §2.6
     Yeats (2017) Chapter 4
+    Bogner & Weinzierl (2010) arXiv:1003.1154
 """
 
 from __future__ import annotations
@@ -49,89 +60,153 @@ class SubDivergence:
     """
     A 1PI sub-divergence γ of a Feynman graph Γ.
 
+    Defined by a **subset of internal edges** of Γ whose induced subgraph
+    (on the vertices incident to those edges) is 1PI with L ≥ 1 loops.
+
     Parameters
     ----------
-    vertex_set : frozenset of vertex indices in Γ that form γ
-    parent : the parent FeynmanGraph Γ
+    edge_set : frozenset of internal edge indices (into parent.edges)
+    parent   : the parent FeynmanGraph Γ
     """
 
-    def __init__(self, vertex_set: FrozenSet[int], parent: FeynmanGraph):
-        self.vertex_set = vertex_set
+    def __init__(self, edge_set: FrozenSet[int], parent: FeynmanGraph):
+        self.edge_set = edge_set
         self.parent = parent
+
+    # ------------------------------------------------------------------ #
+    #  Structural properties                                               #
+    # ------------------------------------------------------------------ #
 
     @property
     def induced_edges(self) -> List[int]:
-        """
-        Internal edges of Γ that have both endpoints in vertex_set.
-        These are the internal edges of γ.
-        """
-        result = []
-        for i, (src, tgt, is_ext) in enumerate(self.parent.edges):
-            if not is_ext and src in self.vertex_set and tgt in self.vertex_set:
-                result.append(i)
-        return result
+        """Sorted list of edge indices in this sub-divergence."""
+        return sorted(self.edge_set)
 
     @property
-    def is_1pi(self) -> bool:
-        """Check if the induced subgraph is 1PI (no bridges)."""
-        if len(self.induced_edges) == 0:
-            return False
-        # Build a sub-FeynmanGraph and check
-        n_verts = len(self.vertex_set)
-        vmap = {v: i for i, v in enumerate(sorted(self.vertex_set))}
-        edges = []
-        for e_idx in self.induced_edges:
+    def vertex_set(self) -> FrozenSet[int]:
+        """
+        Internal vertices incident to at least one edge in edge_set.
+        (External vertex v_∞ is excluded.)
+        """
+        verts: Set[int] = set()
+        n_int_v = self.parent.n_vertices_int
+        for e_idx in self.edge_set:
             src, tgt, _ = self.parent.edges[e_idx]
-            edges.append((vmap[src], vmap[tgt], False))
-        if not edges:
-            return False
-        sub = FeynmanGraph(n_verts - 1, edges)
-        return sub.is_1pi()
+            if src < n_int_v:
+                verts.add(src)
+            if tgt < n_int_v:
+                verts.add(tgt)
+        return frozenset(verts)
 
     @property
     def betti_number(self) -> int:
-        """Loop number L = |E_int| - |V_int| + 1."""
-        n_e = len(self.induced_edges)
-        n_v = len(self.vertex_set)
-        return max(0, n_e - n_v + 1)
+        """
+        Loop number L = |edges| − |vertices| + 1  (for a connected subgraph).
+        """
+        return max(0, len(self.edge_set) - len(self.vertex_set) + 1)
+
+    @property
+    def is_1pi(self) -> bool:
+        """
+        True iff the induced edge-subgraph is 1PI:
+          (a) connected on its vertex set, and
+          (b) has no bridge (removing any single edge keeps it connected).
+
+        Uses NetworkX on the internal-vertex subgraph only.
+        """
+        import networkx as nx
+
+        v_set = self.vertex_set
+        if not v_set:
+            return False
+
+        vmap = {v: i for i, v in enumerate(sorted(v_set))}
+
+        G_sub = nx.MultiGraph()
+        G_sub.add_nodes_from(range(len(v_set)))
+
+        for i, e_idx in enumerate(self.induced_edges):
+            src, tgt, _ = self.parent.edges[e_idx]
+            if src in vmap and tgt in vmap:
+                G_sub.add_edge(vmap[src], vmap[tgt], key=i)
+
+        if G_sub.number_of_edges() == 0:
+            return False
+
+        # (a) connected on its own vertex set
+        if not nx.is_connected(G_sub):
+            return False
+
+        # (b) no bridge: every edge must lie on a cycle
+        for s, t, key in list(G_sub.edges(keys=True)):
+            H = G_sub.copy()
+            H.remove_edge(s, t, key=key)
+            if not nx.is_connected(H):
+                return False  # found a bridge
+
+        return True
+
+    # ------------------------------------------------------------------ #
+    #  Conversion and contraction                                          #
+    # ------------------------------------------------------------------ #
+
+    def to_graph(self) -> FeynmanGraph:
+        """
+        Build a standalone FeynmanGraph for this sub-divergence.
+
+        Vertices are renumbered 0...|V_γ|-1; all edges become internal
+        (no external legs — used for amplitude computation of γ alone).
+        """
+        v_set = self.vertex_set
+        vmap = {v: i for i, v in enumerate(sorted(v_set))}
+
+        edges = []
+        for e_idx in self.induced_edges:
+            src, tgt, _ = self.parent.edges[e_idx]
+            if src in vmap and tgt in vmap:
+                edges.append((vmap[src], vmap[tgt], False))
+
+        return FeynmanGraph(len(v_set), edges)
 
     def contracted_graph(self) -> FeynmanGraph:
         """
-        Contract γ to a single vertex in Γ.
+        Γ/γ: contract γ to a single super-vertex in Γ.
 
-        Γ/γ: replace all vertices in vertex_set with a single new vertex.
-        Edges internal to γ are removed; edges between γ and Γ\γ
-        become new edges connected to the contracted vertex.
+        Algorithm:
+          1. All internal vertices of γ collapse to super-vertex 0.
+          2. Remaining internal vertices of Γ become 1, 2, ...
+          3. v_∞ becomes n_new_int.
+          4. Edges in edge_set are deleted.
+          5. Edges NOT in edge_set are remapped through the new vertex indices.
 
-        (Connes-Kreimer: quotient graph)
+        Result is a FeynmanGraph with one fewer free parameter per loop of γ.
+        For the sunset contracted by a bubble: the contracted graph is a tadpole
+        (single vertex with a self-loop + two external legs).
         """
-        contracted_v = min(self.vertex_set)  # representative vertex
-        other_vertices = sorted(
+        V_gamma = self.vertex_set
+
+        # Vertices of Γ not in γ (sorted for canonical ordering)
+        other_int_verts = sorted(
             v for v in range(self.parent.n_vertices_int)
-            if v not in self.vertex_set
+            if v not in V_gamma
         )
 
-        # Build new vertex set: contracted_v + other_vertices + v_∞
-        new_v_map = {}
-        new_idx = 0
-        for v in sorted(self.vertex_set):
-            new_v_map[v] = 0  # all collapse to vertex 0
-        for v in other_vertices:
-            new_v_map[v] = new_idx + 1
-            new_idx += 1
-        new_v_map[self.parent.v_inf] = new_idx + 1  # v_∞ remains
+        # New vertex map:  V_gamma → 0,  others → 1, 2, ...,  v_∞ → n_new_int
+        vmap: Dict[int, int] = {}
+        for v in V_gamma:
+            vmap[v] = 0
+        for new_idx, v in enumerate(other_int_verts, start=1):
+            vmap[v] = new_idx
+        n_new_int = 1 + len(other_int_verts)
+        vmap[self.parent.v_inf] = n_new_int  # v_∞
 
-        n_new_int = new_idx + 1  # excluding v_∞
-
-        # Build new edge list: skip internal edges of γ
+        # Build contracted edge list (skip edges that were in γ)
         new_edges = []
-        internal_gamma = set(self.induced_edges)
-
         for e_idx, (src, tgt, is_ext) in enumerate(self.parent.edges):
-            if e_idx in internal_gamma:
-                continue  # removed
-            new_src = new_v_map.get(src, src)
-            new_tgt = new_v_map.get(tgt, tgt)
+            if e_idx in self.edge_set:
+                continue  # contracted away
+            new_src = vmap.get(src, src)
+            new_tgt = vmap.get(tgt, tgt)
             new_edges.append((new_src, new_tgt, is_ext))
 
         return FeynmanGraph(n_new_int, new_edges)
@@ -143,7 +218,8 @@ class CoproductMap:
 
     Δ(Γ) = Γ ⊗ 1 + 1 ⊗ Γ + Σ_{γ} γ ⊗ Γ/γ
 
-    where the sum is over all non-empty, proper, 1PI sub-divergences γ.
+    where the sum is over all proper non-empty 1PI edge-subsets γ with
+    L(γ) ≥ 1.
 
     Parameters
     ----------
@@ -157,22 +233,29 @@ class CoproductMap:
     @property
     def subdivergences(self) -> List[SubDivergence]:
         """
-        All non-trivial 1PI sub-divergences of self.graph.
+        All proper 1PI edge-subset sub-divergences with L ≥ 1.
 
-        A sub-divergence is a proper non-empty subset of internal vertices
-        that induces a 1PI subgraph with L ≥ 1 loops.
+        Enumerates all 2^{n_int} − 2 non-empty proper subsets of internal
+        edges.  For each subset, checks:
+          (a) betti_number ≥ 1  (at least one loop)
+          (b) is_1pi            (connected, no bridge)
+
+        Complexity: O(2^{n_int} × n_int²) — feasible for n_int ≤ ~20.
         """
         if self._subdivergences is not None:
             return self._subdivergences
 
-        n = self.graph.n_vertices_int
-        result = []
+        int_edges = self.graph.internal_edge_indices
+        n_int = len(int_edges)
+        result: List[SubDivergence] = []
 
-        # Enumerate all non-empty proper subsets of internal vertices
-        # (For large graphs, this is exponential — practical limit ~10 vertices)
-        for mask in range(1, 2**n - 1):  # exclude empty and full sets
-            vset = frozenset(i for i in range(n) if mask & (1 << i))
-            sub = SubDivergence(vset, self.graph)
+        full_mask = (1 << n_int) - 1  # all-ones: the full edge set
+
+        for mask in range(1, full_mask):  # 1 .. 2^n−2  (exclude empty and full)
+            edge_subset = frozenset(
+                int_edges[i] for i in range(n_int) if mask & (1 << i)
+            )
+            sub = SubDivergence(edge_subset, self.graph)
             if sub.betti_number >= 1 and sub.is_1pi:
                 result.append(sub)
 
@@ -183,9 +266,24 @@ class CoproductMap:
         """
         Return the non-primitive coproduct terms: [(γ, Γ/γ), ...]
 
-        Each pair is a (sub-divergence, contracted graph).
+        Each pair is a (sub-divergence as SubDivergence, contracted graph as
+        FeynmanGraph).
         """
         return [(sub, sub.contracted_graph()) for sub in self.subdivergences]
+
+    def summary(self) -> str:
+        """Human-readable summary of all sub-divergences."""
+        lines = [f'CoproductMap for {self.graph}']
+        subs = self.subdivergences
+        lines.append(f'  {len(subs)} sub-divergence(s):')
+        for s in subs:
+            contracted = s.contracted_graph()
+            lines.append(
+                f'    edges {s.induced_edges}  '
+                f'(V={s.vertex_set}, L={s.betti_number})  →  '
+                f'contracted: {contracted}'
+            )
+        return '\n'.join(lines)
 
 
 class BPHZRenormalization:
@@ -198,16 +296,15 @@ class BPHZRenormalization:
     where C(γ) = -Pole[I(γ)] in MS-bar scheme.
 
     The antipode S satisfies:
-        S(Γ) = -Γ - Σ_{γ ⊊ Γ} S(γ) · (Γ/γ)
+        S(Γ) = -I(Γ) - Σ_{γ ⊊ Γ} S(γ)·I(Γ/γ)
 
     (recursive on the Hopf grading = loop order)
 
     Parameters
     ----------
-    graph : FeynmanGraph
-    amplitude_func : callable(graph) → sympy expr
-        Function that computes I(G; ε) for a given graph as a Laurent
-        series in ε.
+    graph          : FeynmanGraph
+    amplitude_func : callable(graph) → sympy Laurent series in ε, or None.
+                     If None, symbolic placeholders are used.
     """
 
     def __init__(self, graph: FeynmanGraph, amplitude_func=None):
@@ -217,55 +314,60 @@ class BPHZRenormalization:
 
     def pole_part(self, expr: sp.Expr) -> sp.Expr:
         """
-        Extract the pole part of a Laurent series in ε.
-        In MS-bar: counterterm = -Res_{ε=0}[I(γ)]
+        Extract the pole part of a Laurent series in ε (MS-bar counterterm).
+
+        Returns the sum of all terms with negative powers of ε.
+
+        Finds the epsilon symbol by name from the expression's free symbols
+        so that assumption mismatches (positive=True vs bare) don't hide poles.
         """
-        eps = sp.Symbol('epsilon')
-        series = sp.series(expr, eps, 0, 1)
-        # Extract terms with negative powers of ε
+        # Find epsilon in the expression (may carry positive=True assumption)
+        eps = None
+        for sym in expr.free_symbols:
+            if sym.name == 'epsilon':
+                eps = sym
+                break
+        if eps is None:
+            return sp.S.Zero  # no epsilon → no poles
+
         pole = sp.S.Zero
-        for term in sp.Add.make_args(series):
-            if term.has(eps) and sp.Poly(term, eps).degree() < 0:
+        for term in sp.Add.make_args(sp.expand(expr)):
+            if isinstance(term, sp.Order):
+                continue  # skip O(...) truncation terms
+            power = term.as_powers_dict().get(eps, 0)
+            if power < 0:
                 pole += term
         return pole
 
     def counterterm(self, subgraph: FeynmanGraph) -> sp.Expr:
         """C(γ) = -Pole[I(γ; ε)]"""
         if self.amplitude_func is None:
-            eps = sp.Symbol('epsilon')
-            return sp.Symbol(f'C_gamma_{subgraph.n_vertices_int}L{subgraph.L}')
+            return sp.Symbol(f'C_L{subgraph.L}_E{subgraph.n_internal_edges}')
         amplitude = self.amplitude_func(subgraph)
         return -self.pole_part(amplitude)
 
     def antipode(self, graph: FeynmanGraph = None) -> sp.Expr:
         """
-        Compute S(Γ) recursively.
+        Compute S(Γ) recursively (Connes-Kreimer antipode).
 
-        S(Γ) = -I(Γ) - Σ_{γ ⊊ Γ, 1PI} S(γ)·I(Γ/γ)
+        S(Γ) = -I(Γ) - Σ_{γ ⊊ Γ, 1PI} S(γ) · I(Γ/γ)
 
-        For tree-level (L=0): S(Γ) = -I(Γ) (no subdivergences)
+        For primitive graphs (no sub-divergences): S(Γ) = -I(Γ).
         """
-        G = graph or self.graph
+        G = graph if graph is not None else self.graph
         cmap = CoproductMap(G)
 
         if self.amplitude_func is None:
-            return sp.Symbol(f'S_Gamma_L{G.L}')
+            return sp.Symbol(f'S_L{G.L}_E{G.n_internal_edges}')
 
         I_G = self.amplitude_func(G)
 
         if not cmap.subdivergences:
-            # No non-trivial subdivergences: antipode = -amplitude
             return -I_G
 
         antipode_sum = sp.S.Zero
         for sub, contracted in cmap.coproduct_terms():
-            # Recursively compute S(γ)
-            sub_graph = FeynmanGraph(
-                len(sub.vertex_set),
-                [(self.graph.edges[e][0], self.graph.edges[e][1], False)
-                 for e in sub.induced_edges]
-            )
-            S_gamma = self.antipode(sub_graph)
+            S_gamma = self.antipode(sub.to_graph())
             I_contracted = self.amplitude_func(contracted)
             antipode_sum += S_gamma * I_contracted
 
@@ -273,10 +375,10 @@ class BPHZRenormalization:
 
     def renormalized_amplitude(self) -> sp.Expr:
         """
-        I_R(Γ) = I(Γ) + S(Γ) in the forest formula sense.
+        I_R(Γ) = I(Γ) + S(Γ)
 
-        In practice under MS-bar:
-            I_R(Γ) = I(Γ) - Pole[I(Γ)] + ...
+        Under MS-bar this equals I(Γ) with all 1/ε poles from
+        subdivergences removed.
         """
         if self.amplitude_func is None:
             return sp.Symbol('I_R')
@@ -298,7 +400,6 @@ class BPHZRenormalization:
         I_R = self.renormalized_amplitude()
         I_R_series = sp.series(I_R, eps, 0, 1)
 
-        # The coefficient of 1/ε gives Z_λ at one loop
         pole_coeff = sp.S.Zero
         for term in sp.Add.make_args(sp.expand(I_R_series)):
             if term.has(eps):

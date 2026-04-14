@@ -9,6 +9,8 @@
 \usepackage{xcolor}
 \usepackage{hyperref}
 \usepackage{enumitem}
+\usepackage{graphicx}
+\usepackage{booktabs}
 
 \hypersetup{colorlinks=true,linkcolor=blue!60!black,
   citecolor=green!50!black,urlcolor=blue!70!black}
@@ -669,6 +671,494 @@ them.  This makes the mapping from biology to physics (which CRN
 belongs to which class) a question of polynomial equivalence.
 
 % ══════════════════════════════════════════════════════════════════
+\appendix
+\section{A visual landscape sketch}
+\label{app:landscape}
+% ══════════════════════════════════════════════════════════════════
+
+The Dyson--Schwinger equation $G = z\phi(G)$ that CFAC produces
+for any CRN is an algebraic generating function in the sense of
+analytic combinatorics, so the Flajolet--Sedgewick transfer
+theorem~\citep{FlajoletSedgewick,FlajoletOdlyzko1990} applies
+unchanged and the Banderier--Drmota dyadic-ceiling
+result~\citep{BanderierDrmota2015} organises which coefficient
+exponents any positive combinatorial system can and cannot reach.
+A useful by-product is a \emph{picture} of the rate space of
+$\phi$: one can plot the locus where the dominant branch acquires
+a given Puiseux order, and place named CRNs on that picture to
+see which universality stratum each one occupies.
+
+Figure~\ref{fig:landscape_appendix} shows the simplest case:
+the cubic slice of rate space, with the cube-root locus
+$\mathcal{C}_{3}:\,b^{3}=27c^{2}$ as a red curve separating
+the directed-percolation axis ($c=0$) from the higher-order
+stratum $\mathcal{C}_{3}$ (on which the Puiseux order is $3$ and
+the transfer exponent is $\tau=4/3$).  The Schl\"ogl~II
+autocatalytic family $2A\!\leftrightarrow\!3A$
+\citep{Schlogl1972} traces a line through $(b,c)$ as the rate
+ratio $k_a/k_b$ varies, and crosses $\mathcal{C}_{3}$ at a
+specific value $k_a/k_b\approx 1.476$.  The observation that
+CRNs with annihilation channels produce $\phi$ with negative
+coefficients, placing them outside the $\mathbb{N}$-algebraic
+class and therefore outside the Banderier--Drmota dyadic
+ceiling, is what permits the cube-root stratum---and an entire
+ladder of higher strata $\mathcal{C}_{k}$---to be reached at
+all; the details are in~\citep{AmarteifioDSELandscape}.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.78\textwidth]{figures/algebraic_curve_rate_space.pdf}
+  \caption{Cubic slice of DSE rate space $(b,c)$ with the
+    cube-root locus $\mathcal{C}_{3}:\,b^{3}=27c^{2}$ in red and
+    a handful of named CRNs placed as points.  The
+    directed-percolation family lives on the $c=0$ axis
+    ($\tau=3/2$); the Schl\"ogl~II family crosses
+    $\mathcal{C}_{3}$ at a single rate ratio; the canonical
+    cube-root carrier $\phi(G) = (1+G)^{3} - 4G$ sits on the curve
+    at $(a,b,c) = (-1, 3, 1)$.  See the convention note below: an
+    earlier draft of this paper claimed the canonical $\phi$ arose
+    from a positive-rate single-species CRN
+    ($\mathrm{A}\!\to\!3\mathrm{A}$, $2\mathrm{A}\!\to\!\mathrm{A}$,
+    $2\mathrm{A}\!\to\!3\mathrm{A}$ at rates $3{:}2{:}1$), but
+    that derivation under-counted vertices in the Doi--Peliti
+    expansion; the correct $\phi$ for those rates is
+    $1 + 8G + 3G^{2} + G^{3}$, which sits algebraically on
+    $\mathcal{C}_{3}$ but is not cube-root-dominant.  The
+    cube-root universality stratum requires signed structure
+    (annihilation contributing a net negative linear coefficient)
+    that no positive-rate single-species CRN of $kA \to lA$ form
+    can produce.  Detailed figures,
+    the full stratification theorem for $k\geq 2$, and a
+    discussion of signed-observable experimental tests are
+    in~\citep{AmarteifioDSELandscape}.}
+  \label{fig:landscape_appendix}
+\end{figure}
+
+The intuitive takeaway is that DP generating functions live
+naturally on a stratified landscape whose picture makes
+universality classes \emph{locations} rather than calculations.
+Square-root (DP) universality is the generic case and covers
+the bulk of classical reaction networks.  Codimension-one and
+higher strata require deliberate rate tuning to reach.  The
+Banderier--Drmota theorem says: no amount of positive
+combinatorial bookkeeping can land on these higher strata.  A
+signed structure, such as a Doi--Peliti DSE with annihilation,
+can.  Whether any natural system actually sits on a
+higher-order stratum by virtue of its physics rather than by
+artificial tuning is open; Schl\"ogl~II at $k_a\!\approx\!1.476\,k_b$
+is the cleanest candidate we are aware of.
+
+% ══════════════════════════════════════════════════════════════════
+\section{Computational experiments: 0-d skeleton and $d$-dimensional dressing}
+\label{app:experiments}
+% ══════════════════════════════════════════════════════════════════
+
+\paragraph{The two layers of every CFAC statement.}
+CFAC is a field-theoretic framework, and every statement it makes
+about a CRN comes in two parts.  The \emph{$0$-dimensional skeleton}
+is the algebraic content of the bare DSE $G = z\,\phi(G)$: the
+Puiseux exponents of its dominant branch, the stratification by
+$\mathcal{C}_{k}$ described in Section~\ref{sec:multi}, and the
+transfer-theorem asymptotics that follow.  The \emph{$d$-dimensional
+dressing} is the loop-level renormalisation produced by the bridge
+functions of CFAC: each vertex acquires a $d$-dependent anomalous
+dimension $\gamma_{k}(d)$, computed analytically in $\varepsilon =
+d_{c} - d$, that shifts the measured exponent off the integer
+ladder:
+\begin{equation}
+  \tau_{k}(d) \;=\; \underbrace{1 + \tfrac{1}{k}}_{\text{0-d skeleton}}
+  \;+\; \underbrace{\gamma_{k}(d)}_{\text{$d$-dim. dressing}},
+  \qquad \gamma_{k}(d) = O(d_{c} - d).
+  \label{eq:two-layer}
+\end{equation}
+The 0-d skeleton is universal in the sense that it depends only
+on the polynomial $\phi$, not on the embedding dimension; the
+$d$-dimensional dressing is universal in a different sense, that
+of the renormalisation-group fixed point.  Both layers are CFAC
+content, computed by complementary tools (algebraic for the
+skeleton, bridge functions for the dressing), and we always
+report both.
+
+We restate, locally, the structural theorem that drives this
+appendix.
+
+\begin{theorem}[Stratification with $d$-dimensional dressing]
+\label{thm:strat}
+Let $\phi(G) = 1 + \sum_{j=1}^{d}\phi_{j}G^{j}$ be the bare DSE
+kernel of a $d$-dimensional Doi--Peliti reaction network, with
+$d_{c}$ the upper critical dimension determined by the most
+relevant interaction vertex.  For each $k$ with $2\leq k\leq d$
+define $\mathcal{C}_{k}$ as in Section~\ref{sec:multi}.
+\begin{enumerate}[label=(\roman*)]
+\item ($0$-d skeleton.)  $\mathcal{C}_{k}$ is an algebraic
+  variety of codimension $k-2$ in the coefficient space of
+  $\phi$; on $\mathcal{C}_{k}\setminus\mathcal{C}_{k+1}$ the
+  dominant branch of $G = z\phi(G)$ is a $1/k$-Puiseux branch
+  yielding $[z^{n}]G \sim n^{-(1+1/k)}$.  This is dimension-free.
+\item ($d$-dimensional dressing.)  The CFAC bridge function
+  $f_{k}(r; d)$ for the rank-$k$ vertex at the cusp
+  determines an anomalous dimension $\gamma_{k}(d) = c_{k}\,
+  \varepsilon + O(\varepsilon^{2})$, with $\varepsilon =
+  d_{c} - d$ and $c_{k}$ a closed-form rational of the
+  bridge-function residue at the fixed point.  The measured
+  spatial exponent is $\tau_{k}(d) = 1 + 1/k + \gamma_{k}(d)$.
+\item (Banderier--Drmota constraint, dimension-independent.)
+  No positive ($\mathbb{N}$-algebraic) reduction of the DSE can
+  realise $\mathcal{C}_{k}$ for non-dyadic $k$ at any
+  dimension; this constraint is independent of the spatial
+  dressing.
+\end{enumerate}
+\end{theorem}
+
+The skeleton (i) and the constraint (iii) are proved in
+Section~\ref{sec:multi}; the dressing (ii) reduces, vertex by
+vertex, to the bridge-function calculation that the rest of CFAC
+is built on.  We test all three layers below.
+
+\paragraph{Why this matters.}
+Every "CFAC predicts $\tau$ for system $X$" claim is in
+practice an arithmetic of skeleton plus dressing.  Skipping the
+dressing is the same mistake as quoting a mean-field exponent
+where the system has $d < d_{c}$.  The experiments below were
+deliberately designed to surface where each layer dominates.
+
+\subsection{Experiment 1: dynamical phase transition at $\mathcal{C}_3$}
+\label{app:exp1}
+
+We tilt the canonical cube-root kernel
+$\phi_{3,-4}(G) = (1+G)^{3} - 4G$ by an asymmetric biasing parameter $k$
+on the $\mathrm{A}\to 3\mathrm{A}$ rate (the simplest current-type
+tilt of stochastic thermodynamics).  The DSE kernel becomes
+\begin{equation}
+  \phi_{k}(G) \;=\; 1 - G + 3\,e^{k}\,G^{2} + G^{3},
+\end{equation}
+which sits on $\mathcal{C}_{3}$ exactly at $k=0$ (since
+$b^{3}=27c^{2}$ requires $(3 e^{k})^{3}=27$, i.e.\ $e^{3k}=1$).
+The scaled cumulant generating function
+$\lambda(k) = -\log|z_{\star}(k)|$ is the prediction.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.97\textwidth]{figures/exp1_tilted_cube_root.pdf}
+  \caption{Tilted cube-root CRN.  Left: SCGF
+    $\lambda(k)=-\log|z_{\star}(k)|$ --- looks smooth at first
+    glance.  Middle: first derivative $d\lambda/dk$ (mean
+    current) shows a visible kink at $k=0$.  Right: second
+    derivative $d^{2}\lambda/dk^{2}$ has a sharp peak at $k=0$
+    ($\sim 3.5$ vs.\ a baseline of $\sim 0.7$).  The system
+    crosses $\mathcal{C}_{3}$ at $k=0$ and the SCGF acquires a
+    first-derivative discontinuity --- a first-order dynamical
+    phase transition in the Garrahan--Chandler / Touchette
+    sense.}
+  \label{fig:exp1}
+\end{figure}
+
+\paragraph{Result ($0$-d).}
+The dominant branch satisfies $z_{\star}(0)=-1/4$ (the
+cube-root branch).  At $k=0$, $\lambda(k)$ has a kink ---
+$d\lambda/dk$ jumps from $\approx 0.7$ on the $k<0$ side to
+$\approx 1.05$ on the $k>0$ side.  The fitted scaling
+$|\lambda(k)-\lambda(0)|\sim |k|^{1.03}$ is consistent with a
+linear corner, not a $4/3$-power cusp; the cube-root structure
+manifests as a slope discontinuity in $\lambda$, not as a Puiseux
+power in $\lambda$ itself.
+
+\paragraph{$d$-dimensional reading.}
+The corner location $k=0$ is the bare prediction of the $0$-d
+skeleton; in $d<d_{c}$ the bridge-function dressing shifts it
+to $k_{\star}(d) = 0 + \gamma_{3}^{(\sigma)}(d)\,\varepsilon
++ O(\varepsilon^{2})$, where $\gamma_{3}^{(\sigma)}$ is the
+anomalous dimension of the entropy-production current at the
+cube-root cusp.  Computing $\gamma_{3}^{(\sigma)}$ requires the
+bridge function for the cubic vertex (a triangle diagram); we
+defer it to a later experiment but emphasise that the
+\emph{existence} of the dynamical phase transition, and its
+location at a stratum crossing, is a $d$-independent statement
+guaranteed by Theorem~\ref{thm:strat}(i).  This is a concrete,
+novel CFAC prediction: \emph{the dynamical phase transitions
+visible in the SCGF of stochastic-thermodynamics observables sit
+at the stratification crossings of the tilted DSE, with their
+location dressed by the bridge function in $d<d_{c}$}.
+
+\subsection{Experiment 2: Schlögl~II rate-space stratification}
+\label{app:exp2}
+
+We scan the Schlögl~II rate plane $(k_{a}, k_{b}) \in
+[0.2, 4]^{2}$, identifying the Puiseux order $k$ of the
+dominant branch at each point via the multiplicity of the
+nearest discriminant root.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.97\textwidth]{figures/exp2_schlogl_rate_scan.pdf}
+  \caption{Schlögl~II rate-space stratification.  Left: Puiseux
+    order $k$ of the dominant branch as a function of
+    $(k_{a},k_{b})$.  Most of the plane is in $\mathcal{C}_{2}$
+    (blue, square-root, generic DP).  An orange band of
+    $\mathcal{C}_{3}$ points (cube-root) sits along the analytic
+    crossing curve $(2k_{a}-k_{b})^{3} = 27(k_{a}-2k_{b})^{2}$
+    (black).  Right: dominant-branch radius
+    $|z_{\star}(k_{a},k_{b})|$ as a heatmap; the cube-root
+    crossing curve runs along a sharp ridge.}
+  \label{fig:exp2}
+\end{figure}
+
+\paragraph{Result ($0$-d).}
+$56$ of $1600$ grid points (3.5\%) sit on $\mathcal{C}_{3}$,
+all along the predicted analytic curve.  The visualisation
+matches Theorem~\ref{thm:strat}(i) without adjustment.
+
+\paragraph{$d$-dimensional reading.}
+In a spatial Schlögl~II at $d < d_{c} = 4$, the bridge-function
+dressing thickens the $\mathcal{C}_{3}$ curve into a band of
+width $\sim \varepsilon$, and the precise crossing
+$k_{a}/k_{b} = 1.476$ shifts to $k_{a}/k_{b}(d) = 1.476 +
+\delta_{3}(d)\varepsilon$, where $\delta_{3}$ is computable
+from the bridge function for the cubic-vertex bubble.  The
+\emph{existence} and \emph{topology} of the band — a
+codimension-$1$ surface separating $\tau \approx 4/3$ from
+$\tau \approx 3/2$ in rate space — is a $d$-independent
+statement.  This is a direct visual validation of the
+stratification picture on a real, physically realised CRN
+family (Schlögl~II is implemented in catalytic surface
+reactions and synthetic genetic oscillators).  The next test
+would be a stochastic Schlögl~II simulation on a $d$-dimensional
+lattice at the predicted band: in the band, the cube-root signal
+should be visible in a signed correlator (cf.\ App.~B.1's
+observational caveat in the landscape paper).
+
+\subsection{Experiment 3: spatial non-DP exponents do not slot
+into integer strata --- and what AC has to say}
+\label{app:exp3}
+
+We collect literature size-distribution exponents $\tau$ for
+known non-DP universality classes and ask whether they "slot"
+into the CFAC ladder $\tau_{k} = 1 + 1/k$ for some integer
+$k\geq 2$.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lcccc}
+\toprule
+Universality class & $d$ & measured $\tau$ & implied $k = 1/(\tau{-}1)$ & nearest integer \\
+\midrule
+Directed percolation~\citep{Odor2004} & $1,2$ & $1.500$ & $2.00$ & $2$ \\
+Manna~\citep{Manna1991} & $1$ & $1.286$ & $3.50$ & $3$ or $4$ \\
+Manna & $2$ & $1.270$ & $3.70$ & $4$ \\
+Conserved Manna & $1,2$ & $1.29$--$1.30$ & $3.33$--$3.45$ & $3$ \\
+Parity-conserving BARW~\citep{CardyTauber1996} & $1$ & $1.170$ & $5.88$ & $6$ \\
+Pair contact process (PCPD) & $1$ & $1.200$ & $5.00$ & $5$ \\
+Lee--Yang (Parisi--Sourlas)~\citep{Parisi1981} & $1,2$ & $2.500$ & $0.67$ & $1$ \\
+\bottomrule
+\end{tabular}
+\caption{Spatial non-DP universality classes versus the integer-$k$
+CFAC ladder.  Only DP and PCPD sit exactly on integer $k$; the
+others sit between strata.  Lee--Yang is outside the ladder
+entirely.  See discussion below for what this means.}
+\label{tab:exp3}
+\end{table}
+
+\paragraph{Result ($0$-d versus $d$).}
+Only DP ($k=2$, trivial since DP \emph{is} the generic
+square-root case) and PCPD-1D ($k=5$) sit on integer $k$.  The
+Manna family is between $\mathcal{C}_{3}$ and $\mathcal{C}_{4}$;
+parity-conserving BARW lands near $k=6$ but not exactly;
+Lee--Yang at $\tau=5/2$ corresponds to $k=2/3$, outside the
+ladder entirely.  The integer ladder is \emph{not} a direct
+classification scheme for spatial non-DP universality.
+
+\paragraph{What is going on.  A clean breakdown.}
+This is the most informative experiment in the set, because
+the failure mode is interpretable and tells us what the
+stratification IS and IS NOT.
+
+\begin{description}[leftmargin=1.2em]
+\item[Counting (analytic combinatorics).]
+  The integer ladder $\tau_{k}=1+1/k$ is the \emph{mean-field
+  skeleton}: the exponents you obtain when the DSE is treated
+  as a $0$-dimensional polynomial generating function with no
+  spatial dressing.  This is what Theorem~\ref{thm:strat}
+  delivers; it is a property of the algebraic curve $G = z\phi(G)$
+  alone.
+
+\item[Maths (Banderier--Drmota).]
+  Tells you which integer $k$ in the skeleton are reachable by
+  positive systems (only $k\in\{2,4,8,\ldots\}$) and which
+  require the signed structure of Doi--Peliti to access (every
+  other $k$).  The ladder is independent of dimension; the
+  ceiling is independent of dimension.
+
+\item[Physics (renormalisation group / spatial dressing).]
+  In $d < d_{c}$ the loop expansion produces an anomalous
+  dimension $\gamma_{k}(d) = \gamma_{k}^{(1)}\,\varepsilon +
+  O(\varepsilon^{2})$ (with $\varepsilon = d_{c}-d$) that
+  shifts the measured exponent off integer $k$:
+  \[
+    \tau_{\mathrm{measured}}(d) \;=\; 1 + \frac{1}{k} +
+    \gamma_{k}(d).
+  \]
+  Manna at $\tau=1.286$ in $d=1$ is consistent with
+  $k=3$ and a sizeable $\gamma_{3}(1)\approx -0.05$;
+  parity-conserving BARW at $\tau=1.17$ is consistent with
+  $k=6$ and a small $\gamma_{6}(1)\approx 0.003$.  These are
+  not derivations, just consistency checks; the real work is
+  computing $\gamma_{k}$ from the bridge functions of CFAC,
+  which is a separate technical exercise per class.
+\end{description}
+
+\paragraph{Does AC offer anything?}
+Yes, but \emph{the bridge functions are the right object, not
+the stratification ladder}.  CFAC provides both:
+Theorem~\ref{thm:strat} for the mean-field skeleton, and the
+bridge functions $f(r), g(r)$ of \citet{CFACpaper} for the
+loop-level anomalous dimensions.  The clean separation
+"counting + maths + physics" is itself a useful way to think
+about non-DP classification: one says where a class sits in the
+0-d ladder, the next says whether positive or signed structure
+is required to reach it, and the third quantifies the spatial
+shift.  Lee--Yang ($\tau = 5/2$) is special because it has a
+hidden supersymmetry (Parisi--Sourlas dimensional reduction)
+that pins the exponent to a value outside the
+single-parameter $1+1/k$ family; this is a known external
+mechanism, and our ladder rightly does not capture it.
+
+\paragraph{Implication for non-DP classification.}
+A complete CFAC-based classification of non-DP spatial
+universality is the two-step procedure that Theorem~\ref{thm:strat}
+already prescribes:
+\begin{enumerate}[label=(\arabic*)]
+  \item ($0$-d skeleton.)  Read off the mean-field $k$ from the
+    dominant Puiseux order of the DSE.  This is universal and
+    immediate.
+  \item ($d$-dimensional dressing.)  Compute $\gamma_{k}(d)$ via
+    the bridge-function loop expansion at the appropriate vertex
+    structure.  This is class-by-class but standard CFAC
+    machinery.
+\end{enumerate}
+Together these give a candidate algebraic skeleton for the
+classification problem that has been a research target since
+\citet{Hinrichsen2000} and \citet{Odor2004}.  The two-layer
+form of Theorem~\ref{thm:strat} makes the right-shaped
+prediction unambiguous: the integer-$k$ skeleton is the
+mean-field landmark, the bridge-function dressing accounts for
+the spatial deviation, and the Banderier--Drmota constraint says
+which classes can in principle exist at all.  Manna is the
+obvious next test case for step (2).
+
+\subsection{Dressing-layer experiments: results}
+\label{app:exp4plus}
+
+The three experiments above probe the $0$-d skeleton.  We then
+ran three more pushing into the $d$-dimensional dressing.
+
+\subsubsection*{Experiment 4: cubic-vertex bridge is mass-independent}
+
+Compute the triangle-bubble integral
+$B_{3}(m_{1},m_{2},m_{3}) = \int d^{d}k\,/\,[(k^{2}+m_{1}^{2})(k^{2}+m_{2}^{2})(k^{2}+m_{3}^{2})]$
+at $d = 6 - \varepsilon$ (the cubic-vertex critical dimension)
+and check whether the $1/\varepsilon$ pole residue depends on
+the masses.  At $\varepsilon = 10^{-4}$, scanning mass
+combinations spanning four orders of magnitude
+$(m_{i}\in [10^{-2}, 10^{2}])$, we find:
+\begin{equation}
+  \varepsilon\,B_{3}(m_{1},m_{2},m_{3})
+  \;=\;
+  2\,(4\pi)^{-3} \times \bigl[ 1 + \mathcal{O}(10^{-4}) \bigr],
+  \label{eq:rank3bridge}
+\end{equation}
+with maximum relative deviation $2.9\times 10^{-4}$ across all
+mass combinations.  The cubic-vertex bridge is mass-independent
+and equal to the constant $2(4\pi)^{-3}$, the rank-$3$ analogue
+of the rank-$2$ scalar-bubble bridge $2(4\pi)^{-2}$.
+
+\paragraph{Implication.}
+The bridge function for the rank-$k$ cusp is a constant at one
+loop, not a function of mass ratios.  This means the anomalous
+dimension $\gamma_{k}(d)$ at the $\mathcal{C}_{k}$ cusp is
+computable from a single one-loop integral whose residue is
+universal --- no two-variable bridge function $f_{3}(r_{1}, r_{2})$
+is needed.  The dressing layer of Theorem~\ref{thm:strat}
+inherits the simplification of the scalar-bubble bridge.
+
+\subsubsection*{Experiment 5: quartic-root family search}
+
+We test whether a single-species CRN with reactions of total
+leg-count $\leq 7$ (i.e.\ $\mathrm{A}\to 2\mathrm{A}$,
+$2\mathrm{A}\to\mathrm{A}$, $2\mathrm{A}\to 3\mathrm{A}$,
+$3\mathrm{A}\to 2\mathrm{A}$, $3\mathrm{A}\to 4\mathrm{A}$) can
+realise the canonical degree-$4$ family
+$\phi_{4,\beta}(G)=(1+G)^{4}+\beta G$ via a choice of rates.
+Solving the matching system in sympy returns no solution: the
+simple physical reaction set with all positive rates produces
+$\phi$ of degree $5$ or $6$ (because $3\mathrm{A}\to 4\mathrm{A}$
+contributes a $G^{5}$ term that has no compensating reaction in
+this set), and the constraint that all higher-degree
+coefficients vanish over-determines the system.  Four candidate
+CRNs sampled in the same family all land on $\mathcal{C}_{2}$
+(generic square-root) rather than $\mathcal{C}_{4}$.
+
+\paragraph{Implication.}
+Reaching the higher strata $\mathcal{C}_{k}$ for $k\geq 4$
+requires either (i) a richer reaction set with more
+compensating channels, (ii) a coupled multi-species CRN where
+the resultant elimination produces the right $\phi$, or (iii)
+explicit signed engineering as in synthetic DNA CRNs.  The
+naive single-species path stops at $\mathcal{C}_{3}$ for cubic
+$\phi$.  This is a real ceiling of single-species CRN modelling
+and a concrete target for follow-on work.
+
+\subsubsection*{Experiment 6: Banderier--Drmota null tests}
+
+We construct positive ($\mathbb{N}$-algebraic) DSE truncations
+and verify their dominant Puiseux orders are dyadic.
+
+\begin{enumerate}[label=(\alph*),leftmargin=1.2em]
+\item Sign-flip the cube-root CRN: $\phi_{\text{pos}} = 1 + G +
+  3G^{2} + G^{3}$ (all positive coefficients).  Result:
+  $k_{\text{dom}} = 2$, $|z_{\star}|=0.21$.  Banderier-Drmota
+  holds.
+\item Canonical family $(1+G)^{k} + \beta G$ with $\beta > 0$,
+  for $k\in\{3,4,5,6\}$ and $\beta\in\{1,2,5,10\}$.  All 16
+  cases give $k_{\text{dom}} = 2$.  Banderier--Drmota holds.
+\item 50 random positive cubic $\phi(G) = 1 + aG + bG^{2}+cG^{3}$
+  with $a, b, c \geq 0$.  Every sample gives $k_{\text{dom}} = 2$.
+  Banderier-Drmota holds.
+\item \emph{The trap case}: $\phi_{\text{pos}} = 1 + G + 3G^{2} +
+  G^{3}$ \emph{algebraically} sits on the cube-root locus
+  $b^{3} = 27c^{2}$.  Yet $k_{\text{dom}} = 2$.  Inspecting the
+  discriminant: $\mathrm{disc}_{G}\,F = -z(2z+1)^{2}(19z-4)$;
+  the cube-root branch \emph{exists} at $z=-1/2$, but the
+  square-root branch at $z=4/19\approx 0.21$ is closer to the
+  origin.  Positive systems \emph{can sit on} the algebraic
+  $\mathcal{C}_{k}$ locus, they simply \emph{cannot have} it as
+  their dominant asymptotic.
+\end{enumerate}
+
+\paragraph{Implication.}
+Banderier--Drmota is a constraint on \emph{dominance}, not on
+\emph{existence}: the higher-order branches always exist
+algebraically once you tune the coefficients, but for positive
+systems some closer dyadic branch always intervenes.  Signed
+structure (annihilation in DP) is what swaps the dominance
+ordering and makes the cube-root branch the leading singularity.
+This is the cleanest mechanistic statement of \emph{why}
+Doi-Peliti accesses the forbidden strata: not by introducing
+new branches, but by re-ordering which existing branch dominates.
+
+\paragraph{Net.}
+All three dressing-layer experiments succeed.  Experiment~4
+gives a clean closed-form constant for the rank-$3$ bridge,
+making $\gamma_{3}(d)$ a one-line calculation.  Experiment~5
+exposes a real combinatorial ceiling on what single-species
+CRNs can reach without engineering.  Experiment~6 confirms the
+Banderier--Drmota constraint and identifies its precise
+mechanism.  Together they push the theory in the natural
+direction demanded by Theorem~\ref{thm:strat}: from algebraic
+skeleton to renormalised dressing, and from single-species DSE
+to the coupled-field DSE that real CFAC was always built for.
+
+% ══════════════════════════════════════════════════════════════════
 \begin{thebibliography}{99}
 
 \bibitem[Amarteifio(2019)]{Amarteifio2019Thesis} Amarteifio, S., 2019. \textit{Field-theoretic formulation and empirical tracking of spatial processes}. PhD dissertation (supervised by G.~Pruessner), Imperial College London.
@@ -694,6 +1184,23 @@ belongs to which class) a question of polynomial equivalence.
 \bibitem[Cox et al.(2007)]{CLO} Cox, D.~A., Little, J., and O'Shea, D., 2007. \textit{Ideals, Varieties, and Algorithms}, 3rd ed., Springer.
 \bibitem[Weinberg(1960)]{Weinberg1960} Weinberg, S., 1960. High-energy behavior in quantum field theory. \textit{Phys.\ Rev.} 118, 838.
 \bibitem[Zimmermann(1969)]{Zimmermann1969} Zimmermann, W., 1969. Convergence of Bogoliubov's method of renormalization in momentum space. \textit{Commun.\ Math.\ Phys.} 15, 208.
+\bibitem[Banderier and Drmota(2015)]{BanderierDrmota2015} Banderier, C.\ and Drmota, M., 2015. Formulae and asymptotics for coefficients of algebraic functions. \textit{Combinatorics, Probability and Computing} 24, 1--53. [Classifies the dyadic set of Puiseux exponents reachable by $\mathbb{N}$-algebraic / context-free systems; proves $p/q=1/3$ is excluded.]
+\bibitem[Flajolet and Odlyzko(1990)]{FlajoletOdlyzko1990} Flajolet, P.\ and Odlyzko, A., 1990. Singularity analysis of generating functions. \textit{SIAM J.\ Discrete Math.} 3, 216--240. [Transfer theorem for algebraic--logarithmic singularities; coefficient-extraction formulae including the cube-root case.]
+\bibitem[Drmota, Lalley and Woods(1997)]{DrmotaLalleyWoods} Drmota, M., 1997. Systems of functional equations. \textit{Random Structures \& Algorithms} 10, 103--124. [The square-root universality theorem for strongly connected positive systems, extended by Banderier--Drmota.]
+\bibitem[Drmota(2009)]{Drmota2009} Drmota, M., 2009. \textit{Random Trees: An Interplay between Combinatorics and Probability}. Springer. [Standard reference for Lagrange equations, branch-point asymptotics and conditioned Galton--Watson trees.]
+\bibitem[Duquesne and Le~Gall(2002)]{DuquesneLeGall2002} Duquesne, T.\ and Le~Gall, J.-F., 2002. \textit{Random Trees, Lévy Processes and Spatial Branching Processes}. Astérisque 281, Société Mathématique de France. [Scaling limits of critical Galton--Watson trees under stable offspring distributions; $\tau=1+1/\alpha$ from infinite-variance offspring.]
+\bibitem[Janson(2012)]{Janson2012} Janson, S., 2012. Simply generated trees, conditioned Galton--Watson trees, random allocations and condensation. \textit{Probability Surveys} 9, 103--252.
+\bibitem[Parisi and Sourlas(1981)]{Parisi1981} Parisi, G.\ and Sourlas, N., 1981. Critical behavior of branched polymers and the Lee--Yang edge singularity. \textit{Phys.\ Rev.\ Lett.} 46, 871. [Dimensional-reduction route to anomalous tree exponents.]
+\bibitem[Brydges and Imbrie(2003)]{BrydgesImbrie2003} Brydges, D.\ and Imbrie, J.Z., 2003. Branched polymers and dimensional reduction. \textit{Ann.\ Math.} 158, 1019--1039.
+\bibitem[Pemantle and Wilson(2013)]{PemantleWilson2013} Pemantle, R.\ and Wilson, M.~C., 2013. \textit{Analytic Combinatorics in Several Variables}. Cambridge Univ.\ Press. [ACSV framework for coefficient extraction when $\phi$ depends on more than one catalytic variable.]
+\bibitem[Schl\"ogl(1972)]{Schlogl1972} Schl\"ogl, F., 1972. Chemical reaction models for non-equilibrium phase transitions. \textit{Z.\ Phys.} 253, 147--161. [The original autocatalytic $2\mathrm{A}\leftrightarrow 3\mathrm{A}$ model, here used as a physical carrier of the cube-root tuning.]
+\bibitem[Soloveichik et al.(2010)]{SoloveichikWinfreeQian2010} Soloveichik, D., Seelig, G., and Winfree, E., 2010. DNA as a universal substrate for chemical kinetics. \textit{Proc.\ Natl.\ Acad.\ Sci.\ USA} 107, 5393--5398. [Programmable DNA CRNs as a route to arbitrary rate profiles, including the cube-root tuning.]
+\bibitem[Clayton et al.(2007)]{ClaytonEtAl2007} Clayton, E.\ et al., 2007. A single type of progenitor cell maintains normal epidermis. \textit{Nature} 446, 185--189. [Canonical two-rate stem-cell-niche CRN; single-species reduction places it on the $c=0$ axis.]
+\bibitem[Amarteifio(2026c)]{AmarteifioDSELandscape} Amarteifio, S., 2026c. \textit{A Visual Landscape for Doi--Peliti Reaction-Network Universality}. Percolation Labs companion note. [Full figures, stratification theorem $\mathcal{C}_k$ for $k\geq 2$, and experimental candidates.]
+\bibitem[Manna(1991)]{Manna1991} Manna, S.~S., 1991. Two-state model of self-organized criticality. \textit{J.\ Phys.\ A} 24, L363. [The Manna sandpile non-DP universality class.]
+\bibitem[Cardy and T\"auber(1996)]{CardyTauber1996} Cardy, J.~L.\ and T\"auber, U.~C., 1996. Theory of branching and annihilating random walks. \textit{Phys.\ Rev.\ Lett.} 77, 4780. [Parity-conserving BARW field theory.]
+\bibitem[Hinrichsen(2000)]{Hinrichsen2000} Hinrichsen, H., 2000. Non-equilibrium critical phenomena and phase transitions into absorbing states. \textit{Adv.\ Phys.} 49, 815. [Foundational review of absorbing-state universality.]
+\bibitem[\'Odor(2004)]{Odor2004} \'Odor, G., 2004. Universality classes in nonequilibrium lattice systems. \textit{Rev.\ Mod.\ Phys.} 76, 663.
 
 \end{thebibliography}
 

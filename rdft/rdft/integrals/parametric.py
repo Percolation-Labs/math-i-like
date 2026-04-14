@@ -108,17 +108,24 @@ class OmegaIntegration:
         for l, loop_edge_idx in enumerate(non_tree_edges):
             src, tgt, _ = self.graph.edges[loop_edge_idx]
 
-            # Find unique tree path from src to tgt
+            # Find unique tree path from src to tgt (just to identify which
+            # tree edges are in this fundamental circuit — direction ignored)
             path = self._tree_path(spanning_tree, src, tgt)
 
-            # Assign ±1 based on orientation
+            # Assign signs following the RDFT ω-integration convention
+            # (Amarteifio Theorem 5.1): the circuit constraint is
+            #   α_{loop} = Σ_{e' in tree path} α_{e'}
+            # which means: non-tree (loop) edge → +1, tree edges → -1.
+            # This is a topological statement on Schwinger parameters
+            # (α encodes "time" / "length", not momentum direction), so
+            # edge orientations do NOT affect the sign.
             alpha_pos = int_edges.index(loop_edge_idx)
             Ef[l, alpha_pos] = sp.S.One  # loop edge itself: +1
 
-            for edge_idx, sign in path:
+            for edge_idx, _sign in path:
                 if edge_idx in int_edges:
                     alpha_pos = int_edges.index(edge_idx)
-                    Ef[l, alpha_pos] = sp.Integer(sign)
+                    Ef[l, alpha_pos] = sp.Integer(-1)  # tree edges: always -1
 
         self._Ef = Ef
         return self._Ef
@@ -351,17 +358,19 @@ class ParametricIntegral:
         # Apply diffusion scaling
         Psi_p, Phi_p = self.apply_diffusion_scaling(Psi, Phi)
 
-        # Apply ω-integration
-        Psi_r, Phi_r, _ = self._omega_integrator.reduce(Psi_p, Phi_p)
-
         sigma = self.degree_of_divergence()
         Omega = self.angular_factor()
 
-        # For one-loop: after ω-integration we have n_int - L = n_int - 1 free alphas
-        # Apply the Cheng-Wu theorem / delta(1 - Σ α_e) normalization
-        # and then use the Beta-function integration formula:
-        #   ∫ dα α^{a-1} (C·α + M)^{-n} = C^{-a} B(a, n-a) M^{a-n}
-        # (see Amarteifio eq. 2.52-2.55)
+        # Degenerate case: n_int == L means ω-integration would eliminate ALL
+        # Schwinger parameters (leaving Ψ_r = 0).  Instead, evaluate the
+        # Schwinger integral directly on the unduced Ψ and Φ.
+        # Example: tadpole (self-loop, n_int=1, L=1) has n_free=0 after ω-int.
+        # The correct amplitude is Ω × ∫ dα Ψ(α)^{-d/2} exp(-Φ(α)/Ψ(α)).
+        if self.graph.n_internal_edges == self.graph.L:
+            return self._evaluate_alpha_integrals(Psi_p, Phi_p, sigma, Omega)
+
+        # Standard path: apply ω-integration first
+        Psi_r, Phi_r, _ = self._omega_integrator.reduce(Psi_p, Phi_p)
 
         result = self._evaluate_alpha_integrals(Psi_r, Phi_r, sigma, Omega)
 
@@ -373,60 +382,190 @@ class ParametricIntegral:
                                    sigma: sp.Expr,
                                    Omega: sp.Expr) -> sp.Expr:
         """
-        Evaluate the remaining alpha integrals after ω-integration.
+        Evaluate ∫ Π dα Ψ_r^{-d/2} exp(-Φ_r/Ψ_r) analytically.
 
-        For the standard one-loop form with one free alpha:
-            ∫_0^∞ dα · α^{n-1} · (Ψ')^{-d/2} · (Ψ'/Φ')^σ
-          = ∫_0^∞ dα · α^{n-1} · Ψ^{-d/2+σ} · Φ^{-σ}
+        Uses the Schwinger-parameter Gamma formula for monomial integrands.
 
-        After Cheng-Wu (δ(1-Σα) normalization) and Euler-Beta integration,
-        this gives a product of Gamma functions.
+        Key result: for Ψ_r = C·α^p and Q = Φ_r/Ψ_r = M·α^k,
 
-        Implementation: symbolic integration for simple polynomial cases.
+            ∫_0^∞ dα (C·α^p)^{-d/2} exp(-M·α^k)
+                = C^{-d/2} / k · Γ((1 - p·d/2) / k) · M^{-(1-p·d/2)/k}
+
+        For n_free ≥ 2: if Q = Σ_i Q_i(α_i) (sum-separable) and Ψ_r is
+        a product Π_i Ψ_i(α_i), the multi-dimensional integral factorises
+        into independent 1D integrals and the same formula applies to each.
+
+        The angular factor Ω_d^L = (4π)^{-Ld/2} is supplied as Omega^L
+        (caller passes Omega = (4π)^{-d/2}, so Omega^L = (4π)^{-Ld/2}).
         """
         alphas_free = [a for a in self.graph._alpha_syms
                        if Psi_r.has(a) or Phi_r.has(a)]
 
         if len(alphas_free) == 0:
-            # Fully reduced (tree-level): no loop integrals
+            # Tree level: no remaining integrals
             return Omega * sp.gamma(-sigma)
 
+        L = self.graph.L
+        Omega_L = Omega ** L
+
         if len(alphas_free) == 1:
-            # One free parameter: use Euler-Beta formula
-            alpha = alphas_free[0]
+            result = self._schwinger_1d(alphas_free[0], Psi_r, Phi_r)
+            if result is not None:
+                return sp.simplify(Omega_L * result)
 
-            # The integral takes the form:
-            # ∫_0^∞ dα · [linear in α]^{exponent}
-            # Detec linear form: Φ_r = a·α + b (after ω-integration)
-            phi_poly = sp.Poly(Phi_r, alpha)
-            if phi_poly.degree() == 1:
-                a_coeff = phi_poly.nth(1)  # coefficient of α
-                b_coeff = phi_poly.nth(0)  # constant term
+        elif len(alphas_free) >= 2:
+            # Attempt factorised evaluation: Ψ_r = Π_i f_i(α_i)
+            # and Q = Σ_i Q_i(α_i).
+            result = self._schwinger_factorised(alphas_free, Psi_r, Phi_r)
+            if result is not None:
+                return sp.simplify(Omega_L * result)
 
-                # For Ψ = D·α (homogeneous degree 1 in α):
-                psi_poly = sp.Poly(Psi_r, alpha)
+        # Could not evaluate analytically
+        return (Omega_L * sp.gamma(-sigma) *
+                sp.Symbol('I_alpha_unsolved', real=True))
 
-                if psi_poly.degree() == 1 and psi_poly.nth(0) == 0:
-                    D_coeff = psi_poly.nth(1)
+    def _schwinger_1d(self,
+                      alpha: sp.Symbol,
+                      Psi_r: sp.Expr,
+                      Phi_r: sp.Expr) -> Optional[sp.Expr]:
+        """
+        Evaluate ∫_0^∞ dα Ψ_r^{-d/2} exp(-Q)  with Q = Phi_r/Psi_r
+        for the case Ψ_r = C·α^p and Q = M·α^k (both pure monomials).
 
-                    # Integral: ∫_0^∞ dα (D·α)^{-d/2} (a·α + b)^{σ-???}
-                    # Use formula (Amarteifio eq. 2.55):
-                    # ∫_0^∞ dα α^{n_e-1} [k²+M]^{-ν} → Γ(ν-d/2)/Γ(ν) · M^{d/2-ν}
+        Returns the result as a sympy expression, or None if the form
+        is not recognised.
 
-                    # Standard result for one-loop self-energy
-                    # I = Ω_d · Γ(-σ) · ...
-                    # For a simple mass loop (Amarteifio eq. 2.103):
-                    M = b_coeff  # quasimass
-                    exp_sigma = sp.Rational(2, 1) / self.d - 1  # 2/d - 1
+        Formula:
+            C^{-d/2} / k · Γ((1 - p·d/2) / k) · M^{-(1-p·d/2)/k}
+        """
+        d = self.d
 
-                    result = (Omega * sp.gamma(-sigma) *
-                              (sp.Integer(2) * M) ** exp_sigma *
-                              D_coeff ** (-self.d / 2))
-                    return sp.simplify(result)
+        psi_poly = sp.Poly(Psi_r, alpha)
+        p = psi_poly.degree()
+        C = psi_poly.nth(p)
 
-        # General case: return symbolic form
-        return (Omega * sp.gamma(-sigma) *
-                sp.Symbol('I_alpha', real=True))  # placeholder
+        # Ψ_r must be a pure monomial (zero constant and all intermediate terms)
+        if any(psi_poly.nth(i) != 0 for i in range(p)):
+            return None  # not a monomial
+
+        if sp.simplify(Phi_r) == 0:
+            # Massless case: no exp factor.  Use projective representation:
+            # ∫_0^∞ dα (C·α^p)^{-d/2}  is regularised by dim-reg to
+            # C^{-d/2} · δ(exponent)  → gives a pole structure via Γ.
+            # Return the projective result (Cheng-Wu with α=1):
+            exponent = -p * d / 2
+            # ∫_0^∞ dα α^{exponent} regulated = Γ(1+exponent) / (−exponent) ...
+            # Standard result: = 0 by dimensional regularisation for massless
+            # self-energy tadpoles with no external scale.
+            return sp.S.Zero
+
+        Q = sp.simplify(sp.cancel(Phi_r / Psi_r))
+        q_poly = sp.Poly(Q, alpha)
+        k = q_poly.degree()
+        M = q_poly.nth(k)
+
+        # Q must be a pure monomial
+        if any(q_poly.nth(i) != 0 for i in range(k)):
+            return None
+
+        # Γ formula: ∫_0^∞ dα (C·α^p)^{-d/2} exp(-M·α^k)
+        #          = C^{-d/2} / k · Γ((1-p·d/2)/k) · M^{-(1-p·d/2)/k}
+        exponent_arg = (1 - p * d / 2) / k
+        return (C ** (-d / 2)
+                / sp.Integer(k)
+                * sp.gamma(exponent_arg)
+                * M ** (-exponent_arg))
+
+    def _schwinger_factorised(self,
+                               alphas: List[sp.Symbol],
+                               Psi_r: sp.Expr,
+                               Phi_r: sp.Expr) -> Optional[sp.Expr]:
+        """
+        Multi-dimensional Schwinger integral for factorisable integrands.
+
+        Requires:
+          Ψ_r = Π_i Ψ_i(α_i)       (product over free parameters)
+          Q   = Σ_i Q_i(α_i)       (sum over free parameters)
+
+        where each Ψ_i and Q_i depend on only one α_i.
+
+        Under these conditions exp(-Q) = Π_i exp(-Q_i) and the
+        multi-dimensional integral = Π_i [1D Schwinger integral for α_i].
+
+        Returns the product of 1D results, or None if factorisation fails.
+        """
+        # --- Check Ψ_r factorises as a product of univariate pieces ---
+        # Strategy: for each α_i, collect the factor of Ψ_r that depends on α_i.
+        psi_factors: Dict[sp.Symbol, sp.Expr] = {}
+
+        # Try: Ψ_r = f₀(α₀) × f₁(α₁) × ...
+        remaining = sp.expand(Psi_r)
+        for alpha in alphas:
+            others = [a for a in alphas if a is not alpha]
+            # Factor out the α_i-dependent part
+            factor = sp.collect(remaining, alpha, evaluate=False)
+            # Check if remaining / factor(alpha→1) is independent of alpha
+            try:
+                psi_at_1 = remaining.subs(alpha, sp.S.One)
+                ratio = sp.simplify(sp.cancel(remaining / psi_at_1))
+                if not ratio.has(*others):
+                    # ratio depends only on alpha; psi_at_1 on the rest
+                    psi_factors[alpha] = ratio
+                    remaining = psi_at_1
+                else:
+                    return None  # not factorisable at this α
+            except Exception:
+                return None
+
+        # --- Check Q = Φ_r/Ψ_r decomposes as a sum ---
+        Q_full = sp.simplify(sp.cancel(Phi_r / Psi_r))
+        Q_parts: Dict[sp.Symbol, sp.Expr] = {}
+
+        q_remaining = sp.expand(Q_full)
+        for alpha in alphas:
+            others = [a for a in alphas if a is not alpha]
+            # Extract terms of Q that involve alpha
+            q_terms = sp.collect(q_remaining, alpha, evaluate=False)
+            q_alpha = sum(
+                (coeff * alpha ** n)
+                for n, coeff in q_terms.items()
+                if isinstance(n, int) and n > 0
+                and not sp.sympify(coeff).has(*others)
+            ) if isinstance(q_terms, dict) else sp.S.Zero
+
+            if q_alpha == sp.S.Zero:
+                # Try directly: part depending on alpha only
+                q_alpha = sp.S.Zero
+                for term in sp.Add.make_args(q_remaining):
+                    if term.has(alpha) and not term.has(*others):
+                        q_alpha += term
+
+            Q_parts[alpha] = q_alpha
+            q_remaining = sp.expand(q_remaining - q_alpha)
+
+        # Any remainder must be zero (or we can't factorise)
+        if sp.simplify(q_remaining) != 0:
+            return None
+
+        # --- Evaluate each 1D factor ---
+        # `remaining` now holds the constant prefactor C of Ψ_r = C × Π_i ψ_i(α_i).
+        # This constant contributes C^{-d/2} to the integral.
+        psi_constant = remaining  # scalar; no free alphas remain
+        d = self.d
+
+        product = psi_constant ** (-d / 2) if psi_constant != sp.S.One else sp.S.One
+
+        for alpha in alphas:
+            Psi_i = sp.expand(psi_factors[alpha])
+            Q_i   = sp.expand(Q_parts[alpha])
+            Phi_i = sp.expand(Q_i * Psi_i)  # reconstruct Phi_i = Q_i × Ψ_i
+
+            result_i = self._schwinger_1d(alpha, Psi_i, Phi_i)
+            if result_i is None:
+                return None
+            product *= result_i
+
+        return product
 
     def epsilon_expansion(self, d_c: sp.Expr, n_terms: int = 2) -> sp.Expr:
         """
