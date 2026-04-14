@@ -201,6 +201,137 @@ def classify_singular_point(phi_funcs: Sequence[Callable],
     }
 
 
+def classify_non_smooth_critical(phi_funcs: Sequence[Callable],
+                                    G_star: np.ndarray,
+                                    rho_star: float,
+                                    tol: float = 1e-4,
+                                    verbose: bool = False) -> Dict:
+    """Classify a critical point as smooth / multiple / cone via
+    the Jacobian spectrum and eigenvector geometry.
+
+    Pemantle-Wilson terminology (ACSV, Pemantle-Wilson 2013 Ch. 9):
+      - SMOOTH point: single dominant eigenvalue of rho_star·J(G_star)
+        equal to 1 (multiplicity 1).  Standard tau = 3/2 with the
+        Perron-eigenvector-weighted amplitude of
+        diagonal_asymptotic_smooth().
+      - MULTIPLE point: r >= 2 sheets of the singular variety V cross
+        TRANSVERSALLY at (z_star, G_star).  The Jacobian has r
+        linearly-independent eigenvectors at eigenvalue 1.
+        Pemantle-Wilson give an asymptotic as a sum over sheets, with
+        exponent structure depending on the (r, n) geometry.
+      - CONE point: r >= 2 sheets meet NON-transversally (their
+        tangent planes are coplanar or close).  The asymptotic is
+        non-universal and depends on the cone geometry.
+
+    This function DETECTS the case and returns a structured
+    classification; it does NOT always produce an asymptotic, because
+    the Pemantle-Wilson multi-sheet residue integral is problem-specific.
+    When the smooth-amplitude formula is applicable per sheet, the sum
+    is returned; otherwise the user is directed to carry out the
+    residue computation by hand.
+    """
+    n = len(phi_funcs)
+    M = mean_matrix_at_origin(phi_funcs, G_star)
+    J_star = rho_star * M
+    eigs, V = np.linalg.eig(J_star)
+
+    # Indices of eigenvalues near 1
+    tol = 1e-4
+    unit_idx = [i for i, e in enumerate(eigs) if abs(e - 1.0) < tol]
+    r = len(unit_idx)
+
+    if r == 0:
+        return {'error': 'no eigenvalue near 1 — not at a critical point'}
+
+    # Collect right eigenvectors for the unit eigenspace
+    u_vectors = []
+    for i in unit_idx:
+        u = np.real(V[:, i])
+        # Normalise in L^1
+        u = u / (np.sum(np.abs(u)) + 1e-20)
+        u_vectors.append(u)
+
+    # Left eigenvectors (transpose)
+    eigs_L, W = np.linalg.eig(J_star.T)
+    unit_idx_L = [i for i, e in enumerate(eigs_L) if abs(e - 1.0) < tol]
+    v_vectors = []
+    for i in unit_idx_L:
+        v = np.real(W[:, i])
+        v = v / (np.sum(np.abs(v)) + 1e-20)
+        v_vectors.append(v)
+
+    if verbose:
+        print(f'Multiplicity r = {r}; u vectors = {u_vectors}; '
+              f'v vectors = {v_vectors}')
+
+    # Check transversality: the right eigenvectors should be linearly
+    # independent.  If they are (nearly) parallel, we are at a CONE
+    # point rather than a multiple point.
+    if r >= 2:
+        # Gram matrix
+        U = np.array(u_vectors)  # r x n
+        G_gram = U @ U.T
+        det_gram = np.linalg.det(G_gram)
+        is_transverse = abs(det_gram) > 1e-6
+    else:
+        is_transverse = True
+
+    # Curvature: sum over each sheet's contribution
+    eps = 1e-4
+    phi_pp_per_sheet = []
+    for u_right, v_left in zip(u_vectors, v_vectors):
+        Gp = G_star + eps * u_right
+        Gm = G_star - eps * u_right
+        phi_pp_vec = np.array([
+            (phi_funcs[i](Gp) + phi_funcs[i](Gm) - 2 * phi_funcs[i](G_star)) / eps**2
+            for i in range(n)
+        ])
+        curvature = np.dot(v_left, phi_pp_vec)
+        phi_pp_per_sheet.append(curvature)
+
+    if r == 1:
+        classification = 'smooth'
+        advice = 'use diagonal_asymptotic_smooth()'
+    elif r >= 2 and is_transverse:
+        classification = 'multiple_point'
+        advice = (
+            f'{r} sheets cross transversally; Pemantle-Wilson '
+            'residue integral per sheet needed for full asymptotic. '
+            'Per-sheet smooth amplitude contributions listed in '
+            'amplitude_per_sheet.'
+        )
+    else:
+        classification = 'cone_point'
+        advice = (
+            f'{r} sheets meet non-transversally (det Gram of '
+            f'right-eigenvectors = {det_gram:.3e}); asymptotic is '
+            'non-universal and depends on cone geometry.  Case-by-case '
+            'contour integration required.'
+        )
+
+    # Per-sheet smooth amplitude (first approximation for multiple-point)
+    amplitudes_per_sheet = []
+    for u_r, curv in zip(u_vectors, phi_pp_per_sheet):
+        if curv > 0:
+            amp = np.abs(u_r) / np.sqrt(2 * np.pi * curv * rho_star)
+            amplitudes_per_sheet.append(amp)
+        else:
+            amplitudes_per_sheet.append(None)
+
+    return {
+        'classification': classification,
+        'multiplicity_r': r,
+        'is_transverse': is_transverse,
+        'rho_star': rho_star,
+        'G_star': G_star,
+        'right_eigenvectors': u_vectors,
+        'left_eigenvectors': v_vectors,
+        'curvatures_per_sheet': phi_pp_per_sheet,
+        'amplitude_per_sheet': amplitudes_per_sheet,
+        'advice': advice,
+    }
+
+
 def diagonal_asymptotic_smooth(phi_funcs: Sequence[Callable],
                                  G_star: np.ndarray,
                                  rho_star: float,
@@ -263,6 +394,90 @@ def diagonal_asymptotic_smooth(phi_funcs: Sequence[Callable],
             f'[z^m] G_{species_index}(z,...,z) ~ {amplitude:.6f} '
             f'* m^(-3/2) * {1/rho_star:.6f}^m'
         ),
+    }
+
+
+# ------------------------------------------------------------------ #
+#  Physical demonstration: independent two-species (multiple-point)
+# ------------------------------------------------------------------ #
+
+def cone_point_demo(epsilon: float = 0.01) -> Dict:
+    """Construct a CONE-POINT critical singularity.
+
+    We take a 2x2 Jacobian rho*J(G_star) = [[1, 0], [eps, 1]] —
+    a Jordan block in the limit eps -> 0, or equivalently, two
+    sheets whose tangent directions both align with (1, 0) to
+    leading order when eps is small.
+
+    The offspring functions phi_1, phi_2 are constructed to give
+    this Jacobian at the chosen G_star.  For small eps the two
+    right eigenvectors are (1, 0) and (1, -eps) — nearly parallel.
+    The Gram determinant ~ eps^2 is below our transversality
+    threshold, so the classification flags 'cone_point'.
+
+    This is a contrived example — physical CRNs rarely sit exactly
+    at a cone point — but it illustrates the detection logic.
+    """
+    def phi1(G):
+        return G[0] + 0.5 * G[0] ** 2  # gives dphi_1/dG_1 = 1 + G_0 at G_star
+    def phi2(G):
+        return epsilon * G[0] + G[1] + 0.5 * G[1] ** 2
+
+    # Pick G_star such that phi_i(G_star) = G_star (on-shell for rho=1)
+    # and Jacobian has eigenvalue 1 with the Jordan-like structure.
+    # Use G_star = (0, 0) as a trivial basepoint; the linear kernel gives
+    # J = [[1, 0], [eps, 1]].
+    G_star = np.array([0.0, 0.0])
+    rho_star = 1.0
+
+    cls = classify_non_smooth_critical([phi1, phi2], G_star, rho_star)
+    return {
+        'system': f'cone-point demo with eps = {epsilon}',
+        'G_star': G_star.tolist(),
+        'rho_star': rho_star,
+        **cls,
+    }
+
+
+def independent_two_species_demo() -> Dict:
+    """Two species branching INDEPENDENTLY, each critical Poisson.
+
+    phi_1(G) = exp(G_1 - 1),  phi_2(G) = exp(G_2 - 1).
+    At G_star = (1, 1), the Jacobian rho_star * J = I has eigenvalue
+    1 with algebraic and geometric multiplicity 2 — a multiple point
+    where two independent sheets of V cross transversally.
+
+    The right eigenvectors (1, 0) and (0, 1) are orthogonal, so the
+    crossing is maximally transverse — NOT a cone point.
+
+    Physical interpretation: two non-interacting branching processes
+    at simultaneous criticality.  Each sheet of V corresponds to one
+    of the species being critical.  The diagonal coefficient
+    [z^m] G_i(z, z) factors as a convolution of the two independent
+    species' generating functions, giving the same m^(-3/2) tail as
+    the single-species case (no log factor in this direction because
+    the non-interaction makes the two sheets independent after
+    diagonal projection).
+
+    This demonstrates that the multiple-point CLASSIFICATION is
+    correctly identified even when the physical consequences are
+    simple.
+    """
+    def phi1(G):  return np.exp(G[0] - 1.0)
+    def phi2(G):  return np.exp(G[1] - 1.0)
+
+    # Manually set the critical point (since fsolve might not find a
+    # unique one when there's a continuous family of critical points
+    # for independent species)
+    G_star = np.array([1.0, 1.0])
+    rho_star = 1.0
+
+    cls = classify_non_smooth_critical([phi1, phi2], G_star, rho_star)
+    return {
+        'system': 'two independent critical Poisson branching',
+        'G_star': G_star.tolist(),
+        'rho_star': rho_star,
+        **cls,
     }
 
 

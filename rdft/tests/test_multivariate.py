@@ -15,7 +15,55 @@ from rdft.ac.multivariate import (
     mean_matrix_at_origin, spectral_radius,
     find_critical_point_multivariate, classify_singular_point,
     diagonal_asymptotic_smooth, two_type_branching_demo,
+    classify_non_smooth_critical, independent_two_species_demo,
+    cone_point_demo,
 )
+
+
+class TestNonSmoothCriticalPoints:
+    """Extension: Pemantle-Wilson multiple-point and cone-point detection."""
+
+    def test_independent_two_species_is_multiple_point(self):
+        """Two independent critical Poisson branching processes produce
+        a multiple point: r=2 eigenvalues at 1 with orthogonal
+        eigenvectors (maximally transverse)."""
+        r = independent_two_species_demo()
+        assert r['classification'] == 'multiple_point'
+        assert r['multiplicity_r'] == 2
+        assert r['is_transverse']
+
+    def test_cone_point_detected(self):
+        """Contrived cone-point where eigenvectors are nearly parallel
+        gets flagged as 'cone_point', not 'multiple_point'."""
+        r = cone_point_demo(epsilon=0.01)
+        assert r['classification'] == 'cone_point'
+        assert r['multiplicity_r'] == 2
+        assert not r['is_transverse']
+
+    def test_smooth_still_classified_smooth(self):
+        """The existing smooth case (symmetric 2-type) should still
+        classify as 'smooth' under the extended classifier."""
+        import numpy as np
+        def phi1(G):
+            return np.exp(0.5 * (G[0] - 1) + 0.5 * (G[1] - 1))
+        def phi2(G):
+            return np.exp(0.5 * (G[0] - 1) + 0.5 * (G[1] - 1))
+        r = classify_non_smooth_critical([phi1, phi2],
+                                           np.array([1.0, 1.0]),
+                                           1.0)
+        # M = [[1/2, 1/2], [1/2, 1/2]] has spectrum {1, 0}, so only one
+        # eigenvalue is near 1.
+        assert r['classification'] == 'smooth'
+        assert r['multiplicity_r'] == 1
+
+    def test_multiple_point_provides_per_sheet_amplitudes(self):
+        r = independent_two_species_demo()
+        assert r['amplitude_per_sheet'] is not None
+        assert len(r['amplitude_per_sheet']) == 2
+
+    def test_cone_point_advice_mentions_non_universal(self):
+        r = cone_point_demo(epsilon=0.001)
+        assert 'non-universal' in r['advice'] or 'cone' in r['advice']
 
 
 class TestSpectralRadius:

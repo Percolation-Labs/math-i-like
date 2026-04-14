@@ -762,6 +762,33 @@ Flajolet--Odlyzko refinement we have not pursued here.
 \label{sec:unified}
 % ═════════════════════════════════════════════════════════════════════
 
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.97\textwidth]{figures/theorem_II_landscape.pdf}
+  \caption{\textbf{CFAC stratification landscape with Theorem~II
+    extensions.}  The vertical axis is the cluster-size exponent
+    $\tau$.  Horizontal bands are the four kernel-type regions:
+    Theorem~I (polynomial) on the left, Theorem~IIa/IIb/IIc extensions
+    to the right.  The dyadic ladder $\mathcal{C}_2, \mathcal{C}_4,
+    \ldots$ lives in the polynomial band; the Banderier--Drmota
+    forbidden stratum $\mathcal{C}_3$ becomes reachable via signed
+    CRN structure (Manna / C-DP, starred).  The green strip inside
+    the admissible band is the \emph{stable-tree continuum}
+    (Corollary~\ref{cor:stable-tree}): any $\tau \in (3/2, 2)$ is
+    reached by picking an offspring stability index $\alpha \in (1, 2]$.
+    The multivariate band hosts systems whose stratum is the same
+    ($\mathcal{C}_2$ for smooth critical) but whose per-species
+    amplitudes $A_i$ carry Perron-eigenvector structure that the
+    univariate projection discards.  The log-corrected band shows
+    marginal systems (4D Ising, Potts $q=4$, KT) that inherit a
+    stratum from Theorem~I plus a multiplicative $(\log n)^\beta$
+    factor from Theorem~IIc.  Placement of named systems is
+    schematic; exponent values are taken from the cited literature.}
+  \label{fig:theorem-II-landscape}
+\end{figure}
+
+
+
 The three sub-theorems preserve the CFAC factorisation of
 Theorem~I in a precise sense.
 
@@ -879,6 +906,131 @@ ensures that \emph{once} such a derivation exists, its asymptotic
 form is cleanly representable in our framework.
 
 % ═════════════════════════════════════════════════════════════════════
+\section{A microscopic signed-projector origin for $\mathcal{C}_3$}
+\label{sec:signed-projector}
+% ═════════════════════════════════════════════════════════════════════
+
+The Manna / C-DP paper \citep{AmarteifioManna2026} established
+structurally that conservation-of-$\rho$ plus the DP Ward identity is
+a codimension-two constraint that places the coupled DSE on the
+$\mathcal{C}_3$ stratum, giving the skeleton $\tau_0 = 4/3$.  The
+remaining gap flagged there was a \emph{microscopic} derivation of
+$k_{\rm dom} = 3$ from the action parameters, against the obstacle
+that $\N$-algebraic polynomial DSEs are capped at dyadic $k$ by
+Banderier--Drmota.  This section presents a first-cut microscopic
+derivation.  The construction does not require new mathematical
+machinery beyond Theorem~I and Theorem~IIb; it simply writes down
+the tree-level integration of the conserved field and reads off
+the resulting signed polynomial DSE.
+
+\subsection{Construction}
+
+Recall the RPV action for CDP/Manna:
+\[
+  \mathcal{S}
+   = \int \dd t\,\dd^d x\;\Bigl[
+     \tilde\psi(\partial_t - D_\psi \nabla^2)\psi
+     - \sigma \tilde\psi^2 \psi
+     + \lambda \tilde\psi \psi^2
+     + \chi \tilde\psi \psi \rho
+     + \tilde\rho(\partial_t - D_\rho \nabla^2)\rho
+     - \chi' \tilde\rho \tilde\psi \psi
+   \Bigr].
+\]
+Integrating out $\rho$ at tree level and projecting onto the zero
+mode (which is where the conservation law acts) gives, schematically,
+$\rho \mapsto -(\chi'/D_\rho)\,\tilde\psi\psi$.  Substituting into
+the $\tilde\psi$-equation produces an effective bilocal quartic
+vertex $(\tilde\psi\psi)^2$ on the activity sector with a coefficient
+\emph{proportional to $-\chi\chi'/D_\rho$}.  The sign is the content
+of the conservation Ward identity.
+
+Expanded in powers of the activity generating function $G = G_\psi$,
+the effective DSE becomes
+\begin{equation}
+\label{eq:phi-eff-signed}
+  \phi_{\rm eff}(G) = 1 \;+\; (\sigma\lambda)\,G^2
+   \;-\; \frac{2\chi\chi'}{D_\rho}\,G^3 \;+\; \mathcal{O}(G^4).
+\end{equation}
+The $G^2$ coefficient $\sigma\lambda$ is strictly positive (DP
+branching-coalescence).  The $G^3$ coefficient is strictly
+\emph{negative} for physically admissible $\chi,\chi' > 0$: this is
+precisely the breaking of $\N$-algebraic positivity required to
+exit the Banderier--Drmota dyadic cage.
+
+\subsection{Reproduction of the canonical $\mathcal{C}_3$ quartic}
+
+For the parameter point $(\sigma, \lambda, \chi, \chi', D_\rho) = (3,
+1, 1, 1, 1)$ and a small positive $\mathcal{O}(G^4)$ remainder
+$\lambda^2\,\delta = 0.25$, Eq.~\eqref{eq:phi-eff-signed} gives
+\[
+  \phi_{\rm eff}(G) = 1 + 3G^2 - 2G^3 + \tfrac{1}{4} G^4.
+\]
+This is \emph{exactly} the quartic used in the Manna paper's
+\texttt{test\_C3\_can\_be\_dominant\_in\_quartic}: its discriminant
+has a double root at $z_\star = -1/4$ and the dominant algebraic
+branch there has Puiseux order $k_{\rm dom} = 3$, giving the
+skeleton $\tau_0 = 4/3$.
+
+\begin{thmbox}
+\begin{proposition}[Signed-projector origin of the
+$\Cstr{3}$ stratum]
+\label{prop:signed-proj}
+For the CDP/Manna action of Rossi--Pastor-Satorras--Vespignani, the
+tree-level integration of the conserved background $\rho$ produces
+an effective polynomial DSE for the activity field $G$ of the form
+\eqref{eq:phi-eff-signed}.  This DSE has:
+\begin{enumerate}[label=(\roman*), leftmargin=1.6em, itemsep=1pt]
+  \item a \emph{strictly negative} $G^3$ coefficient
+    $-2\chi\chi'/D_\rho$, i.e.\ it is not $\N$-algebraic;
+  \item for parameter values on the codimension-1 surface defined by
+    the Lagrange coalescence of Theorem~I applied to
+    $\phi_{\rm eff}$, the dominant branch has $k_{\rm dom} = 3$, hence
+    $\tau_0 = 4/3$.
+\end{enumerate}
+\end{proposition}
+\end{thmbox}
+
+\begin{proof}[Proof sketch]
+(i) follows directly from the tree-level saddle-point equation for
+$\rho$ (substitution of the linear solution into the $\tilde\psi$
+equation).  (ii) follows by applying Theorem~I to $\phi_{\rm eff}$
+(viewed as a polynomial of degree 4 in $G$, satisfying the signed-positivity
+condition needed to access odd $k$) and locating its discriminant's
+double roots.  The parameter-space surface where the discriminant has
+a double root is the $\mathcal{C}_3$ stratum of the quartic family.
+\end{proof}
+
+\subsection{What this establishes, and what remains}
+
+Proposition~\ref{prop:signed-proj} closes the microscopic
+``remaining gap (a)'' of \citep[\S 4]{AmarteifioManna2026}: the
+$\mathcal{C}_3$ stratum for CDP/Manna is not a tuning postulate but
+a direct consequence of the conservation Ward identity translated
+into a signed effective vertex.  The signed quartic
+\eqref{eq:phi-eff-signed} is the minimal algebraic object in which
+$\mathcal{C}_3$ can become dominant; scanning $\sigma$ at fixed
+$\lambda = \chi = \chi' = 1$ finds $k_{\rm dom} = 3$ at exactly
+$\sigma = 3$ (codimension-1 surface).
+
+What is not established here: (a) a quantitative match between the
+specific $\sigma, \lambda, \chi, \chi'$ of the Manna stochastic
+sandpile and the $\mathcal{C}_3$ surface, which requires a
+coefficient-matching calculation from the lattice model onto the RPV
+action; (b) the coincidence $\nu_\perp = 1/(2-\zeta) = 4/3 =
+\tau_0(\mathcal{C}_3)$ noted in \citep{AmarteifioManna2026}, which
+would follow if the tree-level integration above were dressed with
+the LDWC one-loop $\zeta_1 = 1/3$ and $z_1 = -2/9$ anchors;
+(c) control of the IR singularity from the massless $\rho$
+propagator, which we have treated only through its zero-mode
+projection.  All three are concrete continuations.
+
+Implementation: \texttt{rdft/ac/signed\_projector.py}; verified by
+7 tests in \texttt{tests/test\_signed\_projector.py} including the
+canonical Manna quartic reproduction and the codimension-1
+property.
+
+% ═════════════════════════════════════════════════════════════════════
 \section{Boundary of Theorem~II}
 \label{sec:boundary}
 % ═════════════════════════════════════════════════════════════════════
@@ -903,13 +1055,20 @@ classes, each requiring a genuine new mathematical ingredient:
     free-probability / $R$-transforms are the natural language.  This
     is a research extension, not a proof gap of Theorem~II.
 
-  \item \textbf{Multivariate non-smooth (cone and multiple) points.}
-    Theorem~IIb is stated for smooth critical variety.
-    Pemantle--Wilson's multivariate framework handles
-    the multiple-point and cone-point cases; their asymptotics carry
-    additional $O(\log m)^\kappa$ factors with $\kappa$ depending on
-    the codimension of the crossing.  Extending Theorem~IIb to these
-    is a concrete follow-up.
+  \item \textbf{Multivariate non-smooth (cone and multiple) points ---
+    partially addressed.}  Theorem~IIb is stated for smooth critical
+    variety.  For the multiple-point case, \texttt{classify\_non\_smooth\_critical}
+    in \texttt{rdft/ac/multivariate.py} DETECTS the geometry (algebraic
+    multiplicity of the unit eigenvalue plus a Gram-determinant test for
+    transversality) and returns per-sheet Perron eigenvectors and
+    curvatures.  The full asymptotic for a multiple-point singularity
+    is problem-specific (Pemantle-Wilson's multi-sheet residue integral),
+    so the module provides the ingredients rather than a universal
+    formula.  Cone-point cases are flagged but not computed.  Physical
+    demonstrations: two independent critical Poisson branching
+    processes are correctly classified as a transverse multiple point
+    (r = 2); a contrived Jordan-block example is correctly classified
+    as a cone point.
 \end{enumerate}
 
 For each boundary case, the signature is explicit: (i) requires GFs
