@@ -439,6 +439,65 @@ for $\Nalg$ DSEs: the polynomial ansatz, even with the soft-mode
 quartic, does not encode the full Ward-identity structure that the
 codimension argument relies on.
 
+\paragraph{The full CFAC pipeline applied directly to the CDP action.}
+The stratification view above is one organisational tool;
+CFAC's main engine is the factorisation
+\begin{equation}\label{eq:cfac_factorise}
+  \text{1-loop contribution}
+  \;=\;
+  \underbrace{\text{counting}}_{\text{vertex algebra}}
+  \times
+  \underbrace{\text{bridge}}_{\text{analytic, mass-indep.}}
+  \times
+  \underbrace{\text{algebra}}_{\Gamma\text{-functions}},
+\end{equation}
+applied diagram-by-diagram.  This is the pipeline that reproduced
+LDWC's two-loop FRG roughness coefficient and the Wilson--Fisher
+O($N$) anomalous dimension; we now apply it directly to the
+CDP/Manna action.
+
+The activity self-energy at one loop has \emph{two} diagrams in the
+RPV action:
+\begin{enumerate}[label=(\alph*),leftmargin=1.4em,itemsep=1pt]
+  \item \emph{DP loop}: vertex pair $(\sigma, \lambda)$, internal
+    $G_\psi G_\psi$.
+    Counting $= \sigma\lambda$.  Bridge $= B_{\rm scalar} = 1$
+    (mass-independent residue of the standard scalar bubble).
+    Algebra: standard 1-loop pole.
+  \item \emph{Soft-mode loop}: vertex pair $(\chi, \chi')$, internal
+    $G_\psi G_\rho$.
+    Counting $= \chi\chi'$.  Bridge $=
+    B_{\rm grad-mass}(D_\psi, D_\rho) = \ln(r)/(r-1)$ with
+    $r = D_\psi/D_\rho$ (the SAME bridge as Keller--Segel
+    chemotaxis~\citep[\texttt{one\_loop\_KS}]{bridge.py}).
+    Algebra: standard 1-loop pole.
+\end{enumerate}
+The two contributions sum to give $\Sigma_\psi(p{=}0) = (\sigma\lambda
+\cdot 1 + \chi\chi'\cdot f(r))/(8\pi^2)$ per $1/\eps$ at $d_c = 4$.
+The CDP-specific shift
+\begin{equation}\label{eq:cdp_shift}
+  \Sigma_{\rm CDP} - \Sigma_{\rm DP} = \chi\chi'\cdot f(r)/(8\pi^2)
+\end{equation}
+is positive (since $f(r) > 0$) and \emph{depends only on the
+diffusion ratio} via the bridge function.
+
+This is implemented in \texttt{rdft/ac/manna\_full.py} and verified
+in \texttt{tests/test\_manna\_full.py}: 13 tests confirm the
+factorisation, bridge identifications, and structural prediction
+that $\eta_{\rm CDP} > \eta_{\rm DP}$.
+
+\paragraph{Quantitative limitation in $d=1$.}
+The 1-loop CFAC machinery applied here gives the right
+\emph{structure} (CDP shifted from DP by the soft-mode bridge
+contribution) but not the right \emph{numbers} in $d=1$, because
+$\eps = 3$ is too large for unresummed perturbation theory.
+Absolute predicted $\tau$ values at one loop are unreliable in 1+1d
+(test \texttt{test\_d1\_predictions\_quantitatively\_off}); the
+result is qualitatively correct (positive shift) but quantitatively
+needs higher-loop or Pad\'e/Borel resummation to reach the observed
+$\tau \approx 1.30$.  This is a generic feature of $\eps$-expansion
+in low dimensions, not a CFAC-specific limitation.
+
 \paragraph{The remaining gap.}
 Two pieces of the slotting are now present: the codimension
 argument (Proposition~\ref{prop:codim}, structural) and the
