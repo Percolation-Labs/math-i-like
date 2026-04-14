@@ -727,11 +727,15 @@ the topology of $\Psi_{\text{sun}}$ and the cancellation above.}
 
 \begin{remark}[Long-range elasticity, $\alpha=1$]
 For long-range elasticity (propagator $\sim 1/q^\alpha$ with
-$\alpha=1$), the amplitude that multiplies $J_{2+3}$ carries an
-extra factor that breaks the $\beta \leftrightarrow 1/\beta$
-symmetry.  The $-\ln 2$ does not appear, leaving
-$X^{(1)} = \ln 2$ (transcendental, but still determined by
-$\Psi_{\text{sun}}$, not a free ODE integral).
+$\alpha=1$), the hat-diagram propagator exponents become
+$(n_0, n_1, n_2) = (\tfrac{1}{2}, 1, \tfrac{1}{2})$ (LDWC
+eq.~III.59).  The Schwinger numerator becomes
+$N(\alpha) = 1/[\pi\sqrt{\alpha_0\alpha_2}]$ rather than $\beta$,
+and the $\beta\leftrightarrow 1/\beta$ symmetry is broken
+by the square-root factor.  Evaluating the sector decomposition
+gives $X^{(1)} = 4\ln 2$~\citep[eq.~III.62]{LDWC2002}, and
+assembly reproduces $c^{\rm LR} = 4\ln 2/(9\sqrt{2}\gamma)
+\approx 0.39735$ (LDWC eq.~IV.19).
 The residual count remains $\Nres = 1$.
 \end{remark}
 
@@ -922,12 +926,20 @@ derivation chain is verified by a passing pytest class
 \label{sec:open}
 % ==================================================================
 
-\paragraph{Short-range case: $\Nres = 1$, $X^{(1)} = \ln 2$.}
-The period integral of $1/\Psi_{\text{sun}}$ over the standard
-simplex is $\ln 2$ --- a single transcendental, still in the
-residual list but now topological.  Computing it from
-$\Psi_{\text{sun}}$ directly (without quoting LDWC) is a one-line
-extension of Proposition~\ref{prop:J1}.
+\paragraph{Cross-checks on other published results.}
+The pipeline passes three independent checks against published
+2-loop values:
+(i) long-range elasticity $\alpha=1$: $X^{(1)} = 4\ln 2$ gives
+$c^{\rm LR} = 0.39735$ (LDWC eq.~IV.19);
+(ii) periodic (CDW) case: $\Nres = 0$, pipeline returns the
+rational $\Delta^*(u) = \eps/36 + \eps^2/108 - (\eps/6+\eps^2/9)u(1{-}u)$
+and dynamical exponent $z = 2 - \eps^2/9$ (LDWC eqs.~IV.32,~IV.45);
+(iii) Wilson--Fisher O($N$) $\phi^4$ anomalous dimension at
+2~loops: same pipeline (with Schwinger numerator $N(\alpha)=1$
+in place of $\beta$) reproduces $\eta = (N{+}2)/(2(N{+}8)^2)\eps^2$
+\citep{KleinertSchulte-Frohlinde,ZinnJustin}.
+None of these checks involve retuning the pipeline; they differ
+only in propagator exponents and vertex combinatorics.
 
 \paragraph{Three loops.}
 At three loops the ``Mercedes'' diagram has no cut vertex and a more
@@ -976,6 +988,16 @@ diagrams (Euler characteristic argument).
   Zimmermann, W., 1969.
   Convergence of Bogoliubov's method of renormalization in momentum space.
   \textit{Commun.\ Math.\ Phys.} \textbf{15}, 208.
+
+\bibitem[Kleinert and Schulte-Frohlinde(2001)]{KleinertSchulte-Frohlinde}
+  Kleinert, H.\ and Schulte-Frohlinde, V., 2001.
+  \textit{Critical Properties of $\phi^4$-Theories}.
+  World Scientific, Singapore.
+
+\bibitem[Zinn-Justin(2002)]{ZinnJustin}
+  Zinn-Justin, J., 2002.
+  \textit{Quantum Field Theory and Critical Phenomena}, 4th ed.
+  Oxford University Press.
 
 \end{thebibliography}
 
