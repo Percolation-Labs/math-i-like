@@ -84,8 +84,13 @@ The prefactor $9\sqrt{2}$ is recovered from the one-loop
 fixed-point amplitude $\Delta'(0^+) = -\eps/3$.  The only residual
 1D integral is $\gamma = \int_0^1\sqrt{y - \ln y - 1}\,\dd y
 \approx 0.5482$.  Assembly reproduces $c = 1/(9\sqrt{2}\gamma)
-= 0.14331$.  The purpose is expository: CFAC as a lens on a
-known FRG calculation, not a shortcut to new physics.
+= 0.14331$.  The same pipeline, run without retuning, also
+reproduces the LDWC long-range coefficient ($c^{\rm LR}=0.39735$),
+the periodic CDW fixed point exactly (no residual integral),
+and the Wilson--Fisher O($N$) anomalous dimension
+$\eta = (N{+}2)/[2(N{+}8)^2]\eps^2$ at two loops.
+The purpose is expository: CFAC as a lens on known FRG (and
+$\phi^4$) calculations, not a shortcut to new physics.
 \end{abstract}
 
 \tableofcontents
@@ -882,6 +887,62 @@ derivation chain is verified by a passing pytest class
 \end{enumerate}
 
 % ==================================================================
+\section{Cross-checks against other published 2-loop results}
+\label{sec:crosschecks}
+% ==================================================================
+
+To guard against the possibility that the pipeline exploits
+LDWC-specific structure rather than genuine combinatorics, we
+applied the same machinery (causal-contraction / bridge filters,
+Symanzik polynomial, BPHZ multiplicity, sector decomposition,
+assembly from the one-loop fixed point) to three further
+published 2-loop calculations.  Each passes without
+pipeline-level retuning.
+
+\paragraph{(i) LDWC long-range elasticity, $\alpha=1$.}
+Hat-diagram propagator exponents become $(\tfrac{1}{2}, 1,
+\tfrac{1}{2})$, so the Schwinger numerator changes from
+$N(\alpha)=\beta$ to $N(\alpha) = 1/[\pi\sqrt{\alpha_0\alpha_2}]$.
+The $\beta\leftrightarrow 1/\beta$ symmetry is broken by the
+square-root factor, so the $\ln 2$ terms no longer cancel;
+sector decomposition gives $X^{(1)} = 4\ln 2$ (LDWC
+eq.~III.62).  Assembly with the unchanged $9\sqrt{2}\gamma$
+prefactor reproduces $c^{\rm LR} = 4\ln 2/(9\sqrt{2}\gamma)
+\approx 0.39735$, matching LDWC eq.~IV.19.
+
+\paragraph{(ii) LDWC periodic (CDW) case.}
+The periodic fixed-point equation (LDWC eq.~III.63) is solved
+exactly by a polynomial in $u$, so the one-loop ODE drops out
+and $\Nres = 0$.  Pipeline output is pure $\mathbb{Q}[\eps]$:
+$\Delta^*(u) = \eps/36 + \eps^2/108 - (\eps/6 + \eps^2/9)u(1{-}u)$
+(LDWC eq.~IV.32) and dynamical exponent $z = 2 - \eps^2/9$
+(LDWC eq.~IV.45).  The factor $1/9 = \zeta_1^{-2}$ is the same
+as in the depinning case, confirming that the prefactor
+derivation is structural.
+
+\paragraph{(iii) Wilson--Fisher O($N$) $\phi^4$ anomalous dimension.}
+Outside the FRG framework entirely: the 2-loop anomalous
+dimension of the O($N$) $\phi^4$ theory in $d = 4-\eps$ comes from
+$(\partial/\partial p^2)\Sigma_{\rm sun}|_{p=0}$.  Same hat
+topology, same $\Psi_{\rm sun}$, but all propagator exponents
+$n_e = 1$, so Schwinger numerator $N(\alpha) = 1$.  BPHZ
+multiplicity $K_{\rm sun}|_{\alpha=1} = 3$ is unchanged.
+Combined with the O($N$) index algebra, the pipeline yields
+$\eta = (N{+}2)/[2(N{+}8)^2]\,\eps^2$
+\citep{KleinertSchulte-Frohlinde,ZinnJustin}.
+This rules out the ``LDWC-fluke'' hypothesis: the pipeline
+depends on graph topology and propagator exponents, not on
+the physical interpretation of the underlying theory.
+
+\paragraph{Summary.}
+Across four independent 2-loop calculations (short-range
+depinning, long-range depinning, periodic CDW, $\phi^4$ O($N$)
+anomalous dimension), the pipeline's output is set entirely by
+the Symanzik polynomial, the propagator exponents, and the
+one-loop fixed-point normalisation.  No case requires a new
+integral beyond the residual list.
+
+% ==================================================================
 \section{What is and is not claimed}
 \label{sec:claims}
 % ==================================================================
@@ -925,21 +986,6 @@ derivation chain is verified by a passing pytest class
 \section{Open directions}
 \label{sec:open}
 % ==================================================================
-
-\paragraph{Cross-checks on other published results.}
-The pipeline passes three independent checks against published
-2-loop values:
-(i) long-range elasticity $\alpha=1$: $X^{(1)} = 4\ln 2$ gives
-$c^{\rm LR} = 0.39735$ (LDWC eq.~IV.19);
-(ii) periodic (CDW) case: $\Nres = 0$, pipeline returns the
-rational $\Delta^*(u) = \eps/36 + \eps^2/108 - (\eps/6+\eps^2/9)u(1{-}u)$
-and dynamical exponent $z = 2 - \eps^2/9$ (LDWC eqs.~IV.32,~IV.45);
-(iii) Wilson--Fisher O($N$) $\phi^4$ anomalous dimension at
-2~loops: same pipeline (with Schwinger numerator $N(\alpha)=1$
-in place of $\beta$) reproduces $\eta = (N{+}2)/(2(N{+}8)^2)\eps^2$
-\citep{KleinertSchulte-Frohlinde,ZinnJustin}.
-None of these checks involve retuning the pipeline; they differ
-only in propagator exponents and vertex combinatorics.
 
 \paragraph{Three loops.}
 At three loops the ``Mercedes'' diagram has no cut vertex and a more
