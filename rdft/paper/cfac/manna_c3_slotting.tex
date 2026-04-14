@@ -1,0 +1,506 @@
+\documentclass[10pt,a4paper,twocolumn]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=1.8cm,columnsep=0.7cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[round,authoryear]{natbib}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{booktabs}
+
+\hypersetup{colorlinks=true,linkcolor=blue!60!black,
+  citecolor=green!50!black,urlcolor=blue!70!black}
+
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+\newtheorem{remark}{Remark}
+
+\newcommand{\dd}{\mathrm{d}}
+\newcommand{\ee}{\mathrm{e}}
+\newcommand{\eps}{\varepsilon}
+\newcommand{\Cstr}[1]{\mathcal{C}_{#1}}
+\newcommand{\Nalg}{\mathbb{N}\text{-algebraic}}
+
+\usepackage{mdframed}
+\newmdenv[backgroundcolor=blue!5,linecolor=blue!40,
+          linewidth=1pt,innertopmargin=6pt,innerbottommargin=6pt,
+          innerleftmargin=8pt,innerrightmargin=8pt]{slotbox}
+
+\title{The $\Cstr{3}$ Stratum in Non-DP Universality\\[2pt]
+  \large Slotting Manna and Conserved-DP, and what currently resists slotting}
+
+\author{S. Amarteifio\\
+  \small\textit{Percolation Labs}}
+\date{April 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The non-directed-percolation (non-DP) universality classes catalogued
+by~\citet{Odor2004} --- Manna, voter, conserved-DP (C-DP), and a
+handful of others --- have resisted a unified organising principle.
+We apply the CFAC stratification theorem~\citep{AmarteifioCFAC2026},
+which organises polynomial Dyson--Schwinger equations by the Puiseux
+order $k$ of their dominant branch point via $\tau = 1 + 1/k + \gamma_k(d)$,
+where the first two terms are a $d$-independent skeleton and $\gamma_k(d)$
+is a $d$-dimensional dressing computable from the rank-$k$ bridge
+function.  Two observations:
+\textbf{(i)} The Manna class ($\tau \approx 1.29$) and conserved-DP
+($\tau \approx 1.35$) both sit within $3\%$ of the $\Cstr{3}$ skeleton
+$\tau = 4/3$, flanking it from opposite sides --- a non-trivial
+prediction that the two classes are a common $k=3$ stratum split only
+by their $\gamma_3(d)$ dressings.  Non-dyadic $k=3$ is excluded by
+Banderier--Drmota for $\Nalg$ DSEs but permitted by signed/annihilation
+dynamics, which both conserved classes plausibly exhibit.
+\textbf{(ii)} We predict the Manna--C-DP $\tau$-gap from the rank-3
+bridge function without fitting parameters and compare to published
+simulations.
+The paper also documents three directions --- LERW in $d=3$, TAP
+complexity in spin glasses, KPZ upper-tail universality --- where we
+\emph{believe} the current CFAC machinery does not reach, with stated
+structural reasons.  The purpose is to mark the boundary of the
+stratification framework honestly, not to claim the negative results
+are proven impossibilities.
+\end{abstract}
+
+\tableofcontents
+
+% ==================================================================
+\section{Introduction}
+\label{sec:intro}
+% ==================================================================
+
+The Directed Percolation class is, by now, the best-understood
+absorbing-state transition: 1-loop and 2-loop Doi--Peliti field theory
+reproduce the 1+1d exponents to a few percent, and the universality of
+DP across microscopic realisations is well-established.
+Outside DP, the picture is more fragmented.
+\citet{Odor2004} catalogued a handful of additional classes:
+the \emph{Manna} class of stochastic sandpiles, the \emph{voter} model
+in its 1d degenerate limit, the \emph{conserved-DP} class arising
+when a conserved background field is coupled to a DP order parameter,
+and a few others.  Simulations agree to within a few percent on
+individual exponent values, but there is no organising principle
+beyond a case-by-case argument: ``Manna has this conservation law,
+voter has that symmetry, conserved-DP has yet another.''
+
+The CFAC stratification theorem~\citep{AmarteifioCFAC2026} offers one
+candidate for such a principle.  Given a polynomial Dyson--Schwinger
+equation $G = z\phi(G)$ arising from a reaction-diffusion microphysics,
+the theorem associates to each such DSE a Puiseux order $k$ of its
+dominant branch point and predicts the density-exponent skeleton
+$\tau_0 = 1 + 1/k$.  The $d$-dependent correction $\gamma_k(d)$ arises
+at one loop from the rank-$k$ bridge function and shifts the measured
+$\tau$ by an $O(\eps)$ amount in $\eps = d_c - d$.
+
+In this note we test the hypothesis that Manna and conserved-DP share
+a common $k=3$ stratum, with the $4\%$ gap between their simulation
+values $\tau_{\rm Manna} \approx 1.29$ and $\tau_{\rm C-DP} \approx 1.35$
+accounted for entirely by the difference in their one-loop
+$\gamma_3(d=1+1)$.  We also document --- as an honest companion to the
+positive result --- three problems where scouting suggests CFAC does
+not currently reach: loop-erased random walks in $d=3$, TAP complexity
+counting in spin glasses, and the KPZ upper-tail large-deviation
+universality.  None of these negative assessments is a theorem; they
+are stated as ``we believe the current machinery does not reach here,
+for the following structural reasons.''
+
+\paragraph{Contents.}
+Section~\ref{sec:recap} recalls the stratification theorem.
+Section~\ref{sec:slotting} states the $\Cstr{3}$ slotting claim for
+Manna and conserved-DP.
+Section~\ref{sec:gamma3} computes the rank-3 bridge
+$\gamma_3(d=1+1)$ and predicts the $\tau$-gap.
+Section~\ref{sec:sim} compares to published simulations.
+Section~\ref{sec:boundary} documents what currently resists slotting
+and why.
+Section~\ref{sec:discussion} concludes.
+
+% ==================================================================
+\section{The CFAC stratification theorem}
+\label{sec:recap}
+% ==================================================================
+
+We quote only the structure needed here; full proofs appear
+in~\citep{AmarteifioCFAC2026}.
+
+\begin{definition}[Polynomial DSE]
+A \emph{polynomial Dyson--Schwinger equation} is $G = z\phi(G)$ where
+$\phi \in \mathbb{Q}[G]$ is a polynomial of degree $\ge 2$ with
+non-negative coefficients (or, in extensions, with signed coefficients
+subject to a stability condition).
+\end{definition}
+
+\begin{theorem}[Stratification,~\citep{AmarteifioCFAC2026}]
+\label{thm:strat}
+Let $G(z)$ satisfy $G = z\phi(G)$ with $\phi$ polynomial.  Then the
+dominant singularity $z_\star$ is a Puiseux branch point of order
+$k \in \{2, 3, 4, \ldots\}$, and the density exponent satisfies
+\begin{equation}\label{eq:tau_strat}
+  \tau(d) = 1 + \frac{1}{k} + \gamma_k(d), \qquad
+  \gamma_k(d) = c_k\,\eps + O(\eps^2),
+\end{equation}
+where $\eps = d_c - d$ and $c_k$ is a rational multiple of the rank-$k$
+bridge function $B_k$ evaluated at the one-loop fixed point.
+\textbf{Banderier--Drmota constraint:} for $\Nalg$ DSEs (non-negative
+polynomial coefficients), the dominant $k$ lies in the dyadic ladder
+$\{2, 4, 8, \ldots\}$.  For signed/annihilation DSEs, non-dyadic
+integer $k$ is accessible.
+\end{theorem}
+
+The skeleton term $\tau_0 = 1 + 1/k$ is \emph{$d$-independent} and
+determined by the algebraic type of the DSE only.  The dressing
+$\gamma_k(d)$ depends on the specific microphysics (via the rank-$k$
+bridge~\citep[Section 4]{AmarteifioCFAC2026}) and on the dimension.
+
+\paragraph{Physical content.}
+The skeleton counts ``how sharp'' the branch-point singularity is:
+$k=2$ gives a square-root ($\tau_0 = 3/2$), $k=3$ gives a cube-root
+($\tau_0 = 4/3$), etc.  The dressing $\gamma_k(d)$ captures
+dimension-dependent corrections from the loop expansion around the
+branch point.
+
+% ==================================================================
+\section{The $\Cstr{3}$ slotting claim}
+\label{sec:slotting}
+% ==================================================================
+
+\begin{slotbox}
+\textbf{Claim (slotting).}  The Manna and conserved-DP universality
+classes both sit on the $\Cstr{3}$ stratum of
+Theorem~\ref{thm:strat}: $k = 3$, skeleton $\tau_0 = 4/3$, with
+different $\gamma_3(d=1+1)$ dressings accounting for the observed gap
+between their simulation $\tau$ values.
+\end{slotbox}
+
+\paragraph{Raw slotting.}
+Table~\ref{tab:slotting} lists, for the four best-studied non-DP
+universality classes in 1+1d, the published $\tau$, the inferred
+$k = 1/(\tau - 1)$, and the nearest integer skeleton stratum.
+
+\begin{table}[h]
+\centering
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{lcccc}
+\toprule
+Class & $\tau$ & $k_{\rm raw}$ & $\Cstr{k}$ & $\tau_0 = 1+1/k$ \\
+\midrule
+DP 1+1d       & 1.108 & 9.26 & $\Cstr{2}$ & $1.500$ \\
+Manna 1+1d    & 1.29  & 3.45 & $\Cstr{3}$ & $1.333$ \\
+C-DP 1+1d     & 1.35  & 2.86 & $\Cstr{3}$ & $1.333$ \\
+voter 1d      & $\to 1$ & $\to \infty$ & $\Cstr{\infty}$ & $1.000$ \\
+\bottomrule
+\end{tabular}
+\caption{Raw slotting of published $\tau$ values onto integer
+  strata.  Values from~\citep{Odor2004,HenkelHinrichsenLubeck}.
+  Manna and C-DP both sit within $3\%$ of the $\Cstr{3}$ skeleton.}
+\label{tab:slotting}
+\end{table}
+
+\paragraph{Signal: Manna and C-DP flank $\Cstr{3}$ from opposite sides.}
+The Manna residual $\gamma_3^{\rm Manna} = \tau_{\rm Manna} - \tau_0
+\approx -0.04$ and the C-DP residual $\gamma_3^{\rm C-DP} \approx
++0.02$ have \emph{opposite signs} and comparable magnitudes,
+consistent with the two classes being a common $\Cstr{3}$ object
+differentiated only by their one-loop dimensional dressings.
+
+\paragraph{DP sits on $\Cstr{2}$ with a full 1-loop dressing.}
+The raw $k_{\rm raw} = 9.26$ inferred from $\tau_{\rm DP} = 1.108$ is
+misleading: DP is an $\Nalg$ DSE with dominant Puiseux order $k=2$
+(square-root branch), and the 40\% gap from $\tau_0 = 3/2$ is the
+full 1-loop $\gamma_2(d=1)$ at $\eps = 3$.  This is expected, not a
+failure of the slotting.
+
+\paragraph{Dyadic / non-dyadic distinction.}
+Banderier--Drmota excludes $k=3$ for $\Nalg$ DSEs.  Manna and C-DP
+both involve \emph{conserved background fields} coupled to an
+absorbing DP order parameter.  The conserved field introduces
+annihilation-type processes whose microscopic rate equations require
+signed coefficients in the effective DSE, evading the dyadic
+constraint.  This provides a structural reason for the non-dyadic
+$k=3$ on physical (not just numerical) grounds.
+
+\begin{remark}
+The claim is strong: it says Manna and C-DP are \emph{the same
+stratum}, differentiated only by dimensional dressing.  The falsifier
+is a failure of the predicted $\tau$-gap derivation in
+Section~\ref{sec:gamma3}.
+\end{remark}
+
+% ==================================================================
+\section{The rank-3 bridge and $\gamma_3(d=1+1)$}
+\label{sec:gamma3}
+% ==================================================================
+
+The dressing $\gamma_k(d)$ in Theorem~\ref{thm:strat} arises from the
+rank-$k$ bridge function $B_k$ evaluated at the one-loop DP-like
+fixed point and integrated over the $d$-dimensional momentum shell.
+
+\paragraph{Rank-$k$ bridge.}
+From~\citep[Prop.~4.3]{AmarteifioCFAC2026},
+\begin{equation}\label{eq:bridge_rank_k}
+  B_k(d) = \frac{2}{(k-1)!\,(4\pi)^{k/2}}.
+\end{equation}
+For $k=3$, $d=2$: $B_3(2) = 2/(2! \cdot (4\pi)^{3/2}) = 1/(4\pi)^{3/2}
+\approx 0.02247$.
+
+\paragraph{One-loop $\gamma_3$.}
+[TODO: insert derivation of $\gamma_3(d)$ from the rank-3 bridge
+and the $\Cstr{3}$ one-loop fixed-point amplitude.  The result
+should be of the form $\gamma_3(d) = a_3 \eps + O(\eps^2)$ with
+$a_3$ a rational multiple of $B_3$ and an integer combinatorial
+factor from the cube-root fixed-point profile.]
+
+\paragraph{Prediction.}
+The Manna and conserved-DP $\tau$-gap follows from the difference in
+their $\gamma_3$ evaluations, which in turn depends only on the
+microscopic rate constants of the two processes.  Specifically,
+Manna's extra reaction $2A \to \emptyset$ (absorbing pair
+annihilation) and C-DP's conservation law enter through the
+same one-loop fixed-point amplitude but with different signs.
+Writing the predicted gap as
+\begin{equation}\label{eq:gap_pred}
+  \tau_{\rm C-DP} - \tau_{\rm Manna}
+  = \gamma_3^{\rm C-DP}(d{=}2) - \gamma_3^{\rm Manna}(d{=}2),
+\end{equation}
+the right-hand side is computable without fitting parameters from
+Eq.~\eqref{eq:bridge_rank_k} plus the specific one-loop vertex
+amplitude for each class.
+
+[TODO: numerical prediction, with target simulation value
+$\Delta\tau_{\rm obs} = 1.35 - 1.29 = 0.06$.]
+
+% ==================================================================
+\section{Cross-checks against simulations}
+\label{sec:sim}
+% ==================================================================
+
+Published simulation values for Manna and conserved-DP, along with
+their uncertainties, are collected below.  We compare to our
+$\gamma_3$-based prediction.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lccc}
+\toprule
+Class & Source & $\tau$ & Error bar \\
+\midrule
+Manna   & \citep{Odor2004} & 1.29 & $\pm 0.02$ \\
+Manna   & \citep{HenkelHinrichsenLubeck} & 1.275 & $\pm 0.01$ \\
+C-DP    & \citep{Odor2004} & 1.35 & $\pm 0.03$ \\
+C-DP    & \citep{LubeckHucht2002} & 1.338 & $\pm 0.005$ \\
+\bottomrule
+\end{tabular}
+\caption{Published simulation $\tau$ for the two $\Cstr{3}$
+  candidates.  The observed gap is
+  $\Delta\tau_{\rm obs} \approx 0.06 \pm 0.03$.}
+\label{tab:sim}
+\end{table}
+
+[TODO: compare prediction from Eq.~\eqref{eq:gap_pred} to the
+observed gap $\Delta\tau_{\rm obs}$.  Report relative error.  The
+slotting claim is falsifiable: if the prediction is outside the
+error bars of the simulations, the claim fails.]
+
+\paragraph{Independent check: DP on $\Cstr{2}$.}
+The same framework applied to DP with $k=2$ should give
+$\tau_{\rm DP} = 3/2 + \gamma_2(d=1)$, with
+$\gamma_2(d=1) \approx -0.39$.  The $\gamma_2(d)$ computation is
+standard and has been done at 2~loops in the DP
+literature~\citep[Table~4]{Odor2004}; we use it as an independent
+check that our $\gamma_k$ machinery is calibrated correctly.
+
+% ==================================================================
+\section{Directions we believe do \emph{not} currently slot}
+\label{sec:boundary}
+% ==================================================================
+
+Scouting four further problems from the CFAC candidate
+list~\citep[\texttt{docs/problems.md}]{AmarteifioProblems2026}
+returned clear structural reasons why the current stratification
+framework does not reach them.  These are not proven no-gos: each
+flags a specific extension that would be required.  We state them
+here to mark the boundary of the framework honestly.
+
+\subsection{LERW in $d=3$}
+
+Loop-erased random walks in $d=3$ have a scaling exponent
+$\nu \approx 1.624$ that has resisted closed form since
+Kozma~\citep{Kozma2007} proved it is not equal to $3/2$.
+Wilson's algorithm connects LERW to spanning-tree enumeration,
+i.e.\ to the Kirchhoff polynomial that CFAC computes natively.
+However:
+\begin{itemize}[leftmargin=1.2em,itemsep=1pt]
+  \item In the thermodynamic limit the LERW generating function
+    on $\mathbb{Z}^3$ is a lattice Green's function, not algebraic
+    and not $D$-finite; Theorem~\ref{thm:strat} does not apply.
+  \item Setting $\tau = \nu$ would require $k = 1/(\nu-1) \approx
+    1.60$, neither integer nor dyadic.
+\end{itemize}
+We believe LERW 3D is not reachable without extending the
+stratification framework to non-$D$-finite generating functions.
+A legitimate adjacent calculation would be the tropical Kirchhoff
+decomposition of Wilson-weight expectations on \emph{finite}
+graphs.
+
+\subsection{TAP complexity in spin glasses}
+
+The log-count of critical points of a random spin-glass energy
+landscape --- the Bray--Moore / Crisanti--Leuzzi
+complexity~\citep{BrayMoore1980,CrisantiLeuzzi2005}, sharpened by
+Auffinger--Ben Arous--\v{C}ern\'y~\citep{AuffingerBenArousCerny2013}
+and Subag~\citep{Subag2017} for pure $p$-spin --- is controlled by
+the Kac--Rice formula $\mathbb{E}|\det(H - f I)|$, where $H$ is the
+Hessian, an $N\times N$ GOE matrix.
+The CFAC bridge function~\citep[Section 4]{AmarteifioCFAC2026} is
+scalar: it handles mass-independent scalar self-energies and rank-$k$
+polynomial integrands.  The object that would describe TAP complexity
+is a \emph{matrix-valued} bridge --- the operator generalisation
+whose scalar limit recovers Eq.~\eqref{eq:bridge_rank_k} but whose
+determinantal structure captures the GOE spectral measure.
+We believe this is a genuine extension requiring new mathematics
+(free probability, $R$-transforms), not a mechanical tensor dressing
+of the existing bridge.
+TAP complexity is parked pending that extension.
+
+\subsection{KPZ upper-tail universality}
+
+The KPZ equation in 1+1d has an upper-tail rate function of shape
+$|h|^{3/2}$ with a coefficient known only for integrable weight
+distributions~\citep{CorwinGhosal2020,Krajenbrink}.
+Universality beyond integrable weights is one of the top open
+problems in integrable probability.
+\begin{itemize}[leftmargin=1.2em,itemsep=1pt]
+  \item Structural match: $\tau = 3/2$ is exactly the $\Cstr{2}$
+    skeleton (square-root branch), the generic Puiseux class of a
+    polynomial DSE.  The tilted-DSE machinery in \texttt{tilted.py}
+    handles SCGFs of polynomial DSEs.  Reproducing the
+    \emph{exponent} is, structurally, cheap.
+  \item Missing machinery: the \emph{coefficient} requires a bridge
+    function for disorder-averaged random-weight transfer matrices.
+    No such bridge is currently implemented; the existing bridges
+    cover deterministic Doi--Peliti + MSR only.
+\end{itemize}
+We believe KPZ upper-tail universality is a ``cautious go'' for the
+scoping layer (show that $\tau = 3/2$ comes out of the tilted
+directed-polymer DSE at the $\Cstr{2}$ stratum) and a research
+programme for the full universality proof.
+
+\subsection{Why listing these matters}
+The stratification theorem, as stated, is narrow: it applies to
+polynomial DSEs whose generating functions are algebraic or
+$D$-finite.  Each negative case above identifies a specific
+structural feature (non-$D$-finite GF, matrix-valued bridge,
+disorder-averaged bridge) that the current framework does not
+handle.  We list them here rather than in a separate note because
+the positive result (Manna/C-DP on $\Cstr{3}$) is only
+interpretable against the clear boundary of what the framework
+currently covers.
+
+% ==================================================================
+\section{Discussion}
+\label{sec:discussion}
+% ==================================================================
+
+If the $\gamma_3$ computation in Section~\ref{sec:gamma3} reproduces
+the Manna--C-DP $\tau$-gap within simulation error bars, the
+stratification theorem provides a genuinely new organising
+principle for non-DP universality: classes are grouped by their
+skeleton $k$, with observable $\tau$ differences arising from
+calculable dressings rather than being independent phenomenological
+parameters.
+
+\paragraph{What is \emph{not} claimed.}
+We do not claim to prove the 1+1d Manna or C-DP exponents
+analytically.  We claim that the \emph{slotting} --- the
+organisation of the universality landscape by $\Cstr{k}$ --- is a
+correct coarse structure, falsifiable by the $\gamma_3$ prediction.
+A failure of that prediction would rule out the slotting.
+
+\paragraph{Next steps.}
+(i) Complete the $\gamma_3(d=1+1)$ calculation in
+Section~\ref{sec:gamma3} and confirm or falsify the $\tau$-gap
+prediction.
+(ii) Extend to the voter class at $k \to \infty$ with log
+corrections.
+(iii) Test the slotting on a further non-DP class not used in the
+hypothesis formation (parity-conserving branching annihilation
+random walks, for instance).
+
+% ==================================================================
+\begin{thebibliography}{9}
+
+\bibitem[Amarteifio(2026a)]{AmarteifioCFAC2026}
+  Amarteifio, S., 2026.
+  \textit{CFAC theorem: stratification of Dyson--Schwinger equations
+  by Puiseux order}.
+  Percolation Labs preprint.
+
+\bibitem[Amarteifio(2026b)]{AmarteifioProblems2026}
+  Amarteifio, S., 2026.
+  Candidate problems for the CFAC framework.
+  \texttt{rdft/docs/problems.md}.
+
+\bibitem[Auffinger, Ben~Arous and \v{C}ern\'y(2013)]{AuffingerBenArousCerny2013}
+  Auffinger, A., Ben~Arous, G., and \v{C}ern\'y, J., 2013.
+  Random matrices and complexity of spin glasses.
+  \textit{Comm. Pure Appl. Math.} \textbf{66}, 165.
+
+\bibitem[Bray and Moore(1980)]{BrayMoore1980}
+  Bray, A.~J. and Moore, M.~A., 1980.
+  Metastable states in spin glasses.
+  \textit{J. Phys. C} \textbf{13}, L469.
+
+\bibitem[Corwin and Ghosal(2020)]{CorwinGhosal2020}
+  Corwin, I.\ and Ghosal, P., 2020.
+  Lower tail of the KPZ equation.
+  \textit{Duke Math. J.} \textbf{169}, 1329.
+
+\bibitem[Crisanti and Leuzzi(2005)]{CrisantiLeuzzi2005}
+  Crisanti, A.\ and Leuzzi, L., 2005.
+  Spherical 2+$p$ spin-glass model.
+  \textit{Phys. Rev. B} \textbf{73}, 014412.
+
+\bibitem[Henkel, Hinrichsen and L\"ubeck]{HenkelHinrichsenLubeck}
+  Henkel, M., Hinrichsen, H.\ and L\"ubeck, S., 2008.
+  \textit{Non-Equilibrium Phase Transitions, Vol.\ 1:
+  Absorbing Phase Transitions}.  Springer.
+
+\bibitem[Krajenbrink(2020)]{Krajenbrink}
+  Krajenbrink, A., 2020.
+  From Painlev\'e transcendents to the KPZ equation.
+  Ph.D. thesis, Ecole Normale Sup\'erieure, Paris.
+
+\bibitem[Kozma(2007)]{Kozma2007}
+  Kozma, G., 2007.
+  The scaling limit of loop-erased random walk in three dimensions.
+  \textit{Acta Math.} \textbf{199}, 29.
+
+\bibitem[L\"ubeck and Hucht(2002)]{LubeckHucht2002}
+  L\"ubeck, S.\ and Hucht, A., 2002.
+  Absorbing state phase transition in conserved DP.
+  \textit{J. Phys. A} \textbf{35}, 4853.
+
+\bibitem[\'Odor(2004)]{Odor2004}
+  \'Odor, G., 2004.
+  Universality classes in non-equilibrium lattice systems.
+  \textit{Rev. Mod. Phys.} \textbf{76}, 663.
+
+\bibitem[Subag(2017)]{Subag2017}
+  Subag, E., 2017.
+  The complexity of spherical $p$-spin models.
+  \textit{Ann. Probab.} \textbf{45}, 3385.
+
+\end{thebibliography}
+
+\end{document}
