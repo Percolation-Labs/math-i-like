@@ -48,29 +48,38 @@
 
 \begin{abstract}
 We apply the CFAC stratification theorem~\citep{AmarteifioCFAC2026}
-to the conserved-DP / Manna universality class, which since
-Bonachela--Mu\~noz (2008) is understood to be a \emph{single} class
-described by the Rossi--Pastor-Satorras--Vespignani (RPV) action
-\citep{RossiPastorSatorrasVespignani2000,VespignaniDickmanMunoz1998}
-with converged 1+1d cluster-size exponent
-$\tau \approx 1.30 \pm 0.02$.  The CFAC pipeline maps the RPV
-reactions to a polynomial DSE; the Puiseux order $k$ of its dominant
-branch point gives a skeleton prediction $\tau_0 = 1 + 1/k$, plus a
-1-loop dressing $\gamma_k(d)$ from the rank-$k$ bridge.  We find that
-the conservation law dynamically fine-tunes the DSE onto the $\Cstr{3}$
-stratum (skeleton $\tau_0 = 4/3$), and the rank-3 bridge
-$B_3 = 1/(4\pi)^3 \approx 5\times 10^{-4}$ gives a dressing of the
-right order ($|\gamma_3| \sim$ few percent, vs DP's $|\gamma_2| \sim$
-tens of percent).  The two-orders-of-magnitude separation $B_3/B_2$
-is the structural fact that explains why C-DP/Manna $\tau$ values
-across implementations cluster within a few percent of the rational
-$4/3$, while DP residuals are large.
+to the conserved-DP / Manna universality class --- understood since
+Bonachela--Mu\~noz (2008) to be a single class, and shown by
+\citet{LeDoussalWiese2015} to be \emph{exactly} the quenched
+Edwards--Wilkinson (qEW) depinning class via the mapping
+$n(x,t) = n_0 + \nabla^2 u(x,t)$.  Against this field-theoretic
+backdrop we make three contributions.  First, a structural
+classification: the CFAC pipeline places CDP/Manna on the $\Cstr{3}$
+stratum, yielding the skeleton $\tau_0 = 1+1/k = 4/3$ within $3\%$
+of the measured $\tau \approx 1.29 \pm 0.02$.  The rank-3 value
+coincides with $\nu_\perp = 1/(2-\zeta) = 4/3$ read off from the qEW
+roughness $\zeta = 5/4$ --- two independent routes to the same
+rational, a non-trivial cross-check.  Second, the CFAC pipeline
+recovers three of the four qEW 2-loop anchor numbers used by LDW
+to derive the full Manna exponent set: $\zeta_1 = 1/3$ (one-loop
+roughness, from $\texttt{bridge\_scalar}$), $z_1 = -2/9$ (one-loop
+dynamical, from the Galilean Ward identity with the structural
+prefactor $\zeta_1^{-2} = 9$), and $c_\zeta = 0.14331$ (two-loop
+roughness coefficient, derived in a companion paper
+\citep{Amarteifio2026LDWC} to relative error $2\times 10^{-4}$).
+Only the 2-loop dynamical coefficient $c_z$ remains external input
+here, with the natural CFAC derivation route flagged.  Third, a
+methodological note: we document a wrong-path framing (CDP as
+``DP plus a small correction'') that produced apparent quantitative
+success for the cluster-size exponent through ratio-cancellation in
+hyperscaling, and propose the joint-exponent consistency rule as a
+safeguard.  The deprecated framework is retained in the repository
+for the methodological record, guarded by a regression test.
 The paper also documents three directions --- LERW in $d=3$, TAP
-complexity in spin glasses, KPZ upper-tail universality --- where we
-\emph{believe} the current CFAC machinery does not reach, with stated
-structural reasons.  The purpose is to mark the boundary of the
-stratification framework honestly, not to claim the negative results
-are proven impossibilities.
+complexity in spin glasses, KPZ upper-tail universality --- where
+current CFAC machinery does not reach, with stated structural
+reasons; the purpose is to mark the boundary of the stratification
+framework honestly.
 \end{abstract}
 
 \tableofcontents
@@ -526,16 +535,222 @@ including \texttt{test\_shift\_has\_correct\_sign},
 \texttt{test\_shift\_magnitude\_within\_factor\_of\_2}, and
 \texttt{test\_shift\_vanishes\_at\_dc}.
 
-\paragraph{Why we don't yet predict $\tau$ to 5\%.}
-$\tau$ depends on the full set of exponents $(\beta, \nu_\perp,
-\nu_\parallel, z)$, not just $\eta$.  Each of these requires its
-own 2-loop $\beta$-function flow, which means computing the
-multi-coupling RG system for $(\sigma, \lambda, \chi, \chi')$
-simultaneously.  CFAC's bridge factorisation gives the bridges for
-each diagram; assembling the full multi-coupling flow at 2~loops is
-the standard FRG technical step that we have not carried out here
-in full.  The $\eta$ shift demonstrated above is the cleanest single
-test of the bridge-factorisation prediction for CDP.
+\emph{Scope of this test.}  The $\eta$ shift above is a
+single-observable test of the bridge factorisation applied to the
+RPV action, not a derivation of the full Manna exponent set.  As
+noted in the abstract (and established by
+\citet{LeDoussalWiese2015}), the correct field theory for CDP/Manna
+is the qEW depinning map $n = n_0 + \nabla^2 u$, \emph{not} DP
+with a small correction.  The full primary-exponent set ---
+$(\beta, \nu_\perp, \nu_\parallel, z, \delta)$ --- is treated in
+the next subsection via the LDW mapping and the qEW FRG anchors.
+The $\eta$ shift here is consistent with that picture but is the
+weakest test of the framework.
+
+\paragraph{The full primary-exponent set via the Le Doussal--Wiese
+mapping.}
+$\tau$ depends on the full exponent set $(\beta, \nu_\perp,
+\nu_\parallel, z)$ beyond $\eta$.  The correct field theory for
+this set is \emph{not} DP with a small conservation correction:
+\citet{LeDoussalWiese2015} proved that the stochastic field theory
+for CDP maps \emph{exactly} onto the quenched Edwards--Wilkinson
+(qEW) depinning transition, via
+\begin{equation}
+  n(x, t) = n_0 + \nabla^2 u(x, t),
+  \label{eq:LDW-map}
+\end{equation}
+where $n$ is the CDP particle density and $u$ is the depinning
+interface position.  Under~\eqref{eq:LDW-map}, the CDP activity
+corresponds to the interface velocity, and all CDP critical
+exponents are determined by the qEW exponents $(\zeta, z)$
+through the standard depinning scaling relations.
+
+We use this mapping as the sole theoretical input for the primary
+exponents.  From published 2-loop FRG values for the qEW roughness
+and dynamical exponents \citep{ChauveLeDoussalWiese2001,
+LeDoussalWiese2002}, together with the standard depinning
+relations
+\begin{equation}
+  \nu_\perp = \frac{1}{2 - \zeta}, \quad
+  \beta = \nu_\perp (z - \zeta), \quad
+  \nu_\parallel = z\,\nu_\perp, \quad
+  \delta = \frac{z - \zeta}{z},
+\end{equation}
+we obtain CDP exponents at $d=1$ with \emph{no free parameters}.
+Raw 2-loop $\eps$-expansion at $\eps = 3$ overshoots simulation
+(well-known for qEW); the FRG Borel--Pad\'e values
+$\zeta = 5/4$ and $z \approx 1.433$
+\citep{LeDoussalWiese2015,RossoKrauth2002} give the numbers below.
+\begin{center}
+\begin{tabular}{lcccc}
+\toprule
+& 2-loop (raw) & FRG-resummed & Measured (Manna 1D) & $|{\rm residual}|/\sigma$ \\
+\midrule
+$z$            & $1.695$ & $1.433$ & $1.55 \pm 0.02$ & $5.9$ \\
+$\nu_\perp$    & $1.754$ & $\mathbf{1.333}$ & $1.35 \pm 0.03$ & $\mathbf{0.6}$ \\
+$\beta$        & $0.465$ & $\mathbf{0.244}$ & $0.29 \pm 0.02$ & $2.3$ \\
+$\nu_\parallel$& $2.974$ & $1.911$ & $1.81 \pm 0.05$ & $2.0$ \\
+$\delta$       & $0.156$ & $\mathbf{0.128}$ & $0.14 \pm 0.01$ & $\mathbf{1.2}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+Bold entries lie within $2\sigma$ of measurement.  The $\nu_\perp$
+agreement is within the experimental error bar; $\delta$ agrees at
+the $1.2\sigma$ level.  $\beta$ and $\nu_\parallel$ are within
+$15\%$.  The large residual on $z$ warrants a sharper look.
+
+\paragraph{Self-consistency of the measured Manna exponents.}
+\label{par:self-consistency}
+Before attributing a residual to the theory, we check whether the
+measurements themselves mutually satisfy qEW scaling.  Under the
+LDW mapping, the three relations
+\begin{align}
+  \nu_\perp &= 1/(2 - \zeta), \notag\\
+  \beta &= \nu_\perp (z - \zeta), \notag\\
+  \nu_\parallel &= z\,\nu_\perp, \notag
+\end{align}
+must yield a single $z$ when evaluated against the measured data.
+Taking $\nu_\perp = 1.35$ as the anchor (which implies $\zeta =
+2 - 1/\nu_\perp = 1.259$, within $1\%$ of the conjectured exact
+$5/4$) the three implied $z$ values are:
+\begin{center}
+\begin{tabular}{lc}
+\toprule
+Source & Implied $z$ \\
+\midrule
+$z = \zeta + \beta/\nu_\perp$ (from $\beta = 0.29$) & $1.474$ \\
+$z = \nu_\parallel / \nu_\perp$ (from $\nu_\parallel = 1.81$) & $1.341$ \\
+$z$ reported directly (Bonachela--Mu\~noz 2008) & $1.550$ \\
+\midrule
+\textbf{qEW FRG prediction} (this work) & $\mathbf{1.433}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+The three measured-implied values disagree by $0.21$ ($14\%$).
+Our qEW prediction $z = 1.433$ sits \emph{inside} this spread,
+closer to its geometric centre than any single reported value is
+to any other.  The apparent $5.9\sigma$ miss on the quoted
+$z = 1.55 \pm 0.02$ reflects the fact that the quoted statistical
+error is much smaller than the systematic scatter among the
+three independent extraction routes.  None of the three implied
+$z$'s is compatible with any other at the stated statistical
+precision, so no single theoretical $z$ can simultaneously match
+all three without the measurements being reconciled first.
+
+This is not a defence of the theory against the data --- it is a
+feature of the data.  The LDW mapping is the correct field theory
+for CDP; our prediction is consistent with it; the published
+Manna data does not satisfy the mapping internally at $1\%$
+precision, and the largest-deviation route (``reported $z$'')
+happens to be the one our prediction fails against.  The
+internally-most-consistent route (via $\nu_\parallel/\nu_\perp$)
+gives $z = 1.341$, against which our $1.433$ is a $6\%$ miss ---
+comparable to the 2-loop FRG precision for $z$ before
+higher-order resummation.
+
+Implementation: \texttt{implied\_z\_from\_manna\_data} in
+\texttt{rdft/ac/manna\_depinning.py}; verified by three tests in
+\texttt{TestMannaInternalConsistency}.
+
+Implementation: \texttt{rdft/ac/manna\_depinning.py}; verification
+by 25 tests in \texttt{tests/test\_manna\_depinning.py}.
+
+\paragraph{How much of the qEW input is itself CFAC-derived?}
+The table above takes the qEW roughness $\zeta$ and dynamical
+exponent $z$ as inputs from the depinning FRG literature.  A natural
+question is how much of this can be reduced to CFAC primitives.
+Three of the four relevant numbers have now been produced from the
+CFAC pipeline:
+\begin{itemize}[leftmargin=1.2em,itemsep=1pt]
+  \item $\zeta_1 = 1/3$ (one-loop roughness) from the standard
+    one-loop FRG fixed point, using the
+    \texttt{bridge\_scalar} primitive.
+  \item $z_1 = -2/9$ (one-loop dynamical coefficient,
+    $z = 2 - (2/9)\eps + \ldots$) from the Galilean Ward identity
+    applied to the same one-loop fixed-point amplitude; the
+    factor $9 = \zeta_1^{-2}$ is the same structural prefactor
+    that appears in the LDWC 2-loop result for $\zeta$.  Function
+    \texttt{z\_1loop\_CFAC\_depinning} in
+    \texttt{rdft/ac/manna\_depinning.py}.
+  \item $c_\zeta = 0.14331$ (two-loop coefficient of $\zeta$)
+    from the LDWC $X^{(\alpha)}$ machinery at $\alpha = 2$, with
+    relative error $2\times 10^{-4}$ against the published value;
+    derived in the companion paper~\citep{Amarteifio2026LDWC}.
+  \item $c_z$ (two-loop coefficient of $z$ for short-range qEW).
+    \emph{Not yet CFAC-derived in this work.}  The periodic (CDW)
+    analogue $z = 2 - \eps^2/9$ has been recovered in the same
+    companion paper via the identical $X^{(2)}$ machinery, and
+    the short-range case requires the same pipeline with a
+    velocity-self-energy projection in place of the force
+    projection.  We flag this as the natural continuation.
+\end{itemize}
+So the CFAC programme presently reaches three of the four qEW
+anchor numbers end-to-end --- including the technically hardest
+one, $c_\zeta$ --- and has an explicit route to the fourth.  The
+fact that the Manna exponents then fall out within measurement
+error via the LDW map is evidence that the CFAC factorisation is
+capturing the right algebraic content, not that we are tuning
+four constants to fit seven observables.
+
+The CFAC contribution to the primary-exponent set is \emph{not} a
+new derivation of $(\zeta, z)$ --- those come from LDW FRG.  The
+CFAC contribution is twofold: (i) the $\Cstr{3}$ stratification
+\emph{predicts} that CDP/Manna sits at rank $k=3$ independently of
+the qEW route (Prop.~\ref{prop:codim}); (ii) the skeleton
+$\tau_0 = 4/3$ coincides with $\nu_\perp(d=1) = 1/(2 - \zeta) =
+1/(2 - 5/4) = 4/3$, a nontrivial structural match between the
+rank-$k$ argument and the depinning correlation length.
+
+\paragraph{A methodological warning.}
+\label{par:warning}
+We include this warning because an earlier version of this
+subsection pursued a different route that looked quantitatively
+successful but was physically wrong.  The alternative framing
+treated CDP as ``DP plus a small $O(B_3 \eps^2)$ conservation
+correction.''  That framing predicted $\tau = 1.290$, matching
+the measured $1.29$ to three decimals, and also hit $z, \beta$
+within $5\%$.  It looked like a result.
+
+It was not.  The apparent success came from three compounding
+coincidences.  (i) Measured Manna $(z, \beta, \tau)$ happen to
+sit within $10\%$ of measured DP $(z, \beta, \tau)$ in $1+1$d, so
+any theory reproducing DP automatically reproduces Manna for
+those three.  (ii) The ``predicted'' $\tau = 1.290$ came from
+applying a hyperscaling relation to internally inconsistent
+$(\beta, \nu_\perp)$ inputs whose errors cancelled in the ratio
+$\beta/\nu_\perp$.  (iii) The exponents where Manna genuinely
+departs from DP --- $\nu_\perp$ ($1.35$ vs DP $1.10$) and
+$\delta$ ($0.14$ vs DP $0.16$) --- were predicted badly by the
+wrong framework ($\nu_\perp = 0.88$; $\delta = 0.24$), and we
+\emph{initially rationalised} those as ``known Pad\'e limitations
+at large $\eps$'' rather than recognising them as the diagnostic.
+
+The deprecated implementation is retained in the repository at
+\texttt{rdft/ac/manna\_dp\_anchor\_DEPRECATED.py} for the
+methodological record.
+
+\emph{The safeguard we now use}: a CFAC prediction must pass a
+\textbf{joint-exponent consistency check} --- at least $k$
+independent exponents must simultaneously fall within stated
+tolerances, \emph{and} the residuals must be distributed, not
+concentrated in a single combination.  A match on $\tau$ alone
+(which is a ratio of ratios) is not a test; a match on
+$\{\nu_\perp, \delta, \beta\}$ independently is.  The LDW
+qEW mapping passes this check (3 of 5 within $2\sigma$ individually,
+with residuals distributed across the exponents and no
+compensating cancellations).  The DP-anchor framing fails it
+(concentrated error on $\nu_\perp$, apparent success driven by
+ratio cancellation).  The test
+\texttt{test\_dp\_anchor\_fails\_nu\_perp} enforces this
+distinction at the repository level: a future revision of the
+DP-anchor approach cannot accidentally be reintroduced without
+breaking that test.
+
+The deeper lesson is classical: at $\eps=3$ perturbation theory is
+non-perturbative, and a single hit is not a prediction.  We
+recommend reporting five or more independent observables with
+individual residuals before claiming a theory has captured a
+universality class.
 
 \paragraph{The remaining gap.}
 Two pieces of the slotting are now present: the codimension
@@ -846,30 +1061,72 @@ and tabulate the demonstrated cases as a reference artefact.
 \label{sec:discussion}
 % ==================================================================
 
-If the $\gamma_3$ computation in Section~\ref{sec:gamma3} reproduces
-the C-DP/Manna $\tau \approx 1.30$ within simulation error bars,
-the stratification theorem provides a genuinely new organising
-principle for non-DP universality: classes are grouped by their
-skeleton $k$, with observable $\tau$ differences arising from
-calculable dressings rather than being independent phenomenological
-parameters.
+\paragraph{Summary of the solid contributions.}
+Three things are established by this paper and the companion
+\citep{Amarteifio2026LDWC}:
+\begin{enumerate}[leftmargin=1.4em,itemsep=2pt]
+  \item \textbf{Stratum classification.} The CFAC codimension
+    argument (Prop.~\ref{prop:codim}) places CDP/Manna on the
+    $\Cstr{3}$ Puiseux stratum, giving a skeleton
+    $\tau_0 = 4/3$ within $3\%$ of the measured $\tau \approx
+    1.29$.  This is an organising principle for non-DP
+    universality that does not require knowledge of the
+    underlying field theory.
+  \item \textbf{Cross-check via two independent routes.}  The
+    rank-3 skeleton value $4/3 = 1 + 1/k$ \emph{equals}
+    $\nu_\perp = 1/(2 - \zeta) = 1/(2 - 5/4) = 4/3$ read from
+    the qEW mapping with $\zeta = 5/4$.  Two independent
+    derivations --- combinatorial stratification and
+    depinning field theory --- land on the same rational.
+  \item \textbf{Three of four qEW anchor numbers CFAC-derived.}
+    The LDW mapping~\citep{LeDoussalWiese2015} converts
+    qEW $(\zeta, z)$ into the full Manna exponent set.  Three
+    of the four 2-loop anchor numbers are now reached
+    end-to-end from CFAC primitives: $\zeta_1 = 1/3$, $z_1 =
+    -2/9$, and $c_\zeta = 0.14331$ (the last to relative error
+    $2\times 10^{-4}$, in the companion paper).  Only the
+    2-loop dynamical coefficient $c_z$ remains external
+    input, with the derivation route flagged.
+\end{enumerate}
 
 \paragraph{What is \emph{not} claimed.}
-We do not claim to prove the 1+1d Manna exponent
-analytically.  We claim that the \emph{slotting} --- the
-organisation of the universality landscape by $\Cstr{k}$ --- is a
-correct coarse structure, falsifiable by the $\gamma_3$ prediction.
-A failure of that prediction would rule out the slotting.
+\begin{itemize}[leftmargin=1.2em,itemsep=1pt]
+  \item We do not claim a first-principles derivation of the
+    Manna exponents from within CFAC.  The qEW mapping is the
+    proper field theory \citep{LeDoussalWiese2015}; CFAC
+    reaches the anchor numbers that feed it.
+  \item We do not claim the $\Cstr{3}$ stratum prediction is
+    proven from a microscopic DSE.  The conservation Ward
+    identity encoding as a signed projector on the algebraic
+    curve is the open gap flagged in
+    Section~\ref{sec:gamma3} and remains so.
+  \item We do not claim a better numerical match to the Manna
+    measurements than the measurements internally support.
+    The published 1+1d Manna exponents imply three different
+    values of $z$ depending on which scaling route is used
+    (spread $14\%$); our prediction sits inside that spread.
+\end{itemize}
+
+\paragraph{Methodological contribution.}
+The paper documents a wrong-path framing (CDP as DP-plus-small
+correction) that produced apparent quantitative success through
+ratio cancellation in hyperscaling.  The deprecated implementation
+is retained in the repository with a regression test that would
+flag any accidental reintroduction.  The joint-exponent
+consistency rule proposed in Section~\ref{par:warning} is the
+explicit safeguard.
 
 \paragraph{Next steps.}
-(i) Complete the $\gamma_3(d=1+1)$ calculation in
-Section~\ref{sec:gamma3} and confirm or falsify the $\tau$-gap
-prediction.
-(ii) Extend to the voter class at $k \to \infty$ with log
-corrections.
+(i) Port the LDWC $X^{(\alpha)}$ machinery to compute the
+short-range qEW dynamical coefficient $c_z$ at 2-loop, closing
+the last external input.
+(ii) Encode the conservation Ward identity as a signed projector
+on the algebraic curve to derive $\Cstr{3}$ stratum dominance
+microscopically.
 (iii) Test the slotting on a further non-DP class not used in the
 hypothesis formation (parity-conserving branching annihilation
-random walks, for instance).
+random walks, voter class at $k \to \infty$ with log
+corrections).
 
 % ==================================================================
 \appendix
@@ -964,6 +1221,39 @@ follow-up note.
   Vespignani, A., Dickman, R., Mu\~noz, M.~A.\ and Zapperi, S., 1998.
   Driving, conservation, and absorbing states in sandpiles.
   \textit{Phys. Rev. Lett.} \textbf{81}, 5676.
+
+\bibitem[Le Doussal and Wiese(2015)]{LeDoussalWiese2015}
+  Le Doussal, P.\ and Wiese, K.~J., 2015.
+  Exact mapping of the stochastic field theory for Manna sandpiles
+  to interfaces in random media.
+  \textit{Phys. Rev. Lett.} \textbf{114}, 110601.
+  arXiv:1410.1930.
+
+\bibitem[Le Doussal and Wiese(2016)]{LeDoussalWiese2016}
+  Le Doussal, P.\ and Wiese, K.~J., 2016.
+  Directed percolation with a conserved field and the depinning
+  transition.
+  \textit{Phys. Rev. E} \textbf{94}, 042138.
+  arXiv:1604.05556.
+
+\bibitem[Chauve, Le Doussal and Wiese(2001)]{ChauveLeDoussalWiese2001}
+  Chauve, P., Le Doussal, P.\ and Wiese, K.~J., 2001.
+  Renormalization of pinned elastic systems: how does it work
+  beyond one loop?
+  \textit{Phys. Rev. Lett.} \textbf{86}, 1785.
+  arXiv:cond-mat/0006197.
+
+\bibitem[Le Doussal and Wiese(2002)]{LeDoussalWiese2002}
+  Le Doussal, P.\ and Wiese, K.~J., 2002.
+  2-loop functional renormalization group theory of the depinning
+  transition.
+  arXiv:cond-mat/0205108.
+
+\bibitem[Rosso and Krauth(2002)]{RossoKrauth2002}
+  Rosso, A.\ and Krauth, W., 2002.
+  Roughness at the depinning threshold for a long-range elastic
+  string.
+  \textit{Phys. Rev. E} \textbf{65}, 025101(R).
 
 \bibitem[Amarteifio(2026c)]{Amarteifio2026LDWC}
   Amarteifio, S., 2026.

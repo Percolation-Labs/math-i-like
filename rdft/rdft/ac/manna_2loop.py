@@ -49,11 +49,11 @@ from .bridge import (
 
 # Standard DP one-loop coefficients (Janssen 1981 normalisation)
 # In dimensionless u = g^2/(8 pi^2):
-#   beta(u) = -eps u + (3/2) u^2
-#   eta(u) = -(u/3) at WF FP (so eta = -2 eps/9 at LO, then Pade improves)
-# These are the canonical values; conventions vary by paper.
+#   beta(u) = -eps u + (3/2) u^2   (u* = 2 eps / 3)
+#   eta(u) = -(u/4)                 (eta_DP* = -eps/6 at WF FP)
+# These are the canonical Janssen-Tauber values (Tauber 2014, Table 4.1).
 B_DP_1LOOP_BETA = 3.0 / 2.0   # b_1 in beta = -eps u + b_1 u^2
-C_DP_1LOOP_ETA = -1.0 / 3.0   # c_1 in eta = c_1 u
+C_DP_1LOOP_ETA = -1.0 / 4.0   # c_1 in eta = c_1 u (gives -eps/6 at u* = 2eps/3)
 
 # DP 2-loop coefficients (extracted from Janssen / van Wijland tables)
 B_DP_2LOOP_BETA = -169.0 / 108.0      # rough
