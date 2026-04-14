@@ -29,6 +29,7 @@
 \newcommand{\eps}{\varepsilon}
 \newcommand{\Cstr}[1]{\mathcal{C}_{#1}}
 \newcommand{\Nalg}{\mathbb{N}\text{-algebraic}}
+\newcommand{\Nres}{N_{\rm res}}
 
 \usepackage{mdframed}
 \newmdenv[backgroundcolor=blue!5,linecolor=blue!40,
@@ -102,17 +103,37 @@ $\tau_0 = 1 + 1/k$.  The $d$-dependent correction $\gamma_k(d)$ arises
 at one loop from the rank-$k$ bridge function and shifts the measured
 $\tau$ by an $O(\eps)$ amount in $\eps = d_c - d$.
 
-In this note we test the hypothesis that Manna and conserved-DP share
-a common $k=3$ stratum, with the $4\%$ gap between their simulation
-values $\tau_{\rm Manna} \approx 1.29$ and $\tau_{\rm C-DP} \approx 1.35$
-accounted for entirely by the difference in their one-loop
-$\gamma_3(d=1+1)$.  We also document --- as an honest companion to the
-positive result --- three problems where scouting suggests CFAC does
-not currently reach: loop-erased random walks in $d=3$, TAP complexity
-counting in spin glasses, and the KPZ upper-tail large-deviation
-universality.  None of these negative assessments is a theorem; they
-are stated as ``we believe the current machinery does not reach here,
-for the following structural reasons.''
+In this note we test the hypothesis that Manna sits on the
+$\Cstr{3}$ stratum, with the canonical RPV
+action~\citep{RossiPastorSatorrasVespignani2000,VespignaniDickmanMunoz1998}
+as the field-theoretic representative.  Bonachela--Mu\~noz
+(2008)~\citep{BonachelaMunoz2008} established that Manna and
+conserved-DP describe the same universality class with converged
+$\tau \approx 1.30 \pm 0.02$, so we treat them as one target.  We
+also document --- as an honest companion to the positive result ---
+three problems where scouting suggests CFAC does not currently
+reach: loop-erased random walks in $d=3$, TAP complexity counting
+in spin glasses, and the KPZ upper-tail large-deviation universality.
+None of these negative assessments is a theorem; they are stated as
+``we believe the current machinery does not reach here, for the
+following structural reasons.''
+
+\paragraph{Manna as a test case for a wider scope claim.}
+The choice of Manna here is not narrow.  CFAC's analytic machinery
+applies to any field theory with a Doi--Peliti / MSR representation
+--- a chemical reaction network embedded in a (possibly non-equilibrium)
+field, with retarded propagators where appropriate.  This covers
+much of statistical physics: reaction--diffusion natively, equilibrium
+$\phi^4$ via stochastic quantisation (Parisi--Wu), spin systems via
+Glauber dynamics, depinning and KPZ via MSR, and so on.  We have
+already exercised this reach implicitly --- the LDWC two-loop FRG
+calculation~\citep{Amarteifio2026LDWC} and the Wilson--Fisher O($N$)
+anomalous dimension came out of the same pipeline despite having no
+shared physics beyond the CRN-in-field structure.  Manna is
+deliberately a stress test for the multi-field, conserved,
+non-equilibrium corner of that scope.  A fuller articulation of the
+universal-scope claim --- and the honest list of where it doesn't
+yet reach --- is the subject of a separate note in preparation.
 
 \paragraph{Contents.}
 Section~\ref{sec:recap} recalls the stratification theorem.
@@ -530,20 +551,110 @@ interpretable against the clear boundary of what the framework
 currently covers.
 
 % ==================================================================
+\section{Universal scope: CRN-in-field as the underlying object}
+\label{sec:scope}
+% ==================================================================
+
+We have framed the Manna calculation in narrow terms (one
+universality class, one stratum), but the machinery used here is
+not Manna-specific.  This section makes the wider scope claim
+explicit so that the Manna result can be read as one specific test
+of it.
+
+\paragraph{The scope claim.}
+\emph{Any statistical-physics system whose dynamics admits a
+Doi--Peliti / MSR action representation --- a chemical reaction
+network embedded in a (possibly non-equilibrium) field, with
+retarded propagators where appropriate --- falls within the CFAC
+analytic framework.}  The two-step procedure is:
+\textbf{(i)} write the CRN-in-field representation of the system;
+\textbf{(ii)} run the CFAC pipeline (filter diagrams by causal
+contraction and bridge factorisation, compute Symanzik polynomials,
+apply BPHZ multiplicities $K_G|_{\alpha=1}$, sector-decompose, and
+extract the residual list of free integrals).
+
+\paragraph{Demonstrated reach.}
+The CFAC pipeline as it stands has been exercised across a
+heterogeneous list of systems:
+\begin{itemize}[leftmargin=1.2em,itemsep=1pt]
+  \item \textbf{LDWC depinning}: 2-loop FRG for an elastic manifold,
+    multi-field MSR action, doubled-propagator hat
+    diagram.~\citep{Amarteifio2026LDWC}
+  \item \textbf{LDWC long-range elasticity}: same pipeline,
+    fractional propagator exponents.
+  \item \textbf{LDWC periodic CDW}: same pipeline, $\Nres = 0$.
+  \item \textbf{Wilson--Fisher O($N$) $\eta$ at 2-loop}: equilibrium
+    $\phi^4$, no FRG.  Reproduces $\eta = (N{+}2)/[2(N{+}8)^2]\eps^2$.
+  \item \textbf{Directed percolation 2-loop}: pure
+    Doi--Peliti.~\citep{Amarteifio2026TwoLoop}
+  \item \textbf{Manna / C-DP}: this paper (multi-field, conserved,
+    non-equilibrium).
+\end{itemize}
+None of these are in the same physics class.  What they share is
+the CRN-in-field structure.  This is evidence for the scope claim,
+not proof.
+
+\paragraph{Routes from common stat-phys to CRN-in-field.}
+\begin{description}
+  \item[Reaction--diffusion:] Direct (Doi--Peliti).
+  \item[Equilibrium $\phi^4$ / O($N$):] Stochastic quantisation
+    (Parisi--Wu) gives a Langevin equation; its MSR action is a
+    CRN-in-field.  The field-theoretic anomalous dimension $\eta$
+    falls out of the same pipeline as Manna's $\tau$.
+  \item[Spin systems:] Glauber dynamics is literally a CRN of
+    spin flips; mapping to a continuous order parameter is standard.
+  \item[KPZ / surface growth:] MSR action for the height field;
+    the noise vertex defines a CRN.
+  \item[Hydrodynamic fluctuations:] MSR for Navier--Stokes; the
+    pressure constraint is a Lagrange-multiplier field; the noise
+    is a CRN.
+  \item[Lattice gauge (stochastic quantisation):] Langevin in field
+    space, MSR action with gauge-fixing constraints.
+\end{description}
+The technical step in each case is well-known; CFAC inherits the
+machinery once the action is in standard form.
+
+\paragraph{Where the scope claim genuinely doesn't reach (yet).}
+The boundary cases of Section~\ref{sec:boundary} sharpen this:
+\begin{itemize}[leftmargin=1.2em,itemsep=1pt]
+  \item \textbf{Matrix-valued fields} (TAP complexity, RMT,
+    replica $n\to 0$): the CRN is matrix-valued, and the bridge
+    function in CFAC is currently scalar.  A matrix-valued bridge
+    (free probability / R-transforms) is a research extension.
+  \item \textbf{Non-$D$-finite generating functions} (LERW in
+    $d=3$, lattice Green's functions): the stratification theorem
+    requires algebraic or $D$-finite GFs.
+  \item \textbf{Topologically constrained systems} (BRST-quantised
+    gauge theory, field theories with global anomalies): the
+    constraint algebra is not currently handled by the pipeline.
+\end{itemize}
+
+\paragraph{Manna's role in the wider programme.}
+Manna is deliberately a stress test for the multi-field, conserved,
+non-equilibrium corner of the scope.  If CFAC handles Manna
+successfully (the slotting holds, the rank-3 bridge gives the right
+order of magnitude, and the conservation projector in the multi-field
+DSE selects $\Cstr{3}$ as predicted), it is direct evidence that
+the wider scope claim is plausible: \emph{a representative system from a
+distinct stat-phys corner falls in line with the same machinery}.
+A separate note in preparation will state the scope claim formally
+and tabulate the demonstrated cases as a reference artefact.
+
+% ==================================================================
 \section{Discussion}
 \label{sec:discussion}
 % ==================================================================
 
 If the $\gamma_3$ computation in Section~\ref{sec:gamma3} reproduces
-the Manna--C-DP $\tau$-gap within simulation error bars, the
-stratification theorem provides a genuinely new organising
+the C-DP/Manna $\tau \approx 1.30$ within simulation error bars,
+the stratification theorem provides a genuinely new organising
 principle for non-DP universality: classes are grouped by their
 skeleton $k$, with observable $\tau$ differences arising from
 calculable dressings rather than being independent phenomenological
 parameters.
 
 \paragraph{What is \emph{not} claimed.}
-We do not claim to prove the 1+1d Manna or C-DP exponents
+We do not claim to prove the 1+1d Manna exponent
 analytically.  We claim that the \emph{slotting} --- the
 organisation of the universality landscape by $\Cstr{k}$ --- is a
 correct coarse structure, falsifiable by the $\gamma_3$ prediction.
@@ -578,10 +689,40 @@ random walks, for instance).
   Random matrices and complexity of spin glasses.
   \textit{Comm. Pure Appl. Math.} \textbf{66}, 165.
 
+\bibitem[Bonachela and Mu\~noz(2008)]{BonachelaMunoz2008}
+  Bonachela, J.~A. and Mu\~noz, M.~A., 2008.
+  Confirming and extending the hypothesis of universality in
+  sandpiles.
+  \textit{Phys. Rev. E} \textbf{78}, 041102.
+
 \bibitem[Bray and Moore(1980)]{BrayMoore1980}
   Bray, A.~J. and Moore, M.~A., 1980.
   Metastable states in spin glasses.
   \textit{J. Phys. C} \textbf{13}, L469.
+
+\bibitem[Rossi, Pastor-Satorras and Vespignani(2000)]{RossiPastorSatorrasVespignani2000}
+  Rossi, M., Pastor-Satorras, R. and Vespignani, A., 2000.
+  Universality class of absorbing phase transitions with a
+  conserved field.
+  \textit{Phys. Rev. Lett.} \textbf{85}, 1803.
+
+\bibitem[Vespignani, Dickman, Mu\~noz and Zapperi(1998)]{VespignaniDickmanMunoz1998}
+  Vespignani, A., Dickman, R., Mu\~noz, M.~A.\ and Zapperi, S., 1998.
+  Driving, conservation, and absorbing states in sandpiles.
+  \textit{Phys. Rev. Lett.} \textbf{81}, 5676.
+
+\bibitem[Amarteifio(2026c)]{Amarteifio2026LDWC}
+  Amarteifio, S., 2026.
+  Reading the LDWC two-loop roughness coefficient through the
+  CFAC lens.
+  Percolation Labs preprint
+  (\texttt{paper/cfac/ldw\_kirchhoff\_recovery.tex}).
+
+\bibitem[Amarteifio(2026d)]{Amarteifio2026TwoLoop}
+  Amarteifio, S., 2026.
+  Multi-Loop Feynman Integrals as Counting Problems.
+  Percolation Labs preprint
+  (\texttt{paper/two\_loop\_worked/main.tex}).
 
 \bibitem[Corwin and Ghosal(2020)]{CorwinGhosal2020}
   Corwin, I.\ and Ghosal, P., 2020.
