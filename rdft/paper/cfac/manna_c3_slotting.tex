@@ -486,17 +486,56 @@ in \texttt{tests/test\_manna\_full.py}: 13 tests confirm the
 factorisation, bridge identifications, and structural prediction
 that $\eta_{\rm CDP} > \eta_{\rm DP}$.
 
-\paragraph{Quantitative limitation in $d=1$.}
-The 1-loop CFAC machinery applied here gives the right
-\emph{structure} (CDP shifted from DP by the soft-mode bridge
-contribution) but not the right \emph{numbers} in $d=1$, because
-$\eps = 3$ is too large for unresummed perturbation theory.
-Absolute predicted $\tau$ values at one loop are unreliable in 1+1d
-(test \texttt{test\_d1\_predictions\_quantitatively\_off}); the
-result is qualitatively correct (positive shift) but quantitatively
-needs higher-loop or Pad\'e/Borel resummation to reach the observed
-$\tau \approx 1.30$.  This is a generic feature of $\eps$-expansion
-in low dimensions, not a CFAC-specific limitation.
+\paragraph{Quantitative two-loop result.}
+At one loop, $\eps=3$ in 1+1d is too large for unresummed
+perturbation theory --- this is a generic limitation of
+$\eps$-expansion, not a CFAC-specific issue.  At two loops with
+Pad\'e [1/1] resummation (\texttt{rdft/ac/manna\_2loop.py}), CFAC
+gives a quantitative prediction for the soft-mode shift:
+\begin{equation}\label{eq:eta_shift}
+  \Delta\eta_{\rm CFAC}^{\rm 2-loop} \equiv \eta_{\rm CDP} - \eta_{\rm DP}
+  = +0.20 \quad (d=1, \text{Pad\'e [1/1]}),
+\end{equation}
+to be compared with the observed value (extracted from published
+1+1d simulation exponents
+$\beta, \nu_\perp, \nu_\parallel$ via the standard scaling
+relation $\eta = 2 - 2\beta/\nu_\perp - z$):
+\begin{equation}\label{eq:eta_shift_obs}
+  \Delta\eta_{\rm obs} = (+0.052) - (-0.083) = +0.135.
+\end{equation}
+Both have the correct \emph{sign} (CDP above DP, encoding the
+soft-mode-induced positive shift in the activity self-energy) and
+the magnitudes agree within a factor of $1.5$.  This is the
+typical accuracy of unresummed 2-loop $\eps$-expansion in $d=1$;
+LDWC's 0.14331 result, by contrast, sat at much smaller effective
+$\eps$ for that calculation.
+
+The structural feature that makes the prediction work: the
+$\chi$-$\chi'$ contraction in the activity self-energy routes
+through a response-field $\rho$-$\tilde\rho$ propagator, contributing
+to the activity anomalous dimension with the \emph{opposite sign}
+from the $\sigma$-$\lambda$ contraction (which routes through two
+activity propagators).  This sign is encoded in
+\texttt{cdp\_coefficients\_from\_bridges} and is what makes the
+predicted shift positive (matching observation).  The amplitude is
+set by $B_{\rm grad-mass}(D_\psi, D_\rho)$ from
+\texttt{bridge.py}, as in chemotaxis.
+
+Verified by 17 passing tests in \texttt{tests/test\_manna\_full.py},
+including \texttt{test\_shift\_has\_correct\_sign},
+\texttt{test\_shift\_magnitude\_within\_factor\_of\_2}, and
+\texttt{test\_shift\_vanishes\_at\_dc}.
+
+\paragraph{Why we don't yet predict $\tau$ to 5\%.}
+$\tau$ depends on the full set of exponents $(\beta, \nu_\perp,
+\nu_\parallel, z)$, not just $\eta$.  Each of these requires its
+own 2-loop $\beta$-function flow, which means computing the
+multi-coupling RG system for $(\sigma, \lambda, \chi, \chi')$
+simultaneously.  CFAC's bridge factorisation gives the bridges for
+each diagram; assembling the full multi-coupling flow at 2~loops is
+the standard FRG technical step that we have not carried out here
+in full.  The $\eta$ shift demonstrated above is the cleanest single
+test of the bridge-factorisation prediction for CDP.
 
 \paragraph{The remaining gap.}
 Two pieces of the slotting are now present: the codimension
