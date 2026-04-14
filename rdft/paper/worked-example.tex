@@ -14,6 +14,8 @@
 \usepackage{multirow}
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta,positioning,decorations.markings,calc}
+\usepackage{graphicx}
+\graphicspath{{figures/}}
 \usepackage{tcolorbox}
 \tcbuselibrary{skins,breakable}
 
@@ -2682,6 +2684,187 @@ At the critical threshold $R_0 = 1$: $z^* = 1/e \cdot e = 1$ and the
 epidemic size distribution is $\Pr[n] \sim C\, n^{-3/2}$. This is the
 \textbf{Borel distribution}, a classical result in
 epidemiology~\cite{flajolet2009}.
+
+\subsection{What does AC actually add for SIR? An honest accounting}
+\label{sec:sir_honest}
+
+A careful student reading the previous derivation should immediately ask:
+``You wrote down a generating function $T(z)$, found its branch point,
+extracted asymptotics. But the SIR generating function is the textbook
+PGF of a branching process, and Lagrange inversion of $T(z)=z\,e^{R_0(T-1)}$
+gives the exact pmf in closed form
+\[
+P(n) \;=\; \frac{1}{n}[T^{n-1}]\, e^{R_0 n (T-1)}
+\;=\; \frac{(R_0 n)^{n-1}\, e^{-R_0 n}}{n!}
+\]
+--- the Borel--Tanner distribution, known since the 1940s. Stirling's
+formula on $n!$ then gives every asymptotic correction in one line.
+What is AC \emph{adding}?''
+
+This is the right question, and the honest answer comes in two parts.
+
+\subsubsection*{What AC does \emph{not} add: marginal asymptotics}
+
+For the marginal observables in Figure~\ref{fig:sir_ac_demo}, AC and
+the PGF route give the same numbers because they \emph{are} the same
+calculation in different notation. Borel--Tanner $\Rightarrow$ Stirling
+on $n!$ recovers (i)~the entire $1/n$ series at criticality
+(Eq.~\eqref{eq:sir_full_series}; the rational coefficients
+$-1/12, 1/288, 139/51840, \ldots$ are literally Stirling's series),
+(ii)~the subcritical amplitude $C(R_0)=1/(R_0\sqrt{2\pi})$
+(Eq.~\eqref{eq:sir_amplitude}), and (iii)~the near-critical scaling
+form (Eq.~\eqref{eq:sir_scaling}; expanding $\ln\rho(1{-}\delta)
+=-\delta^2/2-O(\delta^3)$ produces the Gaussian envelope directly).
+``Puiseux of $T$ at the branch point'' and ``Stirling of $n!$ in the
+closed-form pmf'' are, on this problem, equivalent.
+
+Figure~\ref{fig:sir_ac_demo} should therefore be read as
+\textbf{calibration}: we verify that the AC machinery reproduces three
+results obtainable a different way, before applying the same machinery
+to systems where the closed-form pmf does not exist.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{sir_ac_demo.png}
+\caption{\textbf{Three calibration panels (1--3) and one genuine-AC
+panel (4).} \textbf{Panel 1:} rescaled PMF $\sqrt{2\pi n^3}\,P(n)$ at
+$R_0=1$; the dip below 1 is the $-1/(12n)$ correction, continued by
+$+1/(288n^2)$. \textbf{Panel 2:} subcritical decay
+$\rho(R_0)=R_0 e^{1-R_0}$ and amplitude $C(R_0)=1/(R_0\sqrt{2\pi})$.
+\textbf{Panel 3:} plotting $n^{3/2}P(n;R_0)$ against $\xi=n(1-R_0)^2$
+collapses five values of $R_0$ onto $\mathcal{F}(\xi)=
+(2\pi)^{-1/2}e^{-\xi/2}$. \emph{Panels 1--3 are also obtainable from
+Stirling on the Borel--Tanner closed form.} \textbf{Panel 4 is what AC
+adds:} histograms of the rescaled outbreak duration $H_n/\sqrt{n}$ at
+criticality, conditioned on three disjoint size bins ($n\in[60,200)$,
+$[300,1000)$, $[1500,5000)$). All three histograms collapse onto the
+single Aldous limit law (black curve) --- the density of $2\max_{[0,1]}
+e(t)$, where $e$ is the normalised Brownian excursion --- with sample
+mean $\sqrt{2\pi}\approx 2.507$. \emph{Panel 4 is silent in
+Borel--Tanner}: the closed-form pmf knows total size, not duration.
+Reproduced by \texttt{simulations/sir\_ac\_demo.py}.}
+\label{fig:sir_ac_demo}
+\end{figure}
+
+\paragraph{The three equations the figure verifies.}
+For the record, the closed-form predictions plotted against
+simulation in Figure~\ref{fig:sir_ac_demo} are:
+\begin{align}
+P(n) &\;=\; \frac{1}{\sqrt{2\pi}\,n^{3/2}}
+\left(1 - \tfrac{1}{12 n} + \tfrac{1}{288 n^2}
+      + \tfrac{139}{51840\, n^3} + \cdots\right)
+\quad (R_0 = 1), \label{eq:sir_full_series} \\
+P(n; R_0) &\;\sim\; \frac{1}{R_0\sqrt{2\pi}} \cdot
+\frac{\rho(R_0)^n}{n^{3/2}},
+\qquad
+\rho(R_0) \;=\; R_0\, e^{1 - R_0}, \label{eq:sir_amplitude} \\
+P(n; R_0) &\;\sim\; \frac{1}{\sqrt{2\pi\, n^{3}}}\;
+\mathcal{F}\!\bigl(n(1-R_0)^2\bigr),
+\qquad
+\mathcal{F}(\xi) \;=\; e^{-\xi/2}.
+\label{eq:sir_scaling}
+\end{align}
+
+\subsubsection*{What AC \emph{does} add for SIR}
+
+Two things genuinely beyond the Borel--Tanner formula --- both of which
+matter for understanding why this paper exists.
+
+\textbf{(i) Universality, not just one model.}
+Borel--Tanner is specific to Poisson($R_0$) offspring. AC's content is
+structural: \emph{any} single-type branching process with PGF $\phi(T)$
+satisfying $\phi(T^*) = T^* \phi'(T^*)$ and $\phi''(T^*)\neq 0$ produces
+the same $n^{-3/2}$ tail and the \emph{same} scaling function
+$\mathcal{F}(\xi)=e^{-\xi/2}$, with constants set by the local data
+$(\phi(T^*), \phi''(T^*))$. The equivalence class includes geometric,
+binomial, fixed-size offspring, RBA on the Bethe lattice, uniform
+random trees, parking functions, \L{}ukasiewicz walks, and the entire
+mean-field DP class. The PGF route gives one model's answer; AC says
+which features of $\phi$ control the universal scaling and which are
+model-specific. This is the actual content of the slogan
+``directed-percolation universality class for branching processes.''
+
+\textbf{(ii) Shape statistics conditional on size.}
+Borel--Tanner tells you about \emph{total} outbreak size $n$. It says
+nothing about what the outbreak \emph{looks like}: how many generations
+it lasts, when and how high it peaks, what the full epidemic curve
+looks like. These observables come from the bivariate generating
+function and the AC continuum-tree machinery. The deepest single
+statement is Aldous's continuum random tree theorem~\cite{aldous1993}:
+at criticality, conditioned on total size $n$, the rescaled
+breadth-first profile of the infection genealogy converges to a
+Brownian excursion,
+\begin{equation}
+\frac{1}{\sqrt{n}}\, X_{\lfloor n t\rfloor}
+\;\xrightarrow{d}\;
+\frac{2}{\sigma}\, e(t),
+\qquad t \in [0,1],
+\label{eq:sir_excursion}
+\end{equation}
+where $\sigma^2 = \mathrm{Var}(\phi)$ ($=1$ for SIR at $R_0=1$) and
+$e$ is the normalised Brownian excursion. From this single statement
+follow:
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt]
+\item duration $H_n / \sqrt{n} \xrightarrow{d}
+      (2/\sigma)\,\max_{[0,1]} e$, with explicit Chung--Kennedy
+      density;
+\item peak height $M_n / \sqrt{n} \xrightarrow{d}
+      (2/\sigma)\,\max_{[0,1]} e$ (same limit law as duration, up to
+      factor);
+\item time-to-peak $\tau_n / n \xrightarrow{d} \arg\max_{[0,1]} e$,
+      with explicit density;
+\item any continuous functional of the rescaled profile converges to
+      the corresponding functional of $e$.
+\end{itemize}
+None of these is in the Borel--Tanner pmf. All come from the
+\emph{same} generating-function framework, applied bivariately
+($z$ for size, second variable for the shape statistic). This is the
+``wow'': SIR's epidemic-curve geometry is a \emph{Brownian excursion},
+not because of any specific physics of disease, but because the
+underlying generating function has a square-root branch point and
+the AC continuum-tree limit is forced.
+
+\subsubsection*{Where AC stops being optional}
+
+For SIR, both routes work. For the rest of the paper, AC is forced on
+us by the absence of closed forms:
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt]
+\item \textbf{BARW-even} (Section~\ref{app:barw}): the GF has a
+      logarithmic singularity, not a square-root branch point. There
+      is no Borel--Tanner-style closed pmf to apply Stirling to.
+\item \textbf{Multi-species reaction networks}: the GF is a
+      multivariate implicit equation; ``Lagrange inversion''
+      becomes the bivariate Bender formula and asymptotics need a
+      Newton polygon. Stirling does not apply.
+\item \textbf{Coupled particle--field systems}: the singularity is a
+      curve in $(z, k)$-space; near-critical observables come from
+      multivariate Puiseux. PGFs alone do not reach these.
+\item \textbf{$\varepsilon$-expansion and $\beta$-functions}: the
+      Lagrange coefficients carry $d$-dependent loop weights
+      $\Omega_d/D^2 \cdot 1/\varepsilon$; Lagrange inversion produces
+      the $\beta$-function coefficients automatically. The PGF route
+      has no analogous mechanism.
+\end{itemize}
+
+\paragraph{Student takeaway.}
+On SIR's marginal distribution, AC and the PGF method are the same
+calculation in different notation; Figure~\ref{fig:sir_ac_demo} is a
+calibration check. The genuine value of AC, even on SIR, is
+(a)~\textbf{universality}: it identifies the local data at the branch
+point as the only input, so the same scaling function controls every
+model in the equivalence class; (b)~\textbf{shape statistics}: the
+bivariate machinery delivers the Brownian-excursion profile and its
+functionals, none of which Borel--Tanner can see; and (c)~\textbf{the
+machinery scales}: the same singularity-analysis vocabulary continues
+to work on BARW-even, multi-species CRNs, and coupled field theories,
+where the PGF route runs out of road. This is the whole programme in
+miniature:
+\[
+\underbrace{\{\phi(T^*),\,\phi''(T^*),\,\sigma^2,\,\ldots\}}_{\text{local data at the singularity}}
+\;\Longrightarrow\;
+\underbrace{\{n^{-3/2},\;\mathcal{F}(\xi),\;2e(t)/\sigma\}}_{\text{universal scaling on the whole class}}.
+\]
 
 \subsection{Comparison with the BRW}
 

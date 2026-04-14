@@ -1,0 +1,1525 @@
+\documentclass[10pt,a4paper,twocolumn]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=1.8cm,columnsep=0.7cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[round,authoryear]{natbib}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{booktabs}
+
+\hypersetup{colorlinks=true,linkcolor=blue!60!black,
+  citecolor=green!50!black,urlcolor=blue!70!black}
+
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+\newtheorem{remark}{Remark}
+
+\newcommand{\dd}{\mathrm{d}}
+\newcommand{\ee}{\mathrm{e}}
+\newcommand{\eps}{\varepsilon}
+\newcommand{\Cstr}[1]{\mathcal{C}_{#1}}
+\newcommand{\Tree}{\tau}
+\newcommand{\USM}{\mathrm{UST}}
+\newcommand{\LERW}{\mathrm{LERW}}
+\newcommand{\Tr}{\operatorname{tr}}
+\newcommand{\Ex}{\mathbb{E}}
+
+\usepackage{mdframed}
+\newmdenv[backgroundcolor=blue!5,linecolor=blue!40,
+          linewidth=1pt,innertopmargin=6pt,innerbottommargin=6pt,
+          innerleftmargin=8pt,innerrightmargin=8pt]{slotbox}
+
+\title{Counting Past the Boundary\\[2pt]
+  \large Enumerative CFAC for LERW in $d{=}3$, TAP Complexity, and KPZ Upper Tails}
+
+\author{S. Amarteifio\\
+  \small\textit{Percolation Labs}}
+\date{April 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The CFAC stratification theorem~\citep{AmarteifioCFAC2026} has a narrow
+domain: polynomial Dyson--Schwinger equations with algebraic or
+$D$-finite generating functions and a scalar rank-$k$ bridge.  The
+companion paper~\citep{AmarteifioMannaC3} marks three cases beyond
+that boundary --- loop-erased random walk in three dimensions, TAP
+complexity in spin glasses, and the KPZ upper-tail rate function.
+Here we revisit those cases under the broader CFAC umbrella, where
+the theorem is one deliverable and \emph{weighted enumeration of
+combinatorial objects} is another.  For each case we extract a clean
+generating-function statement: (i) the LERW two-point function on any
+finite graph is a ratio of Kirchhoff polynomials, so the 3D exponent
+$\nu$ is a finite-size scaling question about a concrete rational
+function; (ii) the Kac--Rice expected complexity for $p$-spin models
+is (up to a Legendre transform) a ribbon-graph enumeration, evaluated
+via Harer--Zagier; (iii) the replicated lattice directed polymer is a
+chemical reaction network of $n$ distinguishable walkers with
+pairwise $\delta$-attraction, with Schur-process structure.  None of
+these produces the open exponent in closed form, but each gives the
+object under study a concrete combinatorial definition that the
+CFAC pipeline can operate on at finite size.  The purpose is to
+widen the scope statement honestly: the theorem does not reach these
+problems, but the enumeration layer does.
+\end{abstract}
+
+\tableofcontents
+
+% ==================================================================
+\section{Introduction: two tiers of CFAC}
+\label{sec:intro}
+
+The CFAC programme, as stated in~\citep{AmarteifioCFAC2026}, has two
+distinct deliverables that are usually discussed together.
+
+\begin{description}
+\item[Tier A (stratification theorem).] For a polynomial
+  Dyson--Schwinger equation $G = z\phi(G)$ with an algebraic or
+  $D$-finite generating function, the Puiseux order $k$ of the
+  dominant branch point gives a density-exponent skeleton
+  $\tau_0 = 1 + 1/k$, with a one-loop dressing $\gamma_k(d)$ from a
+  scalar rank-$k$ bridge function.
+\item[Tier B (enumerative combinatorics).] The underlying CFAC
+  pipeline treats Feynman diagrams as weighted combinatorial objects
+  --- Symanzik polynomials, matroidal deletion--contraction,
+  BPHZ multiplicities, sector decomposition --- and computes exact
+  finite-size generating functions independently of whether a
+  closed-form asymptotic exists.
+\end{description}
+
+\subsection*{Background: unpacking the Tier-A statement}
+\label{sec:intro-bg}
+
+The Tier-A sentence compresses several technical notions that are
+worth spelling out for readers coming from physics or probability
+rather than analytic combinatorics.
+
+\paragraph{Generating function (GF).}
+A formal power series $F(z) = \sum_{n \geq 0} a_n z^n$ whose
+coefficients $a_n$ count the combinatorial configurations of size
+$n$ in the problem of interest --- for us, Feynman diagrams with
+$n$ loops, walks of length $n$, spanning trees of given weight,
+etc.  The variable $z$ has no physical meaning; it is a
+book-keeping marker.  For a physicist, $F(z)$ plays the role of
+a partition function in a fictitious ensemble with fugacity $z$
+for ``size''.  The asymptotic behaviour of $a_n$ as $n \to \infty$
+--- which is where physics lives --- is encoded in the nearest
+singularity of $F(z)$ on the circle of convergence: location
+$z_c$ sets the exponential growth $a_n \sim z_c^{-n}$, and the
+\emph{type} of singularity sets the subleading power.
+
+\paragraph{Algebraic GF.}
+$F(z)$ is \emph{algebraic} if it satisfies a polynomial equation
+$P(z, F(z)) = 0$ for some $P \in \mathbb{Q}[z, y]$.  The simplest
+example is the Catalan-number GF
+$F = 1 + z F^2$, solution $F(z) = (1 - \sqrt{1 - 4z}) / (2z)$,
+with a square-root branch point at $z_c = 1/4$.  Algebraic means
+``closed-form in polynomials and $n$-th roots''.  Many tree-like
+combinatorial classes have algebraic GFs; all of them admit exact
+asymptotic extraction by singularity analysis.
+
+\paragraph{$D$-finite GF.}
+$F(z)$ is \emph{$D$-finite} (equivalently, \emph{holonomic}) if it
+satisfies a linear ordinary differential equation with polynomial
+coefficients:
+$p_r(z) F^{(r)}(z) + \cdots + p_0(z) F(z) = 0$
+with $p_i \in \mathbb{Q}[z]$.  Every algebraic GF is $D$-finite,
+but the converse fails: $\exp(z)$, Bessel functions,
+hypergeometric series, and solutions of most special-function
+ODEs are $D$-finite but not algebraic.  For a physicist, $D$-finite
+is the class where the function is ``solvable by a finite
+ODE with polynomial coefficients'', and its coefficients satisfy
+a finite linear recurrence with polynomial coefficients.
+\emph{Not} $D$-finite means: no such finite ODE exists; the
+function lies outside the reach of classical special-function
+methods.  Lattice Green's functions on $\mathbb{Z}^d$ for
+$d \geq 2$ are the canonical non-$D$-finite examples in physics.
+
+\paragraph{Dyson--Schwinger equation (DSE).}
+In quantum field theory a DSE is a self-consistent integral
+equation relating a full Green's function to itself, obtained by
+resumming an infinite tower of Feynman diagrams.  In our
+combinatorial setting, ``DSE'' specialises to a functional
+equation of the form
+\[
+  G(z) \;=\; z \, \phi\bigl(G(z)\bigr),
+\]
+where $\phi$ is a polynomial (or more general analytic function)
+of $G$.  This is the ``polynomial DSE'' of Tier A.  It encodes
+rooted tree-like combinatorial structures: the root contributes
+one $z$, each child subtree contributes a factor of $G$, and the
+vertex structure lives in $\phi$.  The Catalan recursion
+$G = z(1 + G^2)$ (rooted binary trees) and more generally any
+vertex polynomial give specific instances.  Self-similar
+random-cluster models, directed-percolation mean-field
+recursions, and Doi--Peliti tree-level vertex resummations all
+produce DSEs of this shape.
+
+\paragraph{Puiseux order $k$ at the dominant singularity.}
+Near its nearest singularity $z_c$ an algebraic GF admits a
+\emph{Puiseux expansion} --- a power series in fractional powers
+of $(z_c - z)$:
+\[
+  G(z) \;=\; G(z_c) \;-\; A\,(z_c - z)^{1/k} \;+\; \cdots,
+  \qquad k \in \mathbb{Z}_{\geq 2}.
+\]
+The integer $k$ is the \emph{Puiseux order}.  For $k = 2$ the
+leading behaviour is a square-root cusp, for $k = 3$ a cube-root
+cusp, and so on.  By singularity analysis the coefficients behave
+as $a_n \sim C z_c^{-n} n^{-1 - 1/k}$; the exponent
+$\tau_0 = 1 + 1/k$ appearing in Tier A is this.  Different
+universality classes correspond to different $k$: mean-field
+directed percolation has $k = 2$, tricritical branching has
+$k = 3$, and so on.  The Puiseux order $k$ is the
+\emph{CFAC stratification index}: a discrete invariant separating
+the space of polynomial DSEs into strata, within each of which
+the leading exponent $\tau_0$ is universal.
+
+\paragraph{Scalar rank-$k$ bridge.}
+Beyond the leading exponent $\tau_0 = 1 + 1/k$, the CFAC
+programme refines the universal answer with a one-loop correction
+$\gamma_k(d)$ encoding the spatial dimension $d$.  The object
+that carries this correction is a \emph{bridge function}
+$B_k(r)$: a universal single-variable function of a dimensionless
+ratio $r$ (mass or diffusion ratio, etc.) determined by the rank
+$k$ and independent of the specific DSE.  ``Scalar'' means $B_k$
+is number-valued (the bridge is a scalar function of one
+argument); ``rank-$k$'' refers to the Puiseux order $k$ that
+classified the DSE.  The bridge converts the counting exponent
+$\tau_0$ into a physical density exponent, with explicit
+dimensional dependence $\gamma_k(d)$ inserted at the one-loop
+order.  The failure modes in the three boundary problems of the
+companion paper~\citep{AmarteifioMannaC3} are precisely failures
+of this scalar bridge to close: the problem demands a bridge of
+higher tensor rank (TAP), a disorder-averaged bridge (KPZ upper
+tail), or there is simply no DSE of the polynomial form at all
+(LERW in $d = 3$ --- the GF is non-$D$-finite).
+
+\paragraph{Stratification.}
+Putting these together: the CFAC theorem \emph{stratifies} the
+space of polynomial DSEs by the Puiseux order $k$ of the dominant
+singularity, and attaches to each stratum a canonical pair
+$(\tau_0, \gamma_k)$ --- the skeleton exponent and the one-loop
+dressing from the scalar rank-$k$ bridge.  The word
+``stratification'' is used in the classical sense (decomposition
+of a space into lower-dimensional pieces indexed by a discrete
+invariant), not in any sheaf-theoretic sense.
+
+\medskip
+
+The companion paper~\citep{AmarteifioMannaC3} flags three problems
+where Tier A does not reach:
+
+\begin{itemize}[leftmargin=*]
+\item LERW in $d = 3$: the thermodynamic-limit generating function on
+  $\mathbb{Z}^3$ is a lattice Green's function, neither algebraic nor
+  $D$-finite.
+\item TAP complexity: the organising quantity $\Ex|\det(H - fI)|$
+  needs a matrix-valued bridge; the current bridge is scalar.
+\item KPZ upper tail: the coefficient of the $|h|^{3/2}$ rate
+  function requires a disorder-averaged bridge; current bridges are
+  deterministic.
+\end{itemize}
+
+Each obstruction is a Tier-A obstruction.  In this note we ask the
+Tier-B question for the same three problems: \emph{what weighted
+enumeration does the generating-function language hand us}?  The
+answers are known to specialists in each subfield; the contribution
+here is to show that they align under a single CFAC lens, giving
+concrete objects the existing machinery can compute at finite size.
+
+Throughout, ``CFAC enumeration'' means the diagrammatic /
+combinatorial content of the pipeline --- Symanzik polynomials,
+matrix-tree determinants, weighted path and partition sums --- with
+no appeal to the stratification theorem.
+
+% ==================================================================
+\section{The enumerative layer}
+\label{sec:enumerative}
+
+Three constructions recur below.  Fixing them here lets the three case
+sections stay short.
+
+\paragraph{Kirchhoff / first Symanzik polynomial.}  For a finite
+graph $G = (V, E)$ with edge weights $w : E \to \mathbb{R}_{\geq 0}$,
+the \emph{weighted spanning-tree polynomial} is
+\begin{equation}
+  \Tree(G; w) \;=\; \sum_{T \in \mathcal{T}(G)} \prod_{e \in T} w_e,
+  \label{eq:kirchhoff}
+\end{equation}
+where $\mathcal{T}(G)$ is the set of spanning trees.  The
+\emph{matrix-tree theorem} gives a closed form:
+$\Tree(G; w) = \det L^{(v)}(G; w)$ for any reduced weighted Laplacian
+$L^{(v)}$.  In parametric Feynman integration,
+Eq.~\eqref{eq:kirchhoff} is the first Symanzik polynomial; in CFAC
+it is the object produced by \texttt{rdft/ac/dse.py} after
+matroidal deletion--contraction.
+
+\paragraph{Map / ribbon-graph enumeration.}  For an
+$N \times N$ symmetric Gaussian random matrix $M$ (GOE),
+\begin{equation}
+  \Ex[\Tr M^{2k}] \;=\; \sum_{g \geq 0} N^{k+1-2g} \, \varepsilon_g(k),
+\end{equation}
+where $\varepsilon_g(k)$ is the number of rooted one-face maps with $k$
+edges on a (possibly non-orientable) surface of genus $g$.  The
+orientable-surface case is the Harer--Zagier
+formula~\citep{HarerZagier1986}; the non-orientable extension is due
+to~\citep{GouldenJackson1997}.  In CFAC these are the Feynman
+diagrams of the matrix-model action $\tfrac12 \Tr M^2 - \tfrac{g}{N}
+\Tr M^k$, computed as ordinary (weighted) graph counts.
+
+\paragraph{Weighted path enumeration with $\delta$-interactions.}
+Fix a transition kernel $p(x, y)$ on a finite state space.  The
+partition function of $n$ distinguishable walkers of length $N$
+with a pairwise attractive contact interaction of strength $\beta^2$ is
+\begin{equation}
+  Z_N^{(n)}(\beta) \;=\; \sum_{\omega^1, \ldots, \omega^n} \prod_{t=1}^N
+    p(\omega^{\cdot}_{t-1}, \omega^{\cdot}_t) \,
+    e^{(\beta^2/2)\, k_t(\omega)},
+  \label{eq:nwalker}
+\end{equation}
+where $k_t(\omega) = \sum_x (\#\{i : \omega^i_t = x\})^2$ is the
+coincidence count at time $t$.  The reaction-network reading is a
+CRN with $n$ species and a symmetric binary vertex
+$i + j \to i + j$ carrying rate $\beta^2$.  Doi--Peliti quantisation
+of this CRN gives the replica moment of a directed polymer
+(§\ref{sec:kpz}).
+
+Each case below reduces to one of these three constructions.
+
+% ==================================================================
+\section{LERW in $d = 3$ as Kirchhoff enumeration}
+\label{sec:lerw}
+
+\paragraph{Setup.} Let $G = (V, E)$ be a finite connected weighted
+graph and fix two vertices $a, b \in V$.  The loop-erased random walk
+$\LERW_{a\to b}$ is the law of the chronologically loop-erased
+simple random walk from $a$ conditioned to hit $b$.  By Wilson's
+algorithm~\citep{Wilson1996}, $\LERW_{a \to b}$ coincides with the law
+of the unique $a$-to-$b$ path in the uniform spanning tree of $G$.
+
+\begin{proposition}[LERW as spanning-tree ratio]
+\label{prop:lerw}
+For any simple path $\gamma$ from $a$ to $b$ in $G$,
+\begin{equation}
+  \mathbb{P}\bigl[\LERW_{a\to b} = \gamma\bigr]
+  \;=\; \frac{w(\gamma) \, \Tree(G / \gamma)}{\Tree(G)},
+  \label{eq:lerw-kirchhoff}
+\end{equation}
+where $w(\gamma) = \prod_{e \in \gamma} w_e$ and $G / \gamma$ is the
+contraction of $G$ along $\gamma$.
+\end{proposition}
+
+\begin{proof}[Proof sketch]
+The event $\{\LERW_{a\to b} = \gamma\}$ is the event that the unique
+$a$-$b$ path in the UST equals $\gamma$, which is the event
+$\{\gamma \subset \USM\}$.  The conditional law of the UST given
+$\gamma \subset \USM$ is uniform over spanning trees of $G/\gamma$.
+The unconditional UST weight of a fixed spanning tree $T$ is
+$w(T)/\Tree(G)$, so
+$\mathbb{P}[\gamma \subset \USM] = w(\gamma) \Tree(G/\gamma)/\Tree(G)$.
+\end{proof}
+
+\paragraph{Length generating function.}
+Summing Eq.~\eqref{eq:lerw-kirchhoff} against a length marker gives a
+rational function in $z$:
+\begin{equation}
+  F_{ab}(z; G) \;\equiv\;
+  \sum_{\gamma : a \to b \,\text{simple}} z^{|\gamma|} \, w(\gamma) \,
+  \frac{\Tree(G / \gamma)}{\Tree(G)}.
+  \label{eq:Fab}
+\end{equation}
+
+\begin{corollary}[Rational representation on finite graphs]
+\label{cor:rational}
+For any finite $G$, $F_{ab}(z; G)$ is a rational function in $z$ with
+denominator $\Tree(G)$.  Both numerator and denominator are
+evaluations of the weighted Laplacian determinant.
+\end{corollary}
+
+The corollary is just bookkeeping on
+Eq.~\eqref{eq:lerw-kirchhoff}, but the content is that the LERW
+two-point function is a quantity CFAC already computes: the ratio of
+two first Symanzik polynomials.
+
+\paragraph{Scaling limit as finite-size scaling of
+$\boldsymbol{F_{0b}}$.}
+Take $G = \mathbb{Z}^3_N$ (the $N^3$-torus).  Let
+$\langle |\gamma| \rangle_{0b}$ denote the LERW expected length from
+$0$ to $b$ under Eq.~\eqref{eq:lerw-kirchhoff}.  The 3D LERW scaling
+exponent~\citep{Kozma2007} can be read off from
+\begin{equation}
+  \langle |\gamma| \rangle_{0b} \;\asymp\; |b|^{1/\nu_3},
+  \qquad \nu_3 \approx 1.624,
+\end{equation}
+which by Corollary~\ref{cor:rational} is a finite-size scaling
+statement about $z \partial_z \log F_{0b}(z; \mathbb{Z}^3_N)\big|_{z=1}$
+as $N, |b| \to \infty$ in the appropriate order.  The obstruction the
+stratification theorem meets --- that the thermodynamic limit is a
+non-$D$-finite lattice Green's function --- does not obstruct this
+finite-size object, which is a ratio of explicit determinants.
+
+\paragraph{Tropical / monomial-dominance limit.}
+In the limit where one spanning tree dominates (e.g.\ when edge
+weights are $e^{-\beta E_e}$ and $\beta \to \infty$),
+Eq.~\eqref{eq:lerw-kirchhoff} reduces to a deterministic path: the
+unique minimum-weight spanning tree.  The LERW distribution
+collapses onto the tree-path in this limit.  This is the tropical
+Kirchhoff limit mentioned in~\citep[\S7.1]{AmarteifioMannaC3}; it is
+a well-defined CFAC enumeration in its own right.
+
+\begin{remark}
+Prop.~\ref{prop:lerw} is classical (it is Wilson's
+algorithm in reverse).  The CFAC reading is that
+Eq.~\eqref{eq:lerw-kirchhoff} places LERW squarely inside the
+first-Symanzik-polynomial enumeration tier: the same machinery that
+produces two-loop hat diagrams~\citep{Amarteifio2026LDWC} produces
+the LERW two-point function, with no changes beyond the graph on
+which it is evaluated.
+\end{remark}
+
+\paragraph{Why $\boldsymbol{d = 3}$ is the hard case: dimensional
+partitioning of the LERW exponent.}
+The exponent $\nu_d$ is tractable in every dimension \emph{except}
+the physically relevant one, and the reason is structural:
+\begin{itemize}[leftmargin=*]
+\item \textbf{$d = 2$: conformal symmetry.}  The LERW scaling limit
+  is SLE$_2$~\citep{LawlerSchrammWerner2004}, an instance of the
+  conformally-invariant family SLE$_\kappa$.  Conformal invariance
+  in two dimensions is generated by an infinite-dimensional Lie
+  algebra (Virasoro), enough symmetry to collapse every observable
+  to a formula in the single parameter $\kappa$.  For LERW this
+  gives $d_f = 1 + \kappa / 8 = 5/4$ in closed form, and with it
+  $\nu_2 = 4/5$.
+
+\item \textbf{$d \geq 4$: mean-field / dimensional decoupling.}
+  Above the upper critical dimension $d_c = 4$, two independent
+  simple random walks typically do not intersect, so loop-erasure
+  acts trivially in the bulk.  LERW behaves as SRW with at most
+  logarithmic corrections, and $d_f = 2$ is forced by the Gaussian
+  scaling of SRW~\citep{Lawler1986}.  At $d = 4$ this is exact up
+  to $\log^{1/3}$ corrections; for $d \geq 5$ it is exact.
+
+\item \textbf{$d = 3$: no symmetry, no small parameter.}  In three
+  dimensions the conformal group reduces to a finite-dimensional
+  M\"obius group (insufficient to fix any exponent), and the
+  interaction is not small (two 3D random walks intersect with
+  positive probability).  Kozma's theorem~\citep{Kozma2007} proves
+  the scaling limit exists and is supported on a set of some
+  Hausdorff dimension $d_f^{(3)}$, numerically
+  $\approx 1.6236$~\citep{Wilson2010}, but the proof is
+  non-constructive --- no technique is known that produces
+  $d_f^{(3)}$ in any form, closed or otherwise.  The same
+  obstruction is responsible for the unresolved status of 3D
+  Ising, 3D percolation, and 3D Heisenberg critical exponents.
+\end{itemize}
+
+The obstruction is therefore \emph{dimension-specific} and
+\emph{tool-specific}: 2D has conformal algebra, $d \geq 4$ has
+dimensional decoupling, 3D has neither.  The finite-graph
+Kirchhoff ratio of Prop.~\ref{prop:lerw} is exact in every
+dimension; the scaling-limit extraction loses closed-form
+tractability only at $d = 3$.  Section~\ref{sec:fss3d} returns
+to this from the analytic-combinatorics angle: given that the
+finite-size generating function is known exactly, what does
+asymptotic extraction from it give us, even without a closed
+form for the limit?
+
+% ==================================================================
+\section{TAP complexity as ribbon-graph enumeration}
+\label{sec:tap}
+
+\paragraph{Setup.}  For the spherical pure $p$-spin Hamiltonian
+$H_N$ on $S^{N-1}(\sqrt{N})$, the Kac--Rice formula for the expected
+number of critical values in $[NE_1, NE_2]$ is
+\begin{equation}
+  \Ex N_{\text{crit}}([E_1, E_2])
+  \;=\; c_{N,p} \int_{E_1}^{E_2}
+    \Ex \bigl|\det(M - f(E) I)\bigr| \, \rho_E(E) \, \dd E,
+  \label{eq:kacrice}
+\end{equation}
+where $M$ is a GOE$(N{-}1)$ matrix, $f(E)$ is a linear shift
+fixed by the Lagrange multiplier for the spherical constraint, and
+$c_{N,p}, \rho_E$ are explicit Gaussian factors~\citep{ABAC2013,Subag2017}.
+
+\paragraph{Characteristic-polynomial expectation as a generating
+function.}
+For GOE$(N)$,
+\begin{equation}
+  \log \Ex \bigl|\det(M - fI)\bigr|
+  \;=\; \sum_{k \geq 1} \frac{(-1)^{k+1}}{k f^k}\,
+        \Ex \Tr \bigl[(M/\sqrt{N})^k\bigr]
+        + O(1/f),
+  \label{eq:logdet-exp}
+\end{equation}
+convergent for $|f|$ above the semicircle edge.  The coefficients
+$\Ex\Tr[(M/\sqrt{N})^k]$ admit exact finite-$N$ expansions into
+rooted map counts~\citep{HarerZagier1986,GouldenJackson1997}:
+\begin{equation}
+  \Ex \bigl[\Tr (M/\sqrt{N})^{2k}\bigr]
+  \;=\; \sum_{g \geq 0} N^{-2g}\, \varepsilon^{\rm GOE}_g(k),
+  \label{eq:HZ-GOE}
+\end{equation}
+where $\varepsilon^{\rm GOE}_g(k)$ counts rooted one-face maps with
+$k$ edges on a (possibly non-orientable) surface of genus $g$.
+
+\begin{proposition}[TAP complexity as map enumeration]
+\label{prop:tap}
+The Kac--Rice complexity integrand in Eq.~\eqref{eq:kacrice} is the
+exponential of a generating function over rooted one-face maps:
+\begin{equation}
+  \log \Ex \bigl|\det(M - fI)\bigr|
+  \;=\; N \, \Phi_0(f) + \Phi_1(f) + N^{-2}\Phi_2(f) + \cdots,
+\end{equation}
+with each $\Phi_g$ determined by the map-counting coefficients
+$\{\varepsilon^{\rm GOE}_g(k)\}_{k \geq 1}$ via
+Eq.~\eqref{eq:logdet-exp} and the moment expansion
+Eq.~\eqref{eq:HZ-GOE}.  At large $N$, $\Phi_0(f) = \int \log|\lambda -
+f|\,\rho_{\rm sc}(\lambda)\,\dd\lambda$, recovering the semicircle
+complexity density of~\citep{ABAC2013}.
+\end{proposition}
+
+\begin{proof}
+Cluster expansion of $\log \Ex\,\exp[\sum_k \lambda_k \Tr M^k]$ against
+the genus expansion of~\citep{HarerZagier1986, GouldenJackson1997};
+specialise $\lambda_k$ to the coefficients of $\log|\det(M - fI)|$
+from Eq.~\eqref{eq:logdet-exp}.  The large-$N$ limit of
+$\Phi_0$ is the Wigner semicircle transform because the
+planar ($g = 0$) map count is the Catalan numbers, whose generating
+function is $(1 - \sqrt{1 - 4t})/(2t)$.
+\end{proof}
+
+\paragraph{CFAC hookup.}  $\Phi_0$ is the standard TAP complexity
+density.  Prop.~\ref{prop:tap} places it in the CFAC enumeration
+tier: the finite-$N$ and subleading corrections are exact sums over
+rooted one-face maps, which are diagrams the pipeline handles
+natively (they are the Feynman diagrams of a matrix $\phi^3 / \phi^4$
+model).  The obstruction flagged
+in~\citep[\S7.2]{AmarteifioMannaC3} --- that a matrix-valued bridge
+is needed to close the scaling of $\Sigma(E)$ via the stratification
+theorem --- does not apply at this tier: one is counting maps, not
+extracting a Puiseux exponent.
+
+\begin{remark}
+The Legendre transform
+$\Sigma(E) = \sup_f [\,-R(E, f) + \Phi_0(f)\,]$, with $R(E, f)$
+the Gaussian rate~\citep{ABAC2013}, is the large-deviation form of
+TAP complexity.  In the map-counting language, this is the saddle
+point of a generating function over rooted ribbon graphs with an
+external parameter $f$ tuned to the complexity curve.  The complexity
+threshold $E_\infty$ (below which critical points cease to be
+exponentially numerous) is the value of $E$ at which the saddle hits
+the edge of the semicircle, i.e.\ the radius of convergence of the
+planar map generating function.
+\end{remark}
+
+% ==================================================================
+\section{KPZ upper tail as replica CRN enumeration}
+\label{sec:kpz}
+
+\paragraph{Setup.}  The $(1{+}1)$-dimensional lattice directed
+polymer with i.i.d.\ Gaussian weights $\eta(t, x)$ of variance $1$ has
+partition function
+\begin{equation}
+  Z_N(\beta) \;=\; \sum_{\omega : (0,0) \to (N, \cdot)}
+    \prod_{t=0}^{N} \exp\!\bigl[\beta \eta(t, \omega_t)\bigr],
+\end{equation}
+with sum over nearest-neighbour lattice paths.  The KPZ universality
+hypothesis predicts that for large $N$, $\log Z_N - c_1 N \sim c_2
+N^{1/3} \chi$ with $\chi$ Tracy--Widom-distributed, and an upper-tail
+rate function
+$\mathbb{P}[\log Z_N - c_1 N > y N^{1/3}] \asymp e^{-c_3 y^{3/2}}$
+at large positive $y$~\citep{CorwinGhosal2020, Krajenbrink}.
+
+\paragraph{Replicated moments as weighted enumeration.}
+For integer $n \geq 1$, disorder-averaging gives
+\begin{equation}
+  \Ex[Z_N(\beta)^n]
+  \;=\; \sum_{\omega^1, \ldots, \omega^n}
+        \prod_{t=0}^N
+        \exp\!\Bigl[\tfrac{\beta^2}{2}\,
+           k_t(\omega^{1:n})\Bigr],
+  \label{eq:replica-moment}
+\end{equation}
+with the coincidence count
+$k_t(\omega^{1:n}) = \sum_x (\#\{i : \omega^i_t = x\})^2$.
+Eq.~\eqref{eq:replica-moment} is an instance of the weighted
+$n$-walker enumeration Eq.~\eqref{eq:nwalker}.
+
+\begin{proposition}[KPZ replica moments as CRN partition function]
+\label{prop:kpz-replica}
+For each integer $n \geq 1$, $\Ex[Z_N^n]$ is the partition function
+of a chemical reaction network with $n$ distinguishable random-walker
+species and a symmetric binary contact vertex
+$i + j \to i + j$ of rate $\beta^2$, on $N$ time steps.  The
+Doi--Peliti representation is an MSR action with kinetic term for
+each walker and a single $\delta$-localised four-leg vertex
+identifying species pairwise.
+\end{proposition}
+
+The proof is direct inspection of Eq.~\eqref{eq:replica-moment}.  In
+the continuum limit the CRN becomes the attractive $n$-body
+Lieb--Liniger model, and this is the classical replica route to
+Tracy--Widom~\citep{Krajenbrink}.
+
+\paragraph{Schur-process form (discrete geometries).}
+For several exactly-solvable lattice models (log-gamma polymer,
+O'Connell--Yor, geometric last passage), RSK correspondence converts
+the replica sum into a partition sum~\citep{BorodinCorwin2014}:
+\begin{equation}
+  \Ex[Z_N^n] \;=\; \sum_{\lambda \vdash n} s_\lambda(x_1, \ldots, x_N)\,
+      s_\lambda(y_1, \ldots, y_N) \cdot (\text{spectral weight}),
+  \label{eq:schur-form}
+\end{equation}
+with $s_\lambda$ the Schur polynomial.  Eq.~\eqref{eq:schur-form} is
+an enumeration over partitions weighted by Schur pairs, and the
+generating function $\sum_n \lambda^n / n!\, \Ex[Z_N^n]$ becomes a
+Schur measure on partitions --- a determinantal point process whose
+right edge, under an appropriate scaling, is the Airy$_2$ kernel
+underlying Tracy--Widom.
+
+\paragraph{Upper-tail exponent as a Schur-measure edge statement.}
+The $|y|^{3/2}$ upper-tail shape arises as the large-deviation form
+of the right edge of the Schur / Plancherel measure on partitions,
+an instance of the edge large-deviation theory of determinantal
+processes.  This is where the \emph{coefficient} problem sits:
+translating between lattice weight distributions and Schur specialisations.
+
+\begin{proposition}[Exponent vs.\ coefficient]
+\label{prop:kpz-exponent-coeff}
+At the exponent level, the $|y|^{3/2}$ upper-tail shape follows from
+any discretisation admitting the Schur-process resummation
+Eq.~\eqref{eq:schur-form} together with Airy-kernel edge asymptotics
+of the corresponding Schur measure.  The model-specific coefficient
+$c_3$ depends on the spectral weight and is not determined by the
+enumeration alone.
+\end{proposition}
+
+\begin{proof}[Proof sketch]
+Given Eq.~\eqref{eq:schur-form}, the generating function
+$\mathcal{G}(\lambda) = \sum_n \lambda^n \Ex[Z_N^n] / n!$ is a
+Fredholm determinant for a Schur kernel~\citep{BorodinCorwin2014}.
+The upper-tail rate of $\log Z_N$ corresponds to the rate of decay
+of $\mathbb{P}[\text{top row of }\lambda > L]$ under the Schur
+measure.  The classical edge large-deviation result for such measures
+gives a rate function cubic in the scaled variable, yielding the
+$|y|^{3/2}$ shape under the appropriate exponentiation~\citep{Krajenbrink}.
+The coefficient depends on the derivative of the spectral density at
+the edge, which is a model input.
+\end{proof}
+
+\paragraph{CFAC hookup.}  The CRN of Prop.~\ref{prop:kpz-replica}
+sits inside the CFAC pipeline without modification: it is a Doi--Peliti
+action with $n$ species and one vertex.  The enumeration of
+configurations at fixed $n$ is a standard walker counting.  What is
+\emph{not} inside the current pipeline is the replica continuation
+$n \to 0$ and the disorder-averaged bridge that would fix $c_3$ from
+first principles.
+
+\paragraph{Tier-A closed form for the 2-body binding on
+$\boldsymbol{\mathbb{Z}}$.}
+At $n = 2$ the CRN reduces to a tight-binding chain with an
+attractive on-site impurity, which admits a closed-form bound-state
+eigenvalue.  This is the one place where the enumeration layer
+delivers an exact Tier-A statement for the boundary cases.
+
+\begin{theorem}[Closed-form 2-body replica rate]
+\label{thm:d2-closed}
+For the lattice directed polymer on $\mathbb{Z}$ with Gaussian
+disorder of variance $1$ (coincidence weight
+$\exp(\tfrac{\beta^2}{2} k_t)$, $k_t = \sum_x (\#\{i: \omega^i_t = x\})^2$),
+the 2-body replica rate satisfies
+\begin{align}
+  D(2, \beta; \mathbb{Z})
+  &\equiv \lambda(2, \beta; \mathbb{Z}) - 2 \lambda(1, \beta; \mathbb{Z})
+     \nonumber \\
+  &= 2\beta^2 - \log\bigl(2 \ee^{\beta^2} - 1\bigr).
+  \label{eq:d2-closed}
+\end{align}
+The bound-state wavefunction in the relative coordinate $r = x_1 -
+x_2$ is $\psi(r) = z^{|r|/2}$ with $z = 1/(2\ee^{\beta^2} - 1)$.
+\end{theorem}
+
+\begin{proof}
+Separate the translation-invariant centre-of-mass coordinate
+$s = (x_1 + x_2)/2$ from the relative coordinate $r$.  At
+$k_s = 0$ the relative transfer matrix acts as
+$(T_{\text{rel}}\psi)(r) = \psi(r-2) + 2\psi(r) + \psi(r+2)$ for
+$r \neq 0$, with a multiplicative $\ee^{\beta^2}$ at $r = 0$ from
+the coincidence weight.  Ansatz $\psi(r) = z^{|r|/2}$ with
+$|z| < 1$ gives the bulk eigenvalue $\mu_{\text{rel}} = (1+z)^2/z$
+for $r \neq 0$.  The boundary condition at $r = 0$,
+$\ee^{\beta^2}\bigl(2z + 2\bigr) = \mu_{\text{rel}}$, yields
+$2\ee^{\beta^2}(1+z) = (1+z)^2 / z$, and hence
+$z = 1/(2\ee^{\beta^2} - 1)$.  Substituting,
+$\mu_{\text{rel}} = 4\ee^{2\beta^2}/(2\ee^{\beta^2}-1)$.
+Since $\lambda(1, \beta; \mathbb{Z}) = \beta^2/2 + \log 2$ and
+$\lambda(2, \beta; \mathbb{Z}) = \beta^2 + \log 2 + \log \mu_{\text{rel}}
+- \log \ee^{\beta^2}$ (the factored-out $\ee^{\beta^2}$ per step and
+the COM factor $\log 2$ for $k_s = 0$), a direct computation gives
+Eq.~\eqref{eq:d2-closed}.
+\end{proof}
+
+\begin{corollary}[Small-$\beta$ asymptotics]
+\label{cor:d2-small}
+As $\beta \to 0$,
+\[
+  D(2, \beta; \mathbb{Z}) \;=\; \beta^4 \;-\; \frac{\beta^6}{3}
+   \;+\; \frac{\beta^8}{6} \;+\; O(\beta^{10}),
+\]
+so the leading coefficient is $\beta^4$, matching the
+Kardar / Bethe-ansatz scaling of the 2-body bound-state binding for
+1D attractive $\delta$-Bose gases.  The bound state has
+localisation length $1 / \log(2 \ee^{\beta^2} - 1)$, diverging
+as $1/\beta^2$ at weak coupling and shrinking to $O(1)$ lattice
+sites at strong coupling.
+\end{corollary}
+
+Thm.~\ref{thm:d2-closed} is verified against the numerical
+transfer-matrix spectrum: $D(2, \beta; W)$ is monotone decreasing
+in $W$ and converges from above to Eq.~\eqref{eq:d2-closed} as
+$W \to \infty$.  At $\beta = 0.8$ the closed form gives
+$D(2, 0.8; \mathbb{Z}) = 0.25290$, with the finite-$W$ sequence
+$0.337, 0.310, 0.294, 0.284, 0.277, 0.272, 0.269$ at
+$W = 3, \dots, 9$.  Tests in
+\texttt{tests/test\_replica\_closed.py} verify the closed form,
+its series expansion coefficient by coefficient, and the finite-$W$
+convergence.
+
+\paragraph{Status of the other boundary closed forms.}
+The two remaining boundary exponents sit on opposite ends of the
+tractability spectrum, and it is worth being explicit about which
+is which.
+
+\emph{KPZ upper-tail $c_3$ is closed in continuum.}
+The coefficient $c_3 = 4/3$ is known exactly for the continuum
+KPZ equation~\citep{DasTsai2021, KrajenbrinkLeDoussal2021,
+Tsai2022}, derived in multiple independent ways: each route goes
+through the Bethe-ansatz cubic-in-$n$ shape
+$\lambda(n) = \tfrac{\beta^2}{2} n + \tfrac{\beta^4}{48} n(n^2-1)$,
+followed by a saddle-point / Airy-kernel edge argument on the
+resulting Fredholm determinant.  The $3/2$ exponent is the
+Legendre conjugate of the cubic.  For \emph{lattice} polymers the
+value of $c_3$ is model-dependent; Thm.~\ref{thm:d2-closed} already
+captures the $n = 2$ binding on $\mathbb{Z}$ in closed form, and the
+analogous three-body coordinate Bethe ansatz on $\mathbb{Z}$
+(nested, tractable for on-site attraction) would close the
+$n = 3$ sector and give the lattice $c_3$ by the same Legendre
+route. This is routine extension of the machinery already in
+place rather than a conceptual obstacle.
+
+\emph{LERW $\nu_3$ is genuinely open.}
+In $d = 2$ the exponent $\nu_2 = 4/5$ follows from the
+conformal-invariance / SLE$_2$ scaling
+limit~\citep{LawlerSchrammWerner2004}, with the universal formula
+$d_f = 1 + \kappa/8$.  In $d \geq 4$ the exponent $d_f = 2$ comes
+from the mean-field regime above the upper critical
+dimension~\citep{Lawler1986}.  In $d = 3$ neither mechanism
+applies: there is no conformal invariance in the scaling limit and
+no small parameter controlling the interaction.  Kozma's 2007
+scaling-limit theorem~\citep{Kozma2007} is an \emph{existence}
+result --- it shows a limit exists and is supported on a set of
+some Hausdorff dimension --- without producing $\nu_3$ in any
+form.  No closed form has been proposed even conjecturally.  The
+same structural obstruction (below the upper critical dimension,
+no conformal symmetry in odd dimension) is what keeps the 3D
+Ising critical exponents open.  For our programme this means:
+the finite-size Kirchhoff ratio of Prop.~\ref{prop:lerw} is exact
+on every finite graph --- the enumeration layer is complete ---
+but the scaling limit on $\mathbb{Z}^3$ is beyond what any current
+technique can close.
+
+% ==================================================================
+\section{Machine verification}
+\label{sec:machine}
+
+The three propositions are backed by a passing pytest suite
+\texttt{tests/test\_enumerative\_boundary.py}, exercising three new
+modules:
+\begin{itemize}[leftmargin=*]
+\item \texttt{rdft/ac/lerw.py} implements the Kirchhoff ratio of
+  Prop.~\ref{prop:lerw} and the length generating function
+  Eq.~\eqref{eq:Fab}.  Tests verify $\Tree(K_4) = 16$ (Cayley) and
+  $\Tree(C_n) = n$; that LERW probabilities sum to one on $K_4$ for
+  several endpoint pairs; that the two arcs of $C_6$ from $0$ to $3$
+  carry equal mass $\tfrac12$, while the short and long arcs from
+  $0$ to $1$ carry unequal mass summing to one.
+\item \texttt{rdft/ac/matrix\_model.py} implements the Harer--Zagier
+  recursion for $\varepsilon_g(k)$ and the genus expansion of
+  Eq.~\eqref{eq:HZ-GOE} (orientable / GUE case).  Tests verify
+  $\varepsilon_0(k) = C_k$ (Catalan), the classical values
+  $\varepsilon_1(2,3,4,5) = (1, 10, 70, 420)$, the identity
+  $\sum_g \varepsilon_g(k) = (2k-1)!!$ at $N = 1$, and Wigner
+  convergence $\Ex\Tr M^{2k} / N^{k+1} \to C_k$ as $N \to \infty$.
+\item \texttt{rdft/ac/replica.py} implements direct enumeration of
+  $\Ex[Z_N^n]$ from Eq.~\eqref{eq:replica-moment} and a Monte Carlo
+  cross-check by disorder averaging.  Tests verify the $n = 1$
+  enumeration matches the transfer-matrix path count at $\beta = 0$,
+  and that exact enumeration agrees with Monte Carlo within
+  $3\sigma$ at $n = 1$ and $n = 2$ for $N = 3$, $\beta = 0.5$.
+\end{itemize}
+
+\noindent
+These are sanity checks for the combinatorial identities, not
+predictions of the open exponents.
+
+% ==================================================================
+\section{Expressivity experiments}
+\label{sec:experiments}
+
+A second pass of modules pushes each case past the baseline check of
+\S\ref{sec:machine} into a non-trivial numerical experiment.
+
+\paragraph{LERW sampling on $\mathbb{Z}^d$ tori
+(\texttt{rdft/ac/lerw\_scaling.py}).}
+Lawler's loop-erased random-walk construction samples the measure of
+Prop.~\ref{prop:lerw} directly: run SRW from $a$ until it hits $b$,
+apply chronological loop erasure, record the path length. We verify
+on $K_4$ that sampled mean length agrees with the exact Kirchhoff
+ratio within one SEM, then sweep $\langle |\gamma|\rangle_{0 \to (r,
+0)}$ on $\mathbb{Z}^2_{16}$ and $\mathbb{Z}^3_{8}$.  The mean length
+is strictly increasing in $r$ in both dimensions.  On a periodic
+torus (no killing boundary) the Kenyon slope $d_f = 5/4$ is not
+recovered at these finite sizes; the natural setting for Kenyon's
+theorem is a box with Dirichlet boundary, handled next.
+
+\paragraph{Dirichlet-box LERW and recovery of Kenyon / Kozma
+exponents (\texttt{rdft/ac/lerw\_dirichlet.py}).}
+For the killed-walk LERW on $[0, L{-}1]^d$ --- start at the centre,
+run SRW with chronological loop erasure, stop the first time the
+walker steps outside the box --- the mean path length scales as
+$\langle |\gamma| \rangle \asymp L^{d_f}$ with the lattice LERW
+fractal dimension~\citep{Kenyon2000LERW, Kozma2007}.  A Monte-Carlo
+sweep at modest compute ($1500$--$3000$ samples per $L$) gives:
+\begin{center}
+{\small
+\begin{tabular}{@{}cccl@{}}
+\toprule
+$d$ & $L$ range & Fit $d_f$ & Ref.\ $d_f$ \\
+\midrule
+$2$ & $8$--$48$ & $1.28$ & $5/4$ \\
+$3$ & $4$--$12$ & $1.67$ & $\approx 1.624$ \\
+$4$ & $3$--$6$  & $1.77$ & $2$ (mean field) \\
+\bottomrule
+\end{tabular}
+}
+\\[2pt]
+{\small References: $d=2$ \citep{Kenyon2000LERW}; $d=3$
+\citep{Kozma2007, Wilson2010}.}
+\end{center}
+The $d = 2$ slope sits $2.4\%$ above the exact $5/4$ at these box
+sizes, the $d = 3$ slope sits $2.8\%$ above Kozma's value, and the
+$d = 4$ trend toward the mean-field $2$ is visible but finite-size
+dominated.  This is the clean version of the numerical face of
+Prop.~\ref{prop:lerw}: the Kirchhoff-ratio measure, sampled on the
+graph where Kenyon's theorem applies, recovers both known exponents
+within percent-level agreement from the CFAC enumeration layer
+alone.
+
+\paragraph{Replica transfer matrix
+(\texttt{rdft/ac/replica\_transfer.py}).}
+The $n$-walker CRN of Prop.~\ref{prop:kpz-replica} is a transfer
+matrix on configuration space $\{-W, \dots, W\}^n$ of size
+$(2W+1)^n$.  The Perron eigenvalue gives the replica rate
+\begin{equation}
+  \lambda(n, \beta; W) \;=\;
+   \lim_{N \to \infty} \tfrac{1}{N} \log \Ex[Z_N^n].
+\end{equation}
+Tests verify the free baseline $\lambda(n, 0; W) = n \log(2
+\cos(\pi/(2W+2)))$ (open-chain tight-binding), monotonicity in
+$\beta$, superlinear scaling $\lambda(n, \beta; W) / n$ increasing in
+$n$ for $\beta > 0$ (replica attraction / binding), and exact
+agreement between the transfer-matrix partition function and the
+direct CRN enumeration of \S\ref{sec:machine} for small $(n, N)$.
+
+\paragraph{Cubic-in-$n$ Bethe-ansatz signature
+(\texttt{rdft/ac/replica\_cubic.py}).}
+Kardar's exact Bethe-ansatz solution of the continuum
+$n$-body attractive $\delta$-Bose gas~\citep{Kardar1987,
+CalabreseLeDoussalRosso2010} gives
+\begin{equation}
+  \lambda(n, \beta) \;=\; a(\beta)\, n \;+\; b(\beta)\, \frac{n(n^2 - 1)}{6}
+  \;+\; O(n^5),
+\end{equation}
+the Lieb--Liniger ground-state shape that underlies the KPZ
+free-energy cumulants.  Define $D(n) := \lambda(n, \beta; W) - n\,
+\lambda(1, \beta; W)$.  The pure cubic ansatz predicts
+$D(2) = b$ and $D(3) = 4b$, so the model-independent witness
+$R(\beta, W) := D(3) / D(2) \to 4$ in the continuum limit
+$W \to \infty$.  Exact transfer-matrix evaluation yields:
+
+\medskip
+\noindent
+\begin{tabular}{@{}rrrrr@{}}
+\toprule
+$W$ & $D(2)$ & $D(3)$ & $R = D(3)/D(2)$ & $|R - 4|$ \\
+\midrule
+3 & 0.337 & 1.100 & 3.261 & 0.739 \\
+4 & 0.310 & 1.040 & 3.352 & 0.648 \\
+5 & 0.294 & 1.006 & 3.420 & 0.580 \\
+6 & 0.284 & 0.985 & 3.470 & 0.530 \\
+7 & 0.277 & 0.972 & 3.507 & 0.493 \\
+8 & 0.272 & 0.962 & 3.535 & 0.465 \\
+9 & 0.269 & 0.956 & 3.556 & 0.444 \\
+\bottomrule
+\end{tabular}
+
+\medskip
+\noindent (all at $\beta = 0.8$, exact eigenvalues).  The ratio
+approaches $4$ monotonically with the lattice width, with the
+finite-$W$ correction empirically consistent with $|R - 4| \sim 1/W$
+in the regime tested.  Tests verify monotonicity in $W$,
+positivity of binding for $\beta > 0$, vanishing at $\beta = 0$,
+and that the lattice ratio sits strictly in $(3, 4)$ at every $W$
+in the tested range.  This is the cleanest analytic handle on
+$\lambda(n, \beta; W)$ available from the transfer matrix at
+small $n$ alone --- the higher-$n$ continuation that would close
+the upper-tail coefficient is the next analytic step.
+
+\paragraph{Planar semicircle resolvent and Catalan reconstruction
+(\texttt{rdft/ac/tap\_complexity.py}).}
+The map-count generating function of Prop.~\ref{prop:tap} is tested
+at the planar order: the closed form of
+\begin{equation}
+  I(f) \;=\; \int_{-2}^{2} \log|\lambda - f|\, \rho_{\rm sc}(\lambda)
+  \,\dd\lambda
+\end{equation}
+is matched against two independent computations.  (i) Direct
+numerical integration of the defining integral, at a range of probe
+values $f \in \{-3, -2.5, -1.5, 0, 1.2, 2.5, 4\}$; agreement within
+$2 \times 10^{-3}$.  (ii) Series reconstruction from Catalan numbers
+via
+\[
+  I(f) \;=\; \log|f| - \sum_{k \geq 1} \frac{C_k}{2k}\, f^{-2k},
+  \qquad |f| > 2,
+\]
+matched within $10^{-4}$ at $|f| \in \{2.5, 3, 4, 6\}$ with $80$
+Catalan terms.  This is the genus-$0$ face of Prop.~\ref{prop:tap}:
+Catalan counts (planar rooted one-face maps) reconstruct the
+semicircle resolvent.
+
+\paragraph{Combinatorial-animal experiment for $\boldsymbol{d=3}$
+LERW (\texttt{rdft/ac/lerw\_hierarchical.py}).}
+Since the $\mathbb{Z}^3$ thermodynamic generating function is not
+$D$-finite, standard analytic-combinatorics extraction does not
+terminate.  The alternative route is to build a \emph{combinatorial
+animal}: a self-similar graph sequence $\{G_k\}$ on which LERW is
+tractable, and measure the gap between the animal's scaling
+exponent and the $\mathbb{Z}^3$ Monte-Carlo value~$d_f \approx
+1.624$.  Two animals are implemented:
+
+\begin{description}
+\item[Migdal--Kadanoff diamond $(b=4, s=2)$.]  $G_{k+1}$ replaces
+  each edge of $G_k$ by $b$ parallel branches of $s$ edges each.
+  Effective dimension $d_{\text{eff}} = 1 + \log b/\log s = 3$.
+  Every $G_k$ is a series-parallel graph, so its UST
+  deterministically selects one branch per diamond at every level
+  and the source-to-target path realises exactly the graph
+  diameter $s^k$.  Hence $d_f^{\text{MK}}(4, 2) = 1$ exactly, a
+  large-gap \emph{negative result}: the MK approximant, despite
+  having the correct $d_{\text{eff}} = 3$, loses the meandering
+  structure of LERW entirely.  The failure is structural: LERW is
+  degenerate on every series-parallel graph.
+
+\item[Sierpi\'nski gasket.]  $G_{k+1}$ is the ``triforce''
+  arrangement of three copies of $G_k$ glued at top-level corners.
+  Hausdorff dimension $\log 3 / \log 2 \approx 1.585$.  The gasket
+  is not series-parallel: every sub-triangle carries a cycle, so
+  loop erasure is active.  Monte-Carlo extraction at levels
+  $k = 2, \dots, 5$ gives $d_f^{\text{Sierp}} \approx 1.20$,
+  strictly between $1$ and the gasket's Hausdorff dimension.  The
+  animal now has nontrivial loop-erasure exponent but at the
+  wrong fractal dimension; its gap to $\mathbb{Z}^3$'s value
+  $1.624$ is $\approx 0.42$.
+\end{description}
+
+\medskip
+\noindent
+{\small
+\begin{tabular}{@{}p{0.34\columnwidth}ccc@{}}
+\toprule
+Animal & $d_{\text{eff}}$ & $d_f^{\text{LERW}}$ & Gap \\
+\midrule
+MK diamond $(4, 2)$  & $3$         & $1.00$         & $-0.62$ \\
+Sierpi\'nski gasket  & $\log_2 3$  & $\approx 1.20$ & $-0.42$ \\
+$\mathbb{Z}^3_L$ box & $3$         & $\approx 1.67$ & $+0.05$ \\
+\bottomrule
+\end{tabular}
+}
+
+\medskip
+\noindent The two animals break in qualitatively different ways.
+The MK diamond reproduces the \emph{dimension label} of
+$\mathbb{Z}^3$ but not its graph structure (every loop closes
+trivially).  The Sierpi\'nski gasket reproduces the
+\emph{loop-erasure mechanism} but at the wrong fractal dimension.
+$\mathbb{Z}^3$ demands both non-trivial loop structure and
+translation-invariant three-dimensional connectivity at once ---
+neither animal captures both, which is an honest statement of
+what the obstruction to a closed-form $\mathbb{Z}^3$ exponent
+actually is.
+
+\paragraph{Algebraic / compositional reading.}
+Each hierarchical construction $G_{k+1} = \Phi(G_k)$ is a finite
+\emph{compositional} rewrite in the sense of Flajolet--Sedgewick's
+symbolic method: at the level of generating functions, the LERW
+length series $F_k(z)$ satisfies a functional recursion
+\begin{equation}
+  F_{k+1}(z) \;=\; \Phi^\sharp \bigl[ F_k(z) \bigr],
+  \label{eq:rg-recursion}
+\end{equation}
+where $\Phi^\sharp$ is the rational transformation on
+generating functions induced by the graph rewrite $\Phi$ through
+the Kirchhoff-ratio definition of Prop.~\ref{prop:lerw}.  The
+fractal exponent $d_f$ is then the linearisation eigenvalue of
+$\Phi^\sharp$ at its renormalisation fixed point:
+\[
+  d_f \;=\; \frac{\log \lambda^\sharp}{\log s},
+\]
+with $\lambda^\sharp$ the dominant eigenvalue of
+$\mathrm{d}\Phi^\sharp$ and $s$ the length-scale factor of
+$\Phi$.  This is the Kadanoff block-spin renormalisation rephrased
+as a fixed-point problem in the Flajolet symbolic category: the
+\emph{algebra of constructions} (SEQ, PROD, recursive
+substitution) determines the \emph{algebra of generating
+functions}, and the exponent comes from a single eigenvalue
+derivative.  For series-parallel $\Phi$ the transformation is
+degenerate and $\lambda^\sharp = s$ (hence $d_f = 1$); for
+non-series-parallel $\Phi$ the eigenvalue carries non-trivial
+graph information.  The obstruction at $\mathbb{Z}^d$ is precisely
+that there is no finite rewrite $\Phi$ that generates $\mathbb{Z}^d$
+by self-similar substitution: translation invariance is a
+\emph{limit} construction rather than a compositional one, so the
+symbolic-method machinery has no finite animal to seed.
+
+\paragraph{Two further animal experiments and their negative
+findings.}
+Having exhausted the self-similar hierarchical approach, the
+natural next question is whether a tower of
+\emph{non-self-similar} but still algebraic animals can close in
+on $d_f^{(3)}$.  Two are implemented and documented here for
+completeness; both fail, and the failure mode of each is
+informative.
+
+\emph{(a) Finite-cross-section tubes
+(\texttt{rdft/ac/lerw\_tube.py}).}
+LERW on the tube $\{0, \dots, N-1\}^2_{\text{periodic}} \times
+\{0, \dots, L-1\}_{\text{Dirichlet}}$ defines, for each $N$, an
+$N^2$-state Markov chain with an algebraic spectrum, hence an
+algebraic candidate exponent $d_f^{(N)}$.  Monte-Carlo extraction
+at $N = 1, 2, 3, 4, 5$ with $L \in \{8, 12, 16, 24, 32\}$ gives
+$d_f^{(N)} \approx 1$ for every $N$ tested (ballistic collapse).
+The reason is structural: a narrow tube is quasi-1D, and LERW on
+a 1D path is a deterministic monotone traversal.  Cross-sectional
+wandering contributes a sub-leading constant factor, not a
+different power of $L$.  The tower of tube exponents does not
+approach $d_f^{(3)}$ as $N$ grows --- it stays at $1$ until
+$N \sim L$, at which point the ``tube'' is no longer a tube and
+one is simply looking at an isotropic box.  This rules out the
+tube-transfer-matrix approach as a tower of algebraic animals
+for $d_f^{(3)}$.
+
+\emph{(b) Algebraic extrapolation on isotropic boxes
+(\texttt{rdft/ac/lerw\_extrap.py}).}
+The correct target observable is the isotropic-box mean length
+$\langle|\gamma|\rangle_L$ on $\{0, \dots, L-1\}^3$, which our
+Dirichlet sampler produces.  Classical AC-style algebraic
+extrapolation applied to the sequence
+$\{\langle|\gamma|\rangle_L\}$ includes:
+\begin{itemize}[leftmargin=*]
+\item Naive log-log fit;
+\item $(1 + B/L^\omega)$ correction-to-scaling fits with $\omega$
+  fixed or grid-searched;
+\item Richardson extrapolation on effective exponents
+  $d_f^{\text{eff}}(L) := \log(\langle|\gamma|\rangle_{L+}/
+  \langle|\gamma|\rangle_{L-}) / \log(L_+ / L_-)$, assuming a
+  $1/L$ leading correction;
+\item Neville--Richardson tableau extrapolation, assuming an
+  integer-power correction tower $1/L, 1/L^2, \dots$
+\end{itemize}
+On clean synthetic data with a known correction structure the
+schemes recover the injected exponent (tests witness this).  On
+real LERW data in $d = 2$ and $d = 3$, however, the
+``sophisticated'' schemes do \emph{not} outperform the naive fit:
+they systematically bias $d_f$ downward because the true
+correction to scaling is not a simple power of $1/L$.  In $d = 3$
+at $L \in \{4, 6, \dots, 16\}$ the naive fit gives $d_f \approx
+1.62$ (coincidentally within a few parts per thousand of Wilson's
+$1.6236$), while the $(1 + B/L)$ correction fit drags it to
+$\approx 1.54$ and Richardson extrapolation to $\approx 1.29$.
+This is a concrete epistemic statement: \emph{LERW finite-size
+corrections do not live in the algebraic-power-of-$1/L$ category
+that Richardson and Neville assume.}  If they did, those schemes
+would dominate the naive fit by orders of magnitude.  They don't,
+so the corrections include some non-algebraic structure
+(logarithmic factors, non-integer powers, or boundary-specific
+terms that do not obey the $\Phi^\sharp$-eigenvalue story).
+
+\paragraph{A fifth animal: the sandpile group
+(\texttt{rdft/ac/sandpile\_group.py}).}
+The Majumdar--Dhar bijection~\citep{MajumdarDhar1992} maps
+recurrent configurations of the abelian sandpile model (ASM) on a
+graph $G$ to spanning trees of $G$; Wilson's theorem then maps
+the $a$-to-sink path in the UST to LERW.  So ASM states, spanning
+trees, and LERW carry the same probabilistic content.  The
+algebraic upgrade is that recurrent ASM configurations form a
+finite abelian group --- the \emph{sandpile group}
+\[
+  K(G) \;=\; \mathbb{Z}^{V \setminus \{s\}}
+   \,/\, \Delta'\, \mathbb{Z}^{V \setminus \{s\}},
+\]
+with $\Delta'$ the Laplacian with the sink row/column removed.
+The sequence $\{K(\mathbb{Z}^d_L)\}_{L=1,2,\dots}$ is a concrete
+tower of finite algebraic animals, each of which is completely
+determined by the Smith normal form of $\Delta'$.
+
+Computation (via integer Smith normal form): for
+$\mathbb{Z}^2_L$ the non-trivial invariant factors are
+$L = 3$: $[6, 6, 18, 18]$;
+$L = 4$: $[2, 2, 8, 24, 24, 24, 96]$;
+$L = 5$: $[10, 10, 50, 50, 50, 50, 50, 50]$;
+for $\mathbb{Z}^3_3$ torus,
+$[6, 6, 6, 18, 18, 54, 54, 54, 54, 162, 162, 162]$.
+The group orders (= Matrix-Tree spanning-tree counts) are verified
+against the closed-form Laplacian-eigenvalue product, so the
+computation is correct.
+
+\emph{Fifth failure mode.}
+The group structure carries clear number-theoretic content (the
+divisors are products of prime powers determined by $L$'s
+factorisation), but its scaling is erratic rather than universal:
+the largest invariant factor grows as $18, 96, 50, \dots$ for
+$L = 3, 4, 5$, giving effective exponents
+$\log(d_{\max}) / \log L \in \{2.63, 3.29, 2.43\}$ --- dominated
+by number-theoretic fluctuations rather than any clean power-law.
+The obstruction is structural: the sandpile GROUP is the Smith
+normal form of $\Delta'$, a \emph{static} algebraic invariant.
+The LERW \emph{fractal dimension} is a dynamical observable --- the
+expected length of the UST path between two points --- that
+depends on how the full Laplacian spectrum interacts with the
+path decomposition, not on the Smith-normal-form decomposition
+alone.  What WOULD carry $d_f$ is the avalanche-size / wave-profile
+distribution of the ASM \emph{dynamics}; that is not an algebraic
+invariant of $K(G)$.
+
+The upshot: the Majumdar--Dhar bijection is real and deep, and
+the sandpile group is a legitimate algebraic animal for every
+finite graph, but it is the wrong algebraic object to extract
+$d_f^{(3)}$ from.  The group's content is Kirchhoff (spanning-tree
+count, hence bulk entropy); it does not carry path-length
+scaling.  This is another honest no-go to add to the catalogue.
+
+\paragraph{What IS the right combinatorial object for path
+length? (\texttt{rdft/ac/lerw\_exact.py})}
+With five algebraic animals catalogued as failures, a sharper
+question is: \emph{what is the combinatorial object that actually
+captures dynamical path length, the thing we ought to have been
+extracting asymptotics from?}  The answer has been in the paper
+from the start: it is the length generating function of Prop 1
+itself,
+\begin{equation}
+  F_{ab}(z; G) \;=\; \sum_{\gamma : a \to b\,\text{simple}}
+    z^{|\gamma|}\; \frac{w(\gamma)\, \Tree(G / \gamma)}{\Tree(G)}.
+  \label{eq:F-path}
+\end{equation}
+$F_{ab}(z; G)$ is a \emph{rational function in $z$} on every finite
+graph $G$, with mean length $\langle|\gamma|\rangle = F'_{ab}(1)$.
+This is deterministic --- no Monte Carlo --- and is the exact
+algebraic object whose asymptotic behaviour in $L$ would give
+$d_f^{(d)}$.
+
+Two sanity checks.  Naive hope: maybe $\langle|\gamma|\rangle$
+equals the sum of absolute electric currents
+$\sum_e |i_e(a \to b)|$, where $i_e$ is the unit current on edge
+$e$ in the resistor network with unit edge conductances.  This is
+true on trees.  On $K_4$ from vertex $0$ to $1$ the sum of
+absolute currents is $\tfrac12 + 4 \cdot \tfrac14 + 0 = \tfrac32$
+while the exact mean from Eq.~\eqref{eq:F-path} is $13/8 = 1.625$
+--- the discrepancy comes from edge $(2, 3)$, which carries zero
+current by symmetry but still appears in $1/8$ of LERW paths.
+So the correct combinatorial object is \emph{not} a sum of currents;
+it is the Kirchhoff ratio summed against $z^{|\gamma|}$ over simple
+paths, exactly as in Eq.~\eqref{eq:F-path}.
+
+Deterministic values from Eq.~\eqref{eq:F-path} via direct path
+enumeration plus Kirchhoff determinants:
+\begin{center}
+{\small
+\begin{tabular}{@{}lcc@{}}
+\toprule
+Case (corner-to-corner) & Exact $\langle|\gamma|\rangle$ & MC check \\
+\midrule
+$\mathbb{Z}^2_3$ & $17/4 = 4.25$          & $4.26 \pm 0.01$ \\
+$\mathbb{Z}^2_4$ & $6.69228\ldots$         & $6.69 \pm 0.02$ \\
+$\mathbb{Z}^2_5$ & $9.29526\ldots$         & $9.30 \pm 0.02$ \\
+$\mathbb{Z}^3_2$ & $53/16 = 3.3125$        & $3.31 \pm 0.02$ \\
+$\mathbb{Z}^3_3$ & $7.84146\ldots$ ($\sim 2$ min enum.)
+                                           & $7.85 \pm 0.05$ \\
+\bottomrule
+\end{tabular}
+}
+\end{center}
+
+These are \emph{exact rationals} (the last two decimalised for
+brevity), and they match Monte Carlo to sampling precision.
+The length generating function is therefore correctly identified
+as the combinatorial object for path length.
+
+\emph{Why we didn't already extract $d_f^{(3)}$ from it.}
+Two obstructions --- the same two that shaped the whole paper:
+\begin{itemize}[leftmargin=*]
+\item \textbf{Computation cost.}  The number of simple paths on
+  $\mathbb{Z}^3_L$ grows super-exponentially in $L$; direct
+  enumeration becomes infeasible beyond $L = 3$.  No known
+  analytic shortcut reduces the Kirchhoff-ratio sum to anything
+  D-finite as $L \to \infty$ --- because the scaling limit IS the
+  non-D-finite lattice Green's function.
+\item \textbf{Structural obstruction.}  Substituting
+  $z = 1$ in Eq.~\eqref{eq:F-path} gives $1$ (normalisation); the
+  derivative at $1$ is a \emph{weighted resistance-like quantity}
+  against the full Laplacian spectrum, and extracting its
+  $L$-scaling is exactly the closed-form problem we cannot solve
+  in $d = 3$.
+\end{itemize}
+
+So the right combinatorial object is in our hand; the
+rate-limiting step is not identifying it but extracting
+its asymptotics at scale.  The five algebraic animals catalogued
+above are the known attempts at shortcut asymptotics, each
+losing a different ingredient of $F_{ab}(z; \mathbb{Z}^d_L)$ in
+the process.  A wider AC category (resurgent transseries,
+non-D-finite closure, determinantal / Fredholm approximation of
+the scaling limit) is what would be required to close the
+extraction --- and that is the honest open direction this paper
+hands off.
+
+\paragraph{Notebook: a special deep problem.}
+The two negative results above, taken with the MK diamond,
+Sierpi\'nski gasket, and sandpile-group animals, catalogue five
+attempted algebraic animals for $d_f^{(3)}$:
+\begin{center}
+{\small
+\begin{tabular}{@{}p{0.30\columnwidth}p{0.58\columnwidth}@{}}
+\toprule
+Animal & Failure mode \\
+\midrule
+MK diamond $(4, 2)$
+ & Correct $d_\text{eff} = 3$ but series-parallel; UST is
+   trivially ballistic. $d_f = 1$. \\
+Sierpi\'nski gasket
+ & Correct loop-erasure structure but wrong fractal dimension
+   ($d_H = \log_2 3$, not 3). $d_f \approx 1.20$. \\
+$\mathbb{Z}^3$ tube tower
+ & Quasi-1D at every finite $N$. $d_f^{(N)} = 1$ for all
+   accessible $N$. \\
+Algebraic extrapolation on Dirichlet boxes
+ & Naive fit hits $\sim 1.62$, but no scheme improves on it ---
+   corrections are not a clean algebraic power of $1/L$. \\
+Sandpile-group tower (Majumdar--Dhar bijection)
+ & Right bijection to LERW; group carries only Matrix-Tree
+   content (spanning-tree count), not path-length scaling.
+   Erratic $\log d_{\max}/\log L$. \\
+\bottomrule
+\end{tabular}
+}
+\end{center}
+
+\noindent The five failures have a common theme: they each succeed
+at capturing \emph{one} of the ingredients of $\mathbb{Z}^3$
+(dimension, loops, finite Markov structure, algebraic corrections,
+or the Majumdar--Dhar algebraic-group upgrade) while losing the
+dynamical path-length content that $d_f$ actually measures.  The
+target object sits at the intersection of all five, and no finite
+algebraic construction we have been able to put to it captures the
+intersection.
+
+This is a concrete statement of the ``deep'' part of the problem
+--- stronger than ``we don't have a closed form''.  It says: the
+generating-function category within which we can do AC asymptotic
+extraction is populated by objects, none of which contains the
+$\mathbb{Z}^3$ LERW two-point function in its closure under
+composition.  Whether a \emph{wider} AC category (resurgent
+transseries, hyperasymptotic Borel summation, non-D-finite
+closure) contains it is the honest open question this paper
+leaves open.
+
+\paragraph{What the experiments do and do not demonstrate.}
+Each module now has a concrete computational handle tested against
+an independent reference:
+\begin{itemize}[leftmargin=*]
+\item LERW: samplers consistent with the exact Kirchhoff ratio, and
+  numerical recovery of Kenyon's $d_f = 5/4$ in $d=2$ and Kozma's
+  $d_f \approx 1.624$ in $d=3$ from a Dirichlet-box Lawler sweep
+  (each within $\sim 3\%$ at modest sample size); plus the
+  combinatorial-animal experiment above, which quantifies exactly
+  what self-similar surrogates capture and miss about $\mathbb{Z}^3$.
+\item KPZ: a transfer-matrix replica partition function consistent
+  with the CRN enumeration and with the free-walker spectrum; the
+  exact $\lambda(n, \beta; W)$ curve at $n = 1, 2, 3$ shows the
+  Bethe-ansatz cubic-in-$n$ shape, with $D(3)/D(2) \to 4$
+  (Kardar continuum limit) monotonically as $W$ grows; and the
+  closed-form 2-body replica rate
+  $D(2, \beta; \mathbb{Z}) = 2\beta^2 - \log(2\ee^{\beta^2} - 1)$
+  (Thm.~\ref{thm:d2-closed}) is the Tier-A deliverable for the
+  $n = 2$ sector.
+\item TAP: the Catalan-series reconstruction of the semicircle
+  resolvent works to the precision of the truncation.
+\end{itemize}
+The open exponents and coefficients are still open.  What these
+experiments show is that the CFAC enumeration layer produces
+concrete, testable objects in every case --- not just structural
+identities.
+
+% ==================================================================
+\section{What the enumeration layer buys}
+\label{sec:buys}
+
+Prop.~\ref{prop:lerw}, \ref{prop:tap}, and~\ref{prop:kpz-replica}
+are not new mathematics.  The point is that they share a common
+CFAC-enumerative structure:
+
+\medskip
+\noindent
+\begin{tabular}{@{}p{0.28\columnwidth}@{\hspace{4pt}}p{0.64\columnwidth}@{}}
+\toprule
+Case & Enumerated object \\
+\midrule
+LERW 3D       & Simple paths weighted by $\Tree(G/\gamma)/\Tree(G)$ \\
+TAP complexity & Rooted one-face maps by genus (Harer--Zagier) \\
+KPZ moments   & $n$-tuples of walkers by coincidence count \\
+\bottomrule
+\end{tabular}
+\medskip
+
+Each is a weighted sum over a discrete combinatorial set, with
+weights that are either first Symanzik polynomials
+(Eq.~\eqref{eq:kirchhoff}), ribbon-graph Euler numbers
+(Eq.~\eqref{eq:HZ-GOE}), or Doi--Peliti vertex factors
+(Eq.~\eqref{eq:nwalker}).  The existing CFAC pipeline handles all
+three.
+
+\paragraph{What the enumeration layer does \emph{not} buy.}
+\begin{itemize}[leftmargin=*]
+\item For LERW, the 3D exponent $\nu_3$ is still a hard scaling
+  limit of the finite-graph formula; no closed form falls out.
+\item For TAP, the genus expansion organises finite-$N$ corrections
+  but does not by itself give the complexity density $\Phi_0$ in
+  closed form for general mixed $p$-spin models.
+\item For KPZ, integer-$n$ replica enumeration is a classical
+  weighted walker count; the open problem (upper-tail coefficient
+  universality) lives at the $n \to 0$ continuation, outside the
+  enumeration.
+\end{itemize}
+
+What it does buy is a concrete combinatorial definition of the object
+under study, with finite-size exactness, and a clean statement of
+where the stratification theorem would have to be extended (scalar
+$\to$ matrix bridge; algebraic $\to$ non-$D$-finite GF;
+deterministic $\to$ disorder-averaged vertex).
+
+\paragraph{Where this leaves the scope map.}
+Combining this note with~\citep[\S7, \S8]{AmarteifioMannaC3} gives a
+two-tier scope statement:
+
+\begin{slotbox}
+\emph{Tier A (stratification theorem)}: polynomial DSEs with
+algebraic / $D$-finite generating function and a scalar bridge.
+Delivers a skeleton exponent $\tau_0 = 1 + 1/k$ plus a computable
+one-loop dressing $\gamma_k(d)$.
+
+\emph{Tier B (enumeration)}: any weighted combinatorial object
+(Feynman diagrams, spanning trees, ribbon graphs, $n$-walker paths,
+partition sums) with Symanzik / Laplacian / Schur structure.
+Delivers exact finite-size generating functions and explicit rational
+/ determinantal representations.
+\end{slotbox}
+
+The three boundary cases of~\citep{AmarteifioMannaC3} fall outside
+Tier A but strictly inside Tier B.  The scope-claim
+``CRN-in-field is the underlying object'' in~\citep[\S8]{AmarteifioMannaC3}
+is honest at Tier B; the stronger claim that the stratification
+theorem applies is honest only within Tier A.
+
+% ==================================================================
+\section{Discussion}
+\label{sec:discussion}
+
+The three propositions above are classical results rewritten in
+CFAC enumeration language.  The value of the rewrite is that it
+makes the obstruction for each case \emph{localisable}: LERW 3D
+needs non-$D$-finite resummation of a Kirchhoff ratio; TAP complexity
+needs a matrix-valued extension of the scalar bridge to close the
+complexity density into closed form for general $p$-spin;
+KPZ upper tails need a disorder-averaged bridge to fix the
+coefficient from the Schur edge.
+
+Two further cases that the companion paper lists only in passing ---
+BRST-quantised gauge theory and replica $n \to 0$ --- fit the same
+template.  BRST cohomology is a graded enumeration of ghost-number
+sectors; replica $n \to 0$ is a continuation of an enumeration.
+Neither is a Tier-A object.  Both are, at the enumeration level,
+concrete combinatorial constructions the pipeline can handle at
+fixed $n$ or fixed ghost number.
+
+\paragraph{Next steps.}
+The three modules of \S\ref{sec:machine} establish the baseline;
+the interesting extensions are:
+(i) push the LERW Kirchhoff-ratio computation to
+$\mathbb{Z}^3_N$ for $N \lesssim 20$ via a Fourier-diagonalised
+Laplacian, and track the finite-size scaling of
+$\partial_z \log F_{0b}$ against the Kozma exponent;
+(ii) extend the genus-graded ribbon-graph enumeration to GOE
+(non-orientable surfaces, Goulden--Jackson coefficients) and
+plug it into the Kac--Rice Legendre transform to recover the
+$p$-spin complexity density as a map-count resummation;
+(iii) implement the Schur-process reduction Eq.~\eqref{eq:schur-form}
+for integrable polymer geometries and verify it against the
+direct CRN enumeration on small instances
+(e.g.\ $N \leq 4$, $n \leq 3$).
+
+None of these closes the open exponent or coefficient.  Each
+sharpens the line between what CFAC-as-theorem covers and what
+CFAC-as-enumeration covers, and supplies a concrete object for
+downstream work.
+
+% ==================================================================
+\begin{thebibliography}{99}
+\small
+
+\bibitem[Amarteifio(2026a)]{AmarteifioCFAC2026}
+  Amarteifio, S., 2026.
+  \textit{CFAC theorem: stratification of Dyson--Schwinger equations
+  by Puiseux order.}  Percolation Labs preprint.
+
+\bibitem[Amarteifio(2026b)]{AmarteifioMannaC3}
+  Amarteifio, S., 2026.
+  The $\Cstr{3}$ Stratum in Non-DP Universality: Slotting Manna and
+  Conserved-DP, and what currently resists slotting.
+  Percolation Labs preprint
+  (\texttt{paper/cfac/manna\_c3\_slotting.tex}).
+
+\bibitem[Amarteifio(2026c)]{Amarteifio2026LDWC}
+  Amarteifio, S., 2026.
+  Reading the LDWC two-loop roughness coefficient through the
+  CFAC lens.
+  Percolation Labs preprint
+  (\texttt{paper/cfac/ldw\_kirchhoff\_recovery.tex}).
+
+\bibitem[Auffinger, Ben Arous and \v{C}ern\'y(2013)]{ABAC2013}
+  Auffinger, A., Ben Arous, G.\ and \v{C}ern\'y, J., 2013.
+  Random matrices and complexity of spin glasses.
+  \textit{Comm. Pure Appl. Math.} \textbf{66}, 165.
+
+\bibitem[Borodin and Corwin(2014)]{BorodinCorwin2014}
+  Borodin, A.\ and Corwin, I., 2014.
+  Macdonald processes.
+  \textit{Probab. Theory Relat. Fields} \textbf{158}, 225.
+
+\bibitem[Corwin and Ghosal(2020)]{CorwinGhosal2020}
+  Corwin, I.\ and Ghosal, P., 2020.
+  Lower tail of the KPZ equation.
+  \textit{Duke Math. J.} \textbf{169}, 1329.
+
+\bibitem[Goulden and Jackson(1997)]{GouldenJackson1997}
+  Goulden, I.~P.\ and Jackson, D.~M., 1997.
+  Maps in locally orientable surfaces, the double coset algebra,
+  and zonal polynomials.
+  \textit{Canad. J. Math.} \textbf{49}, 865.
+
+\bibitem[Harer and Zagier(1986)]{HarerZagier1986}
+  Harer, J.\ and Zagier, D., 1986.
+  The Euler characteristic of the moduli space of curves.
+  \textit{Invent. Math.} \textbf{85}, 457.
+
+\bibitem[Das and Tsai(2021)]{DasTsai2021}
+  Das, S.\ and Tsai, L.-C., 2021.
+  Fractional moments of the stochastic heat equation.
+  \textit{Ann. Inst. H. Poincar\'e} \textbf{57}, 778.
+
+\bibitem[Krajenbrink and Le Doussal(2021)]{KrajenbrinkLeDoussal2021}
+  Krajenbrink, A.\ and Le Doussal, P., 2021.
+  Inverse scattering solution of the weak noise theory of the KPZ
+  equation with flat and Brownian initial conditions.
+  \textit{Phys. Rev. E} \textbf{105}, 054142.
+
+\bibitem[Tsai(2022)]{Tsai2022}
+  Tsai, L.-C., 2022.
+  Exact lower-tail large deviations of the KPZ equation.
+  \textit{Duke Math. J.} \textbf{171}, 1879.
+
+\bibitem[Lawler(1986)]{Lawler1986}
+  Lawler, G.~F., 1986.
+  Intersections of random walks in four dimensions. II.
+  \textit{Comm. Math. Phys.} \textbf{97}, 583.
+
+\bibitem[Lawler, Schramm and Werner(2004)]{LawlerSchrammWerner2004}
+  Lawler, G.~F., Schramm, O.\ and Werner, W., 2004.
+  Conformal invariance of planar loop-erased random walks and
+  uniform spanning trees.
+  \textit{Ann. Probab.} \textbf{32}, 939.
+
+\bibitem[Calabrese, Le Doussal and Rosso(2010)]{CalabreseLeDoussalRosso2010}
+  Calabrese, P., Le Doussal, P.\ and Rosso, A., 2010.
+  Free-energy distribution of the directed polymer at high
+  temperature.
+  \textit{EPL} \textbf{90}, 20002.
+
+\bibitem[Majumdar and Dhar(1992)]{MajumdarDhar1992}
+  Majumdar, S.~N.\ and Dhar, D., 1992.
+  Equivalence between the Abelian sandpile model and the $q \to 0$
+  limit of the Potts model.
+  \textit{Physica A} \textbf{185}, 129. (Establishes the
+  bijection between recurrent sandpile configurations and
+  spanning trees.)
+
+\bibitem[Kardar(1987)]{Kardar1987}
+  Kardar, M., 1987.
+  Replica Bethe ansatz studies of two-dimensional interfaces with
+  quenched random impurities.
+  \textit{Nucl. Phys. B} \textbf{290}, 582.
+
+\bibitem[Kenyon(2000)]{Kenyon2000LERW}
+  Kenyon, R., 2000.
+  The asymptotic determinant of the discrete Laplacian.
+  \textit{Acta Math.} \textbf{185}, 239. (Gives
+  $d_f = 5/4$ for 2D loop-erased random walk.)
+
+\bibitem[Kozma(2007)]{Kozma2007}
+  Kozma, G., 2007.
+  The scaling limit of loop-erased random walk in three dimensions.
+  \textit{Acta Math.} \textbf{199}, 29.
+
+\bibitem[Krajenbrink(2020)]{Krajenbrink}
+  Krajenbrink, A., 2020.
+  From Painlev\'e transcendents to the KPZ equation.
+  Ph.D.\ thesis, Ecole Normale Sup\'erieure, Paris.
+
+\bibitem[Subag(2017)]{Subag2017}
+  Subag, E., 2017.
+  The complexity of spherical $p$-spin models.
+  \textit{Ann. Probab.} \textbf{45}, 3385.
+
+\bibitem[Wilson(1996)]{Wilson1996}
+  Wilson, D.~B., 1996.
+  Generating random spanning trees more quickly than the cover time.
+  \textit{Proc.\ 28th STOC}, 296.
+
+\bibitem[Wilson(2010)]{Wilson2010}
+  Wilson, D.~B., 2010.
+  The dimension of loop-erased random walk in 3D.
+  \textit{Phys. Rev. E} \textbf{82}, 062102.
+
+\end{thebibliography}
+
+\end{document}

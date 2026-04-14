@@ -670,6 +670,115 @@ a universality class regardless of the reactions that produced
 them.  This makes the mapping from biology to physics (which CRN
 belongs to which class) a question of polynomial equivalence.
 
+% ---------------------------------------------------------------------
+\subsection{Scope: where CFAC contributes and where it does not}
+\label{sec:scope}
+% ---------------------------------------------------------------------
+
+The companion papers
+(\citep{AmarteifioAnts2026,Amarteifio2026LDWC,Amarteifio2026TwoLoop};
+Manna/C-DP slotting~\citep{AmarteifioManna2026})
+establish a consistent picture of the framework's reach.  We state
+it explicitly here so that the theorem's implications are not
+over-read.
+
+\paragraph{Demonstrated scope (positive).}
+\begin{enumerate}[label=(\roman*),leftmargin=1.4em,itemsep=1pt]
+  \item \emph{Factorisation of perturbative integrals} in coupled
+    Doi--Peliti/MSR systems, structured as
+    $(\text{counting})\times(\text{bridge})\times(\text{algebra})$.
+    Demonstrated across five independent 2-loop calculations
+    (LDWC short-range depinning, LDWC long-range, LDWC periodic
+    CDW, Wilson--Fisher O($N$), DP 2-loop) reproducing published
+    numbers to relative error $\leq 10^{-3}$.  This is validation
+    of the algebraic content, not new physics.
+  \item \emph{Stratification of non-DP universality} by Puiseux
+    order $k$.  The $\tau_k = 1 + 1/k$ ladder with the
+    Banderier--Drmota dyadic ceiling for $\mathbb{N}$-algebraic
+    systems is a new organising principle.  Manna/C-DP at
+    $\mathcal{C}_3$ is the first concrete slot outside the
+    reproduction set.  The two-4/3 coincidence
+    ($\tau_0^{\mathcal{C}_3} = 4/3 = \nu_\perp^{\rm qEW}|_{d=1}$)
+    is a cross-check via independent routes.
+  \item \emph{Anchor derivations for external field theories.}
+    When a system has an established field theory with known
+    2-loop coefficients (e.g.\ qEW depinning for CDP), CFAC
+    reaches those coefficients from its primitives.  Three of
+    the four 2-loop qEW anchors used in the Manna exponent
+    chain are now CFAC-derived.
+  \item \emph{Methodological tooling.}  The joint-exponent
+    consistency rule for CFAC predictions is documented in
+    \citep{AmarteifioManna2026}, together with a deliberately
+    retained wrong-path framework guarded by a regression test.
+\end{enumerate}
+
+\paragraph{Current structural limits (negative).}
+These are not unfinished work, they are \emph{boundary
+conditions} of the framework as stated:
+
+\begin{enumerate}[label=(\alph*),leftmargin=1.4em,itemsep=1pt]
+  \item \emph{CFAC does not identify the underlying field
+    theory.}  Manna required Le Doussal--Wiese's
+    $n = n_0 + \nabla^2 u$ mapping as external input; CFAC
+    reaches the anchor numbers once the mapping is fixed.
+    Problems where ``which field theory'' is itself the question
+    (LERW in $d=3$, self-avoiding walk, Anderson localisation,
+    TAP complexity) are not in scope.
+  \item \emph{Non-$D$-finite generating functions.}
+    Theorem~\ref{thm:cfac} requires $\phi$ polynomial; its
+    corollaries extend to algebraic and $D$-finite GFs.  Lattice
+    Green's functions and SAW generating functions are neither,
+    and the theorem does not see them.
+  \item \emph{Matrix-valued observables.}  The bridge function in
+    this paper is scalar.  Observables involving random-matrix
+    averages (Kac--Rice determinants, replica $n\to 0$,
+    Weingarten calculus) require a matrix-valued / free-probability
+    extension that is open.
+  \item \emph{Non-perturbative regimes at large $\varepsilon$.}
+    CFAC is $\varepsilon$-expansion plus Pad\'e.  It inherits, rather
+    than circumvents, the resummation wall that standard FRG
+    faces at $\varepsilon \geq 2$.  The Manna work at $d=1$
+    ($\varepsilon = 3$) exhibits the same quantitative limitations as
+    standard 2-loop FRG; no CFAC-specific magic cure.
+  \item \emph{Microscopic encoding of signed constraints.}
+    Conservation laws entering as Ward identities can be
+    argued structurally (codimension, as in the Manna paper) but
+    not yet derived microscopically from the polynomial DSE,
+    because $\mathbb{N}$-algebraic systems are capped by
+    Banderier--Drmota at dyadic strata.  Encoding the
+    conservation as a signed projector on the algebraic curve
+    is the specific open problem.
+\end{enumerate}
+
+\paragraph{A predictive filter.}
+Given an open problem, four yes/no questions identify whether
+CFAC will contribute:
+\begin{center}
+\small
+\begin{tabular}{@{}lc@{}}
+  \toprule
+  Question & Required answer \\
+  \midrule
+  Admits a Doi--Peliti / MSR field theory? & yes \\
+  Generating function algebraic or $D$-finite? & yes \\
+  Observable is a tail exponent / pole residue? & strong fit \\
+  Observable is matrix-valued / replica-averaged? & no \\
+  \bottomrule
+\end{tabular}
+\end{center}
+Three ``yes'' and one ``no'' typically yields a worked paper.  Two
+``yes'' yields a scoping note.  Fewer than two: the problem is
+outside current scope, and picking it requires one of the extensions
+flagged above.
+
+\paragraph{The one-line summary.}
+CFAC is a factorisation machine for the algebraic content of
+coupled-field perturbation theory, augmented by a stratification
+theorem that organises Puiseux-type universality classes.  It
+reproduces published results where the field theory is known,
+classifies where classification is possible, and does not derive
+physics where the underlying field theory is itself contested.
+
 % ══════════════════════════════════════════════════════════════════
 \appendix
 \section{A visual landscape sketch}
@@ -1201,6 +1310,10 @@ to the coupled-field DSE that real CFAC was always built for.
 \bibitem[Cardy and T\"auber(1996)]{CardyTauber1996} Cardy, J.~L.\ and T\"auber, U.~C., 1996. Theory of branching and annihilating random walks. \textit{Phys.\ Rev.\ Lett.} 77, 4780. [Parity-conserving BARW field theory.]
 \bibitem[Hinrichsen(2000)]{Hinrichsen2000} Hinrichsen, H., 2000. Non-equilibrium critical phenomena and phase transitions into absorbing states. \textit{Adv.\ Phys.} 49, 815. [Foundational review of absorbing-state universality.]
 \bibitem[\'Odor(2004)]{Odor2004} \'Odor, G., 2004. Universality classes in nonequilibrium lattice systems. \textit{Rev.\ Mod.\ Phys.} 76, 663.
+\bibitem[Amarteifio(2026d)]{AmarteifioAnts2026} Amarteifio, S., 2026d. \textit{Ant Colonies as Canonical Coupled-Field Systems: A CFAC Recipe Book}. Percolation Labs preprint (\texttt{paper/cfac/ac\_ants.tex}).
+\bibitem[Amarteifio(2026e)]{Amarteifio2026LDWC} Amarteifio, S., 2026e. \textit{Reading the LDWC Two-Loop Roughness Coefficient Through the CFAC Lens}. Percolation Labs preprint (\texttt{paper/cfac/ldw\_kirchhoff\_recovery.tex}).
+\bibitem[Amarteifio(2026f)]{Amarteifio2026TwoLoop} Amarteifio, S., 2026f. \textit{Multi-Loop Feynman Integrals as Counting Problems}. Percolation Labs preprint (\texttt{paper/two\_loop\_worked/main.tex}).
+\bibitem[Amarteifio(2026g)]{AmarteifioManna2026} Amarteifio, S., 2026g. \textit{The $\mathcal{C}_3$ Stratum in Non-DP Universality: Slotting Manna and Conserved-DP}. Percolation Labs preprint (\texttt{paper/cfac/manna\_c3\_slotting.tex}).
 
 \end{thebibliography}
 
