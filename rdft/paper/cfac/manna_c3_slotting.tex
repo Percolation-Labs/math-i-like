@@ -196,12 +196,35 @@ branch point.
 % ==================================================================
 
 \begin{slotbox}
-\textbf{Claim (slotting).}  The Manna and conserved-DP universality
-classes both sit on the $\Cstr{3}$ stratum of
-Theorem~\ref{thm:strat}: $k = 3$, skeleton $\tau_0 = 4/3$, with
-different $\gamma_3(d=1+1)$ dressings accounting for the observed gap
-between their simulation $\tau$ values.
+\textbf{Slotting Conjecture.}
+The CDP/Manna universality class (RPV
+action~\citep{RossiPastorSatorrasVespignani2000}) is on the
+$\Cstr{3}$ stratum of Theorem~\ref{thm:strat}.  Equivalently:
+the multi-field DSE arising from the RPV Doi--Peliti action has,
+under the conservation projector, a Puiseux branch of order $k=3$
+as its dominant singularity, giving skeleton $\tau_0 = 4/3$ and
+1-loop dressing $\gamma_3(d{=}1) \in [-0.06, +0.02]$ consistent with
+the observed cluster-size exponent $\tau \approx 1.30 \pm 0.02$.
 \end{slotbox}
+
+\paragraph{Status of the conjecture.}
+We split the slotting conjecture into three parts of decreasing
+rigour:
+\begin{description}
+  \item[(a) Algebraic accessibility (\emph{proven below, \S\ref{sec:gamma3}}):]
+    The $\Cstr{3}$ stratum is reachable from polynomial DSEs with
+    rational coefficients.  Specifically, $\phi(G) = 1+3G^2-G^3$ has
+    the $\Cstr{3}$ branch present (test verified).
+  \item[(b) Skeleton match (\emph{empirically verified to $5\%$}):]
+    $\tau_0 = 4/3 = 1.333$ matches the observed
+    $\tau_{\rm CDP/Manna} \approx 1.30 \pm 0.02$ to within the bridge
+    scale $|\gamma_3| \lesssim B_3\,\eps^2 \times O(10) \approx 0.05$.
+  \item[(c) Rigorous $\gamma_3$ from RPV (\emph{deferred}):]
+    The full computation requires extending
+    \texttt{rdft/ac/conserved.py} from its current scoping
+    implementation; see \S\ref{sec:gamma3} for the specific
+    obstruction.
+\end{description}
 
 \paragraph{Raw slotting.}
 Table~\ref{tab:slotting} lists, for the four best-studied non-DP
@@ -328,49 +351,49 @@ $d_c(2) = 4$ (DP), $d_c(3) = 3$ (C-class), $d_c(4) = 8/3$.
 For Manna and C-DP in $d=1$ spatial dimension (1+1d):
 $\eps = d_c(3) - d = 2$.
 
-\paragraph{Order-of-magnitude estimate.}
-The natural $\Cstr{3}$ dressing scale at one loop is
+\paragraph{Natural dressing scale.}
+The rank-$k$ bridge sets the natural one-loop dressing scale at the
+$\Cstr{k}$ cusp:
 \begin{equation}\label{eq:gamma3_scale}
-  \gamma_3 \;\sim\; n_{\rm class}\,B_3\,\eps^2,
+  |\gamma_k| \;\sim\; n_{\rm class}\,B_k\,\eps^2,
 \end{equation}
-where $n_{\rm class}$ is a class-specific integer combinatorial
-factor (channel multiplicity for the relevant 1-loop diagrams).
-With $\eps = 2$ and $B_3 \approx 5\times 10^{-4}$,
-$|\gamma_3| \sim 2\times 10^{-3}\,n_{\rm class}$.  Matching the
-observed residuals $|\gamma_3^{\rm Manna}| \approx 0.04$ and
-$|\gamma_3^{\rm C-DP}| \approx 0.02$ requires
-$n_{\rm class}^{\rm Manna} \approx 20$, $n_{\rm class}^{\rm C-DP}
-\approx 10$, with opposite signs from the underlying vertex content
-(Manna: $2A\to\emptyset$ contributes negatively; C-DP: conservation
-constraint contributes positively).  These integer ranges are
-consistent with realistic FRG diagram counts at 1-loop for
-absorbing-state field theories.
+where $n_{\rm class}$ is an integer combinatorial factor counting
+the contributing 1-loop diagram channels, and
+$\eps = d_c(k) - d$.  At $\Cstr{3}$ in 1+1d ($\eps = 2$):
+$|\gamma_3| \sim 2\times 10^{-3}\,n_{\rm class}$.
 
-\paragraph{Predicted gap.}
-\begin{equation}\label{eq:gap_pred}
-  \Delta\tau_{\rm pred}
-  = \gamma_3^{\rm C-DP} - \gamma_3^{\rm Manna}
-  = (n^{\rm C-DP} + n^{\rm Manna})\,B_3\,\eps^2,
-\end{equation}
-with combined effective counting
-$n^{\rm C-DP} + n^{\rm Manna} \sim 30$, predicting
-$\Delta\tau_{\rm pred} \sim 0.06$, in agreement with
-$\Delta\tau_{\rm obs} = 1.35 - 1.29 = 0.06 \pm 0.03$
-(\S\ref{sec:sim}).
+\begin{proposition}[Magnitude prediction]\label{prop:magnitude}
+For any class on the $\Cstr{3}$ stratum, the one-loop dressing
+satisfies $|\gamma_3| \lesssim n_{\max}\,B_3\,\eps^2$ with $n_{\max}$
+the maximum 1-loop diagram channel count for the class.  In particular,
+$|\gamma_3| \le 5\times 10^{-2}$ unless $n_{\max} > 25$, and
+$|\gamma_3| \le 2\times 10^{-1}$ unless $n_{\max} > 100$.
+\end{proposition}
 
-\paragraph{Important caveat.}
-The integer factors $n_{\rm class}$ are estimated here from the
-required magnitude rather than computed from first principles.
-A rigorous derivation requires writing out the full Doi--Peliti
-action for each class, identifying the $\Cstr{3}$ multicritical
-fixed point, and computing the 1-loop self-energy contributions
-for each class explicitly.  This is a tractable but non-trivial
-calculation that we defer.  The structural claim --- that the
-rank-3 bridge $B_3 \approx 5\times 10^{-4}$ sets the natural
-dressing scale and is intrinsically small --- holds independent of
-the specific integer counting.  The slotting hypothesis would be
-falsified if a rigorous calculation gave $|n_{\rm class}|\,B_3\,\eps^2$
-of order unity (which would put both classes far from $\Cstr{3}$).
+The observed Manna value $|\gamma_3^{\rm Manna}| \approx 0.04$ (residual
+of $\tau_{\rm Manna} = 1.275$ from $4/3$) sits in the
+``small'' regime, consistent with $n_{\max}^{\rm Manna} \lesssim 20$ ---
+unremarkable for an absorbing-state 1-loop diagram count.  This is
+\emph{not} a quantitative prediction of $\gamma_3$ itself, but a
+falsifier: a rigorous CFAC calculation that yielded $n_{\rm class}\,B_3
+\eps^2 \gg 1$ would invalidate the slotting hypothesis.
+
+\paragraph{What blocks a rigorous $\gamma_3$ derivation.}
+The CDP/Manna effective field theory has two coupled fields (activity
+$\psi$, conserved background $\rho$) and the soft-mode IR divergence
+of $\rho$'s diffusive propagator $G_\rho(k,\omega) = 1/(i\omega + D'k^2)$.
+Direct application of \texttt{coupled\_dse\_conserved} with the
+NESS-projection $\rho_{\rm eff} = \mathrm{const}$ (as currently
+implemented in \texttt{rdft/ac/conserved.py}, marked
+``scoping implementation'') collapses the DSE to degree $1$ in
+$G_\psi$ and recovers a $\Cstr{2}$-like structure --- losing the
+soft-mode contribution that physically distinguishes CDP from DP.
+A rigorous $\gamma_3$ extraction requires extending the conservation
+projector to a non-local effective interaction
+$\chi^2 \int \psi\tilde\psi G_\rho \star \psi\tilde\psi$ where the
+$\star$ encodes the diffusive convolution.  This is a tractable
+extension to the existing CFAC infrastructure but lies beyond what
+the current \texttt{conserved.py} module supports.
 
 % ==================================================================
 \section{Cross-checks against simulations}
@@ -383,31 +406,33 @@ $\gamma_3$-based prediction.
 
 \begin{table}[h]
 \centering
-\begin{tabular}{lccc}
+\begin{tabular}{lcc}
 \toprule
-Class & Source & $\tau$ & Error bar \\
+Class & Source & $\tau$ \\
 \midrule
-Manna   & \citep{Odor2004} & 1.29 & $\pm 0.02$ \\
-Manna   & \citep{HenkelHinrichsenLubeck} & 1.275 & $\pm 0.01$ \\
-C-DP    & \citep{Odor2004} & 1.35 & $\pm 0.03$ \\
-C-DP    & \citep{LubeckHucht2002} & 1.338 & $\pm 0.005$ \\
+Manna   & \citep{Odor2004} & $1.29 \pm 0.02$ \\
+Manna   & \citep{HenkelHinrichsenLubeck} & $1.275 \pm 0.01$ \\
+C-DP    & \citep{Odor2004} & $1.35 \pm 0.03$ \\
+C-DP    & \citep{LubeckHucht2002} & $1.338 \pm 0.005$ \\
+\midrule
+$\Cstr{3}$ skeleton & this paper & $4/3 = 1.333$ \\
 \bottomrule
 \end{tabular}
-\caption{Published simulation $\tau$ for the two $\Cstr{3}$
-  candidates.  The observed gap is
-  $\Delta\tau_{\rm obs} \approx 0.06 \pm 0.03$.}
+\caption{Published simulation $\tau$ for CDP/Manna and the
+  $\Cstr{3}$ skeleton prediction.  All four simulation values lie
+  within $5\%$ of $4/3$, and the most precise single-source values
+  ($1.275$ and $1.338$) bracket it from opposite sides.}
 \label{tab:sim}
 \end{table}
 
-\paragraph{Comparison with prediction.}
-The order-of-magnitude estimate~\eqref{eq:gap_pred} predicts
-$\Delta\tau_{\rm pred} \sim 0.06$ from the rank-3 bridge times an
-integer counting factor of $\sim 30$.  This sits within the
-observed range $\Delta\tau_{\rm obs} = 0.06 \pm 0.03$.  More precisely,
-using the more careful single-source values, $\Delta\tau_{\rm obs} =
-1.338 - 1.275 = 0.063$, the agreement is at the few-percent level.
-This is consistent but not yet a tight test; see the caveat in
-Section~\ref{sec:gamma3} on the integer counting.
+\paragraph{Skeleton-level test (passes).}
+The $\Cstr{3}$ skeleton predicts $\tau_0 = 4/3 = 1.333$.  All four
+published values in Table~\ref{tab:sim} agree to within $5\%$
+(\texttt{test\_observed\_tau\_close\_to\_C3\_skeleton} confirms
+this numerically).  The dispersion among them
+($\Delta\tau \approx 0.06$) is consistent with $|\gamma_3| \lesssim
+B_3\,\eps^2 \times O(10)$ from Proposition~\ref{prop:magnitude}.
+This is a successful skeleton match, not a tight $\gamma_3$ test.
 
 \paragraph{Independent calibration: DP on $\Cstr{2}$.}
 The same framework applied to DP gives skeleton $\tau_0 = 3/2$
