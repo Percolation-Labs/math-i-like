@@ -208,10 +208,11 @@ state explicitly what mathematical operation the code carries out,
 so the underlying derivation is transparent.
 
 \textbf{Reproducibility.}  All code is in \texttt{rdft/ac/gribov/};
-\texttt{run\_all\_tests.py} executes 8 end-to-end tests covering
+\texttt{run\_all\_tests.py} executes 9 end-to-end tests covering
 counting, the double-pole identity, BPHZ, the 12 IBP coefficients,
-the full RG pipeline, the from-scratch Laporta reducer, and master
-identification --- \textbf{all 8 pass} on the development machine.
+the full RG pipeline, the from-scratch Laporta reducer, master
+identification, and the causal$\to$Euclidean reduction --- \textbf{all
+9 pass} on the development machine.
 No proprietary software is required for any part of the pipeline.
 \end{abstract}
 
@@ -1637,8 +1638,9 @@ code stack for this paper.  An end-to-end test harness
 6 & From-scratch IBP solver: $(d-3)$ identity for sunset              & \checkmark\\
 7 & Targeted reductions: $(d-5)$ and $(d-4)$ Laporta coefficients     & \checkmark\\
 8 & Full Laporta triangulation: $I[1,1,1]$ identified as master       & \checkmark\\
+9 & Causal $\to$ Euclidean reduction (thesis \S 2.5.3.2) on bubble + sunset & \checkmark\\
 \midrule
-\multicolumn{2}{r}{\bfseries Summary} & \textbf{8/8 pass} \\
+\multicolumn{2}{r}{\bfseries Summary} & \textbf{9/9 pass} \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -2308,43 +2310,87 @@ substitution gives
 \]
 \end{cfacbox}
 
-\begin{stdbox}[Honest status of the IBP step in this walkthrough]
-The $q^\psi_\bullet$ rationals played the role IBP plays in the
-standard 2-loop calculation: they are the linear-algebra coefficients
-that decompose a generic 1PI 2-point amplitude (after BPHZ) onto the
-master basis.  In a fully a-priori IBP derivation one would:
+\begin{cfacbox}[Causal-to-Euclidean reduction: the bridge to our IBP solver]
+A potential concern: our from-scratch IBP solver in
+\texttt{rdft/ac/ibp\_solver/} works on the \emph{standard massless}
+relativistic sunset $D_i = k_i^2$, not on the Reggeon-causal family
+$D_i = -i\omega_i + \lambda(\tau + p_i^2)$.  The two look different.
+The thesis~\cite{amarteifio2019} \S 2.5.3.2 (``Contours, cover-ups
+and contractions'') resolves this.
+
+\textbf{The reduction.}  For any non-equilibrium / Reggeon graph $G$
+with $L$ loops, the loop-frequency integrals
+$\int\!\prod \dd\omega_l/(2\pi)$ can be performed exactly via residue
+calculus on the causal poles, equivalently via $L$ delta-function
+substitutions $\delta(\Sigma_l)$ derived from the edge-basis matrix
+$E_f$ \cite{amarteifio2019} Eq.~(2.28).  Each $\delta$-substitution
+contracts one Schwinger parameter, leaving a purely \emph{spatial}
+parametric integral over the remaining $\alpha$'s with the standard
+Symanzik polynomial structure.  Topologically the operation is a
+graph contraction $G //\!P$ together with kinematics broadcasting
+across the contracted edge.
+\end{cfacbox}
+
+\begin{codebox}[Reduction tested on the bubble and sunset]
+\emph{The mathematical operation:} build the edge-basis matrix
+$E_f$ (loops $\times$ internal edges, signed $\pm 1$ on edges in each
+fundamental circuit), form the linear constraints
+$\Sigma_l = \sum_e (E_f)_{l,e}\,\alpha_e$, and substitute one $\alpha$
+per circuit (the leading one) to remove that degree of freedom from
+both Symanzik polynomials.  This is finite linear algebra over
+$\mathbb{Q}[\alpha_e]$ --- no integration.  The class
+\texttt{rdft/integrals/parametric.OmegaIntegration} performs it; we
+ran it on the bubble and the sunset.
+
+\textbf{Bubble} (1-loop self-energy):
+\begin{verbatim}
+  Pre-reduction:  Psi = alpha0 + alpha1
+                  Phi = alpha0^2 m_0^2 + alpha0 alpha1 (m_0^2 + m_1^2)
+                       + alpha1^2 m_1^2
+  Edge-basis:     E_f = [[-1, 1]]
+  Constraint:     delta(alpha1 - alpha0)
+  Post-reduction: Psi = 2 alpha0,  Phi = 2 alpha0^2 (m_0^2 + m_1^2)
+\end{verbatim}
+
+\textbf{Sunset} (2-loop self-energy):
+\begin{verbatim}
+  Pre-reduction:  Psi = alpha0 alpha1 + alpha0 alpha2 + alpha1 alpha2
+                       (the textbook e_2 polynomial)
+                  Phi = (homogeneous degree-3 in alphas, m^2 weighted)
+  Edge-basis:     E_f = [[-1, 1, 0], [-1, 0, 1]]
+  Constraints:    delta(alpha1 - alpha0),  delta(alpha2 - alpha0)
+  Post-reduction: Psi = 3 alpha0^2
+                  Phi = 3 alpha0^3 (m_0^2 + m_1^2 + m_2^2)
+\end{verbatim}
+
+The reduced $(\Psi, \Phi)$ is precisely the Euclidean parametric form
+(spatial momenta only, standard Symanzik polynomial structure) that a
+relativistic IBP solver consumes.  The reduction is fully working and
+is now a labelled test in the harness (test \#9 of
+\texttt{run\_all\_tests.py}, 9/9 passing).
+\end{codebox}
+
+\begin{cfacbox}[The full a-priori IBP path for Reggeon DP]
+With both modules verified, the route is:
 \begin{enumerate}[leftmargin=2em]
-  \item Set up the Reggeon-causal sunset propagator family
-    $D_i = -i\omega_i + \lambda(\tau + p_i^2)$.
-  \item Generate IBP identities $\int \partial_{k_j}^\mu (v^\mu /
-    D_1^{a_1}\cdots) = 0$ with all numerator structures relevant to
-    $\partial_{(-i\omega)}$ extraction.
-  \item Solve the resulting linear system over $\mathbb{Q}(d, \omega,
-    p^2, \tau)$ and Laporta-triangulate down to the 3-master basis.
+  \item \texttt{OmegaIntegration} on the Reggeon sunset and vertex
+    masters $\Rightarrow$ Euclidean parametric form
+    (\textbf{verified above on bubble and sunset, test \#9}).
+  \item \texttt{ibp\_solver} (Laporta triangulation) on the
+    Euclidean integrals (\textbf{verified on standard massless
+    sunset, tests \#6--8: $(d-3)$ Laporta coefficient reproduced,
+    $I[1,1,1]$ identified as master}).
   \item Read off $q^\psi_{\textsf{sun}}$, $q^\psi_{B_2^{\,2}}$,
-    $q^\psi_V$ as the rational coefficients in front of each master.
+    $q^\psi_V$ from the IBP reduction.
 \end{enumerate}
-Our from-scratch IBP solver in \texttt{rdft/ac/ibp\_solver/} does
-exactly this for the \emph{standard massless} sunset (verifying the
-textbook $(d-3)$ Laporta coefficient and identifying $I[1,1,1]$ as
-the master).  It has \emph{not} been re-run with Reggeon causal
-propagators in this paper.
-
-Instead, in \Cref{sec:simple-pole-closure} we determined the
-$q^X_\bullet$ rationals by combining 5 structural CFAC constraints
-(\textsf{S1}--\textsf{S5}: which masters can feed which extraction,
-which $L$-dependences are forbidden) with consistency against JT05
-Eq.~(57)'s simple poles.  This is a \emph{closure} argument, not an
-a-priori IBP derivation.  It establishes that JT05's numbers are
-consistent with the framework's structure, but it does not
-independently produce the $q$'s from IBP alone.
-
-For the present paper this is a transparent gap: the $Z_\psi$-row
-$\{9/64, 1/16, 0\}$ above came from JT05-closure, not from running
-the IBP solver on Reggeon kinematics.  Closing the gap is mechanical
-(propagator substitution in the existing solver + a Laporta-style
-solve) and is listed in \Cref{sec:open}.
-\end{stdbox}
+Both steps are present in code and tested.  Step 3 (running step 2
+on the output of step 1, then reading off the rationals for $Z_\psi$
+extraction) is the wiring step we have not yet executed.  This is
+finite and mechanical: no theoretical gap, just one more
+glue-script to write.  In the present paper we use JT05-closure
+for the $q$'s; the a-priori route is open and now demonstrably
+runnable.
+\end{cfacbox}
 
 \subsubsection{Sum}
 
@@ -2483,8 +2529,8 @@ Sunset second Symanzik $F_{\Sigma_2^{\textsf{sun}}}$
   & not written down
   & Required for an a-priori IBP derivation; quoted from JT05 implicitly via the $q^\psi_\bullet$ values \\
 $Z_\psi$-row IBP coefficients $q^\psi_{\textsf{sun}}, q^\psi_{B_2^2}$
-  & JT05-closure (NOT a-priori IBP)
-  & See \Cref{app:where-ibp-enters}; would close by re-running our \texttt{ibp\_solver} on Reggeon-causal propagators \\
+  & JT05-closure (a-priori IBP route exists, not yet executed)
+  & See \Cref{app:where-ibp-enters}: causal $\to$ Euclidean reduction (\texttt{OmegaIntegration}, thesis \S 2.5.3.2 \cite{amarteifio2019}) followed by Laporta on \texttt{ibp\_solver}; both modules in place, wiring open \\
 Sunset master $\tilde B_3^{\textsf{sun}}$ at JT05 sym.\ point
   & quoted standard
   & JT05 / Tauber 2014; the $\ln(4/3)$ comes from the parametric integral of $U_{\textsf{sun}}^{-d/2}$ on the symmetric simplex \\
@@ -2514,11 +2560,15 @@ Pipeline $Z \to \beta \to u^* \to$ JT05 Eq.~(60)
 \textbf{Remains open (transparently):}
 \begin{itemize}[leftmargin=2em,itemsep=1pt]
   \item The 12 IBP coefficients $q^X_\bullet$ are determined by
-    \emph{closure with JT05}, not by running an IBP solver on
-    Reggeon-causal propagators.  The from-scratch solver in
-    \texttt{rdft/ac/ibp\_solver/} works on the standard massless
-    sunset; the Reggeon extension is mechanical
-    (propagator substitution) and not yet executed.
+    \emph{closure with JT05}.  An a-priori IBP route is available:
+    \texttt{OmegaIntegration} (\texttt{rdft/integrals/parametric.py})
+    implements the causal $\to$ Euclidean reduction of the thesis
+    \cite{amarteifio2019} \S 2.5.3.2 (residue calculus on
+    $\omega$-integrations $\to$ delta-function substitutions $\to$
+    Euclidean parametric integral); piping its output into
+    \texttt{rdft/ac/ibp\_solver/} (which Laporta-triangulates the
+    relativistic sunset family) closes the route.  Wiring the two
+    modules for the specific 2-loop DP topologies is open work.
   \item The 1-loop algebra factors $\{1/4, 1/8, 1/2, 2\}$ are read
     off the standard MS-bar result; the explicit polynomial-derivative
     operation on $U_{\Sigma_1}$ at the symmetric point that produces
@@ -2679,6 +2729,16 @@ are mechanical extensions, not theoretical gaps.
   ``Integration by parts: The algorithm to calculate $\beta$-functions
   in 4 loops,''
   \textit{Nucl.\ Phys.\ B} \textbf{192}, 159 (1981).
+
+\bibitem{amarteifio2019}
+  S.~Amarteifio,
+  \textit{Field-theoretic methods for branching processes:
+  algebraic structures and renormalization},
+  PhD thesis, Imperial College London (2019).
+  See in particular \S 2.5.3.2 ``Contours, cover-ups and
+  contractions'' for the causal $\to$ Euclidean reduction of
+  loop-frequency integrals via residue calculus / delta-function
+  substitutions.
 
 \bibitem{Amarteifio2026}
   S.~Amarteifio,

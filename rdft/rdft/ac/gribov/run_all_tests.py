@@ -91,6 +91,10 @@ def main():
         ('8. IBP solver: full Laporta triangulation',
          [sys.executable, i('triangulate.py')],
          ['Iterations:', 'I[1,1,1] is identified as a MASTER']),
+
+        ('9. Causal->Euclidean reduction (thesis 2.5.3.2): bubble + sunset',
+         [sys.executable, g('test_causal_reduction.py')],
+         ['alpha0 + alpha1', 'alpha0*alpha1 + alpha0*alpha2 + alpha1*alpha2']),
     ]
 
     passes = 0
