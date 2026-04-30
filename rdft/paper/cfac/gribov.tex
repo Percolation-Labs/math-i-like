@@ -17,7 +17,8 @@
 \usepackage[most]{tcolorbox}
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta, positioning, decorations.pathmorphing,
-                decorations.markings, shapes.geometric, calc, fit,
+                decorations.markings, decorations.pathreplacing,
+                shapes.geometric, calc, fit,
                 backgrounds, shadows.blur, chains}
 
 \hypersetup{colorlinks=true,linkcolor=blue!60!black,
@@ -2454,85 +2455,142 @@ method give the same answer; the delta-function form is what we
 implement.
 \end{cfacbox}
 
-\subsubsection{Pictures: bubble}
+\subsubsection{What actually changes: bubble}
 
-\begin{cfacbox}[Reggeon bubble $\to$ Euclidean bubble]
+\begin{cfacbox}[Reggeon bubble: input graph $\to$ Euclidean parametric integrand]
+The input to the reduction is a graph; the output is a parametric
+integrand.  These are different kinds of object, so we show them
+honestly rather than as ``two graphs side by side''.  The output is
+defined by its explicit Symanzik polynomials.
+
+\medskip
 \begin{center}
-\begin{tikzpicture}[font=\footnotesize, baseline]
-  % Left: Reggeon bubble with frequency-flow arrows
-  \node[circle, fill=black, inner sep=1.2pt] (l1) at (-5.0, 0) {};
-  \node[circle, fill=black, inner sep=1.2pt] (l2) at (-3.0, 0) {};
-  \draw[thick, ->] (l1) to[bend left=60] node[above]{$\alpha_0,\,\omega$} (l2);
-  \draw[thick, <-] (l1) to[bend right=60] node[below]{$\alpha_1,\,\omega$} (l2);
-  \draw[thick] (-5.7, 0) -- (l1);
-  \draw[thick] (l2) -- (-2.3, 0);
-  \node at (-4.0, -1.4) {\textbf{Reggeon bubble}};
-  \node at (-4.0, -1.85) {\scriptsize causal: $\dd\omega/(2\pi) \int$};
+\begin{tikzpicture}[font=\scriptsize]
+  % Left: Reggeon bubble (input GRAPH)
+  \node[anchor=south, font=\bfseries] at (-3.5, 1.6) {Input: Reggeon bubble (graph)};
+  \node[font=\scriptsize, anchor=south] at (-3.5, 1.2)
+    {$\displaystyle\int\!\frac{\dd\omega}{2\pi}\int\!\dd^d k\;
+       \frac{1}{(-i\omega + \lambda(\tau+p^2))\,(i\omega + \lambda(\tau+p^2))}$};
+  \node[circle, fill=black, inner sep=1.2pt] (l1) at (-4.5, 0) {};
+  \node[circle, fill=black, inner sep=1.2pt] (l2) at (-2.5, 0) {};
+  \draw[thick, ->] (l1) to[bend left=60]
+       node[above, midway, font=\scriptsize]{$\alpha_0,\,+i\omega$} (l2);
+  \draw[thick, <-] (l1) to[bend right=60]
+       node[below, midway, font=\scriptsize]{$\alpha_1,\,-i\omega$} (l2);
+  \draw[thick] (-5.1, 0) -- (l1);
+  \draw[thick] (l2) -- (-1.9, 0);
+  \node[anchor=north, font=\scriptsize] at (-3.5, -0.95)
+    {2 vertices, 2 edges, 1 loop $\omega$};
 
-  % Arrow with delta-function
+  % Arrow with reduction
   \draw[->, very thick, draw=cfacline]
-       (-1.9, 0) -- node[above]{\scriptsize $\delta(\alpha_1 - \alpha_0)$}
-                  node[below]{\scriptsize \emph{contour}}
-       (0.3, 0);
+    (-1.5, 0) -- node[above, font=\scriptsize]
+       {residue at causal pole}
+    node[below, font=\scriptsize]
+       {$=$ $\delta(\alpha_1 - \alpha_0)$}
+    (1.0, 0);
 
-  % Right: Euclidean bubble with identified Schwinger parameter
-  \node[circle, fill=black, inner sep=1.2pt] (r1) at (1.0, 0) {};
-  \node[circle, fill=black, inner sep=1.2pt] (r2) at (3.0, 0) {};
-  \draw[thick] (r1) to[bend left=60] node[above]{$\alpha_0$} (r2);
-  \draw[thick] (r1) to[bend right=60] node[below]{$\alpha_0$} (r2);
-  \draw[thick] (0.3, 0) -- (r1);
-  \draw[thick] (r2) -- (3.7, 0);
-  \node at (2.0, -1.4) {\textbf{Euclidean bubble}};
-  \node at (2.0, -1.85) {\scriptsize $\Psi = 2\alpha_0$};
+  % Right: explicit parametric integrand (NOT a graph!)
+  \node[anchor=south, font=\bfseries] at (3.7, 1.6)
+       {Output: Euclidean integrand};
+  \node[draw=cfacline, fill=cfacfill, rounded corners=2pt,
+        inner sep=4pt, font=\scriptsize, align=left,
+        anchor=center] at (3.7, 0.1)
+       {$\displaystyle\int\!\dd^d k\;
+        \frac{\alpha_0^{\,a-1}\,e^{-\alpha_0 \cdot 2\,(\lambda(\tau+p^2/4))}}
+              {\Psi'(\alpha_0)^{d/2}}$ \\[3pt]
+        $\Psi'(\alpha_0) = 2\alpha_0$ \\
+        $\Phi'(\alpha_0) = 2\alpha_0^2(m_0^2 + m_1^2)$};
+  \node[anchor=north, font=\scriptsize] at (3.7, -1.1)
+       {(no $\omega$, single $\alpha_0$, masses broadcast)};
 \end{tikzpicture}
 \end{center}
-The two edges' Schwinger parameters get \emph{identified} ($\alpha_0
-= \alpha_1$) by the delta function $\delta(\alpha_1 - \alpha_0)$
-arising from the single loop's frequency integration.  The reduced
-Symanzik polynomial is $\Psi = \alpha_0 + \alpha_1\big|_{\alpha_1 =
-\alpha_0} = 2\alpha_0$, which is the ``one effective Schwinger
-parameter with multiplicity 2'' that a relativistic IBP would see.
+
+\medskip
+\textbf{Code-verified.}  The script
+\texttt{rdft/ac/gribov/verify\_contraction\_view.py} runs
+\texttt{OmegaIntegration} on the bubble graph and prints
+$(\Psi', \Phi') = (2\alpha_0,\, 2\alpha_0^2(m_0^2 + m_1^2))$
+exactly as shown.  The output is \emph{not} the parametric form of an
+abstract ``contracted graph'' (a literal tadpole has $\Psi = \alpha,
+\Phi = \alpha^2 m^2$ --- different from our reduced form because
+neither the multiplicity nor the broadcast masses match).  The thesis
+Remark~32's ``$G//P$'' description is a topological intuition, not a
+literal Symanzik-polynomial identity; the actual operation is the
+parameter substitution that produces $\Psi'$ above.
+
+\textbf{What changes:}
+\begin{itemize}[leftmargin=2em, itemsep=0pt]
+  \item \emph{Object type}: graph $\to$ parametric integrand.
+  \item \emph{Integration measure}: $\dd\omega/(2\pi)$ disappears.
+  \item \emph{Schwinger parameters}: $(\alpha_0, \alpha_1)$ collapse
+    to a single $\alpha_0$ via $\delta(\alpha_1 - \alpha_0)$.
+  \item \emph{Kinematics}: masses $m_0^2, m_1^2$ broadcast into the
+    Euclidean propagator content.
+\end{itemize}
 \end{cfacbox}
 
-\subsubsection{Pictures: sunset}
+\subsubsection{What actually changes: sunset}
 
-\begin{cfacbox}[Reggeon sunset $\to$ diagonal Euclidean]
+\begin{cfacbox}[Reggeon sunset: input graph $\to$ Euclidean parametric integrand]
+Same operation, two loops.
+
+\medskip
 \begin{center}
-\begin{tikzpicture}[font=\footnotesize, baseline]
-  % Left: Reggeon sunset (3 parallel propagators between 2 vertices)
-  \node[circle, fill=black, inner sep=1.2pt] (sl) at (-5.0, 0) {};
-  \node[circle, fill=black, inner sep=1.2pt] (sr) at (-3.0, 0) {};
-  \draw[thick, ->] (sl) to[bend left=70] node[above]{$\alpha_0,\,\omega_1$} (sr);
-  \draw[thick, ->] (sl) to node[above, midway]{$\alpha_1,\,\omega_2$} (sr);
-  \draw[thick, ->] (sl) to[bend right=70] node[below]{$\alpha_2,\,\omega_3$} (sr);
-  \draw[thick] (-5.7, 0) -- (sl);
-  \draw[thick] (sr) -- (-2.3, 0);
-  \node at (-4.0, -1.5) {\textbf{Reggeon sunset}};
-  \node at (-4.0, -1.95) {\scriptsize 2 loops; 2 frequency ints};
+\begin{tikzpicture}[font=\scriptsize]
+  \node[anchor=south, font=\bfseries] at (-3.5, 1.7) {Input: Reggeon sunset (graph)};
+  \node[font=\scriptsize, anchor=south] at (-3.5, 1.3)
+    {$\displaystyle\int\!\frac{\dd\omega_1\,\dd\omega_2}{(2\pi)^2}\int\!\dd^d k_1\,\dd^d k_2\,\cdots$};
+  \node[circle, fill=black, inner sep=1.2pt] (sl) at (-4.5, 0) {};
+  \node[circle, fill=black, inner sep=1.2pt] (sr) at (-2.5, 0) {};
+  \draw[thick, ->] (sl) to[bend left=75]
+       node[above, midway, font=\scriptsize]{$\alpha_0,\,+i\omega_1$} (sr);
+  \draw[thick, ->] (sl) to
+       node[above, midway, font=\scriptsize]{$\alpha_1,\,+i\omega_2$} (sr);
+  \draw[thick, ->] (sl) to[bend right=75]
+       node[below, midway, font=\scriptsize]{$\alpha_2,\,-i(\omega_1{+}\omega_2)$} (sr);
+  \draw[thick] (-5.2, 0) -- (sl);
+  \draw[thick] (sr) -- (-1.8, 0);
+  \node[anchor=north, font=\scriptsize] at (-3.5, -1.05)
+    {2 vertices, 3 edges, 2 loop $\omega$'s};
 
-  % Arrow
   \draw[->, very thick, draw=cfacline]
-       (-1.9, 0) -- node[above]{\scriptsize $\delta(\alpha_1{-}\alpha_0),\,\delta(\alpha_2{-}\alpha_0)$}
-       (0.3, 0);
+    (-1.5, 0) -- node[above, font=\scriptsize]
+       {residue at 2 causal poles}
+    node[below, font=\scriptsize]
+       {$=$ $\delta(\alpha_1{-}\alpha_0),\,\delta(\alpha_2{-}\alpha_0)$}
+    (1.0, 0);
 
-  % Right: Euclidean diagonal sunset (all three alphas identified)
-  \node[circle, fill=black, inner sep=1.2pt] (esl) at (1.0, 0) {};
-  \node[circle, fill=black, inner sep=1.2pt] (esr) at (3.0, 0) {};
-  \draw[thick] (esl) to[bend left=70] node[above]{$\alpha_0$} (esr);
-  \draw[thick] (esl) to node[above, midway]{$\alpha_0$} (esr);
-  \draw[thick] (esl) to[bend right=70] node[below]{$\alpha_0$} (esr);
-  \draw[thick] (0.3, 0) -- (esl);
-  \draw[thick] (esr) -- (3.7, 0);
-  \node at (2.0, -1.5) {\textbf{Euclidean sunset}};
-  \node at (2.0, -1.95) {\scriptsize $\Psi = 3\alpha_0^2$};
+  \node[anchor=south, font=\bfseries] at (3.7, 1.7)
+       {Output: Euclidean integrand};
+  \node[draw=cfacline, fill=cfacfill, rounded corners=2pt,
+        inner sep=4pt, font=\scriptsize, align=left,
+        anchor=center] at (3.7, 0.1)
+       {$\displaystyle\int\!\dd^d k_1\,\dd^d k_2\;
+        \frac{\alpha_0^{\,a-1}}{\Psi'(\alpha_0)^{d/2}}\,e^{-\Phi'/\Psi'}$ \\[3pt]
+        $\Psi'(\alpha_0) = 3\alpha_0^{\,2}$ \\
+        $\Phi'(\alpha_0) = 3\alpha_0^{\,3}(m_0^2 + m_1^2 + m_2^2)$};
+  \node[anchor=north, font=\scriptsize] at (3.7, -1.1)
+    {(no $\omega$'s, single $\alpha_0$, masses broadcast)};
 \end{tikzpicture}
 \end{center}
-Two delta functions (one per loop) identify all three Schwinger
-parameters: $\alpha_0 = \alpha_1 = \alpha_2$.  The reduced Symanzik
-polynomial is $\Psi = (\alpha_0 \alpha_1 + \alpha_0 \alpha_2 +
-\alpha_1 \alpha_2)\big|_{\alpha_1 = \alpha_2 = \alpha_0} = 3\alpha_0^2$
---- exactly the diagonal contraction of the textbook 2-loop sunset
-Symanzik.
+
+\medskip
+\textbf{Code-verified.}  Same script
+(\texttt{verify\_contraction\_view.py}) runs the sunset graph through
+\texttt{OmegaIntegration} and produces
+$(\Psi', \Phi') = (3\alpha_0^2, 3\alpha_0^3(m_0^2 + m_1^2 + m_2^2))$
+matching the box above exactly.
+
+\textbf{What changes:}
+\begin{itemize}[leftmargin=2em, itemsep=0pt]
+  \item \emph{Object type}: graph $\to$ parametric integrand.
+  \item \emph{Integration measure}: both $\dd\omega_l/(2\pi)$ disappear.
+  \item \emph{Schwinger parameters}: $(\alpha_0, \alpha_1, \alpha_2)$
+    collapse to one $\alpha_0$ via two $\delta$-constraints.
+  \item \emph{Kinematics}: all three masses broadcast into the
+    Euclidean propagator content.
+\end{itemize}
 \end{cfacbox}
 
 \subsubsection{What the reduction actually does}
@@ -2571,30 +2629,48 @@ substitutions).  Implemented in
 \#9 of \texttt{run\_all\_tests.py}.
 \end{cfacbox}
 
-\subsubsection{Why this works: the broadcasting principle}
+\subsubsection{Why ``contraction'' is heuristic, not literal}
 
-\begin{stdbox}[Topological interpretation, after thesis Remark 32]
-Each $\delta$-substitution can be read in two equivalent ways:
-\begin{itemize}[leftmargin=2em]
-  \item \textbf{As a graph contraction $G //\!P$}: the propagator $P$
-    that carried the residue pole is contracted (its endpoints
-    identified, its edge removed/identified with its parallel
-    edges).
-  \item \textbf{As kinematics broadcasting}: any external momentum or
-    mass $\pm i\omega_l$ that flowed on $P$ is ``broadcast'' to the
-    parallel edges, so the residue value depends only on what
-    survives on the contracted graph.
-\end{itemize}
-The bubble: contracting either edge gives a single line with the sum
-of the two masses.  The sunset: contracting two of the three edges
-gives a single line with the sum of the three masses.
+\begin{stdbox}[Topological intuition vs.\ literal Symanzik]
+The thesis Remark~32 describes the reduction as ``topologically a
+contraction $G //\!P$'' --- the propagator carrying the causal pole
+is treated as removed, its kinematics broadcast to the surviving
+structure.  This is a useful conceptual picture: it explains \emph{why}
+the result is independent of the original $\omega_l$, and why all
+masses on the contracted edges add up onto the survivor.
 
-The Reggeon-graph perspective and the Euclidean-graph perspective are
-related by this contraction; the rationals on the IBP-reduction side
-do not know whether the input was Reggeon-causal or
-relativistic-Euclidean, only that they got a Symanzik polynomial of
-a specific structure.  This is why a single IBP solver can serve
-both worlds.
+\textbf{However, the contracted-graph picture is not literal at the
+Symanzik level.}  The reduced Symanzik polynomials $\Psi', \Phi'$
+produced by \texttt{OmegaIntegration} do not match the Symanzik
+polynomials of an abstract contracted graph.  Concretely, for the
+bubble:
+\begin{center}\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+& $\Psi$ & $\Phi$\\
+\midrule
+\texttt{OmegaIntegration} on bubble & $2\alpha_0$ & $2\alpha_0^2(m_0^2 + m_1^2)$\\
+Literal tadpole graph (\texttt{FeynmanGraph.tadpole}) & $\alpha_0$ & $\alpha_0^2 m_0^2$\\
+\midrule
+\multicolumn{3}{l}{\emph{not equal} (factor 2 multiplicity, broadcast masses)}\\
+\bottomrule
+\end{tabular}
+\end{center}
+This is verified by the script
+\texttt{rdft/ac/gribov/verify\_contraction\_view.py} which prints both
+$(\Psi', \Phi')$ side by side and reports the comparison.
+
+\textbf{What is literally true:} the operation is parameter
+substitution on the Schwinger parameters, dictated by the edge-basis
+matrix $E_f$.  The output is a parametric integrand --- not a graph
+--- with explicit polynomials that any IBP solver consumes the same
+way it consumes the polynomials of an Euclidean graph.
+
+The IBP solver does not distinguish between ``input graph was a
+Reggeon graph reduced via $\omega$-integration'' and ``input graph
+was a relativistic graph from the start''.  It just sees the
+Symanzik polynomials and applies its rules.  This is why a single
+solver works for both worlds.
 \end{stdbox}
 
 \subsection{Code correspondence: pen-and-paper $\leftrightarrow$ SymPy}

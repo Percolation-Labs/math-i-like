@@ -95,6 +95,10 @@ def main():
         ('9. Causal->Euclidean reduction (thesis 2.5.3.2): bubble + sunset',
          [sys.executable, g('test_causal_reduction.py')],
          ['alpha0 + alpha1', 'alpha0*alpha1 + alpha0*alpha2 + alpha1*alpha2']),
+
+        ('10. Contraction-view verification: code output vs. literal tadpole',
+         [sys.executable, g('verify_contraction_view.py')],
+         ['Psi_A == Psi_B ?  False', 'DIFFERENT parametric forms']),
     ]
 
     passes = 0
