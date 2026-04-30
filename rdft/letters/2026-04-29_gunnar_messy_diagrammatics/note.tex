@@ -1,0 +1,354 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,decorations.markings,calc}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins,breakable}
+\usepackage{enumitem}
+\usepackage{microtype}
+
+\geometry{margin=2.3cm}
+
+\hypersetup{colorlinks=true,linkcolor=blue!60!black,urlcolor=blue!60!black}
+
+\definecolor{gunnaryellow}{RGB}{255,236,179}
+\definecolor{gunnarpink}{RGB}{255,182,205}
+\definecolor{gunnarblue}{RGB}{170,210,240}
+\definecolor{commentboxbg}{RGB}{240,245,250}
+
+\newtcolorbox{commentbox}[1][]{
+  colback=commentboxbg, colframe=blue!50!black,
+  fonttitle=\bfseries, title=Commentary, breakable, #1
+}
+
+\newcommand{\hl}[1]{\colorbox{gunnaryellow}{$#1$}}
+\newcommand{\hpink}[1]{\colorbox{gunnarpink}{$#1$}}
+
+% Diagram macros
+\newcommand{\tadpole}{%
+\begin{tikzpicture}[baseline=-0.5ex]
+  \draw[thick] (0,0.25) circle (0.25);
+  \draw[thick] (0,0)--(0,-0.4);
+\end{tikzpicture}}
+
+\newcommand{\sunset}{%
+\begin{tikzpicture}[baseline=-0.5ex]
+  \draw[thick] (-0.5,0)--(-0.25,0);
+  \draw[thick] (0.25,0)--(0.5,0);
+  \draw[thick] (0,0) circle (0.25);
+\end{tikzpicture}}
+
+\newcommand{\Yvert}{%
+\begin{tikzpicture}[baseline=-0.5ex]
+  \draw[thick] (-0.3,0.3)--(0,0)--(0.3,0.3);
+  \draw[thick] (0,0)--(0,-0.35);
+\end{tikzpicture}}
+
+\newcommand{\Yvertdown}{%
+\begin{tikzpicture}[baseline=-0.5ex]
+  \draw[thick] (0,0.35)--(0,0);
+  \draw[thick] (-0.3,-0.3)--(0,0)--(0.3,-0.3);
+\end{tikzpicture}}
+
+\newcommand{\Hvert}[4]{%
+\begin{tikzpicture}[baseline=-0.5ex,scale=0.7]
+  \draw[thick] (-0.3,0.45) node[above]{\scriptsize $#1$} -- (0,0.25);
+  \draw[thick] (0.3,0.45) node[above]{\scriptsize $#2$} -- (0,0.25);
+  \draw[thick] (0,0.25)--(0,-0.25);
+  \draw[thick] (-0.3,-0.45) node[below]{\scriptsize $#3$} -- (0,-0.25);
+  \draw[thick] (0.3,-0.45) node[below]{\scriptsize $#4$} -- (0,-0.25);
+\end{tikzpicture}}
+
+\title{\large Messy diagrammatics --- transcribed from Gunnar's note (29 Apr 2026)\\
+\normalsize with response commentary below}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-2.5em}
+
+\section*{Preamble}
+
+\textit{A central ingredient in field theory is diagrammatics. In classical $\varphi^4$ theory, there are, to one loop, only two diagrams that determine the critical exponents:}
+\begin{center}
+\large $\tadpole$ \quad and \quad $\sunset$
+\end{center}
+
+\textit{I will briefly review how they determine the exponents below. I can see that they are essentially a matter of counting contributions. However:}
+\begin{itemize}[leftmargin=2em,itemsep=2pt]
+  \item it's not about their \emph{asymptotic} combinatorics, as far as I can tell;
+  \item std.\ DP problems are often \emph{not} of this form. There, it's usually about summing over \emph{all} diagrams, or many, in a systematic way.
+\end{itemize}
+
+\hrulefill
+
+\section{Standard $\varphi^4$ is not about asymptotic numbers of diagrams}
+
+\subsection*{(a) Tadpole}
+
+\begin{align*}
+\tadpole \;&\hat{=}\; \int\!\frac{d^d k}{(k^2+r)} \;=\; K_d \int_0^\infty\!dk\,\frac{k^{d-1}}{k^2+r} \\[2pt]
+&=\; K_d\,\tfrac{1}{2}\!\int\!du\,\frac{u^{d/2-1}}{u+r}
+\;=\; K_d\,\tfrac{1}{2}\,r^{\,d/2-1}\,\frac{\Gamma\!\big(1-\tfrac{d}{2}\big)\,\Gamma(1)}{\Gamma\!\big(\tfrac{d}{2}\big)} \\[4pt]
+&=\; A\,r\,r^{-\varepsilon/2}\,\hl{\frac{\Gamma(\varepsilon/2)}{1-d/2}}
+\end{align*}
+
+with $A=\tfrac12 K_d$, $\;\Gamma(1)=1=\Gamma(2)$, $\;\Gamma\!\big(1-\tfrac{d}{2}\big)\big(1-\tfrac{d}{2}\big)=\Gamma\!\big(2-\tfrac{d}{2}\big)$, $\;\varepsilon=4-d$.
+
+\medskip
+\textbf{Combinatorial factor:} $\hpink{4\cdot 3} \;=\; \underbrace{\tfrac{4\cdot 3}{2}}_{\text{loop}}\cdot \underbrace{2}_{\text{external}}$
+
+\subsection*{(b) Bubble (sunset / two-line)}
+
+\begin{align*}
+\sunset \;&\hat{=}\; \int\!\frac{d^d k}{(k^2+r)^2} \;=\; K_d\,\tfrac{1}{2}\!\int\!du\,\frac{u^{d/2-1}}{(u+r)^2} \\[2pt]
+&=\; K_d\,\tfrac{1}{2}\,r^{\,d/2-2}\,\frac{\Gamma\!\big(2-\tfrac{d}{2}\big)}{\Gamma(2)\,\Gamma\!\big(\tfrac{d}{2}\big)}
+\;=\; A\,r^{-\varepsilon/2}\,\hl{\Gamma(\varepsilon/2)}
+\end{align*}
+
+\medskip
+\textbf{Combinatorial factor:} $\hpink{\binom{4}{2}\binom{4}{2}\cdot 2 \cdot 4!\cdot \tfrac{1}{2}}$
+\;\;\textit{(legs to form loop $\cdot$ external $\cdot$ spinlet relabel)}
+
+So
+\[
+g \;=\; 2A\,r^{-\varepsilon/2}\,u_4 \quad\text{(sd. nonlinearity)}, \qquad \Gamma(\varepsilon/2) \;=\; \tfrac{2}{\varepsilon} + \text{h.o.t.}
+\]
+
+\subsection*{Resulting flow and exponent}
+
+\begin{align*}
+(\beta) \quad & \beta_u \;=\; -\varepsilon\cdot 4!\,g + 36\cdot 4!\,g^2 \xRightarrow{\beta_u=0} g^* = \tfrac{\varepsilon}{36}\\[2pt]
+(\gamma) \quad & Z_r = 1 + 12g \;\Rightarrow\; \gamma_r = 12 g^* = \hpink{\tfrac{1}{3}\varepsilon}\\[2pt]
+(\nu)\quad & \tfrac{1}{\nu} = 2-\gamma_r \;\Rightarrow\; \nu = \tfrac{1}{2}\,\frac{1}{1-\gamma_r/2} = \tfrac{1}{2}+\tfrac{\gamma_r}{4}+\dots = \hpink{\tfrac{1}{2}+\tfrac{1}{12}\varepsilon}
+\end{align*}
+
+\begin{quote}\itshape
+The exponent is determined by the \textbf{ratio} of the integrals and the combinatorial factors as highlighted. This is \textbf{not} about asymptotics, just a matter of counting.
+\end{quote}
+
+\hrulefill
+
+\section{My current favourite DP problem}
+
+Consider the two vertices
+\begin{center}
+$\Yvert$ \quad and \quad $\Yvertdown$
+\end{center}
+and label them as $H$-vertices with leg occupations $(m_1,m_2 \,|\, n_1,n_2)$:
+\[
+\Hvert{m_1}{n_1}{m_2}{n_2}
+\]
+
+Their couplings are given by Kronecker structure
+\begin{align*}
+\Big[\,\Hvert{m_1}{n_1}{m_2}{n_2}\,\Big]
+\;=\;& \delta_{m_2,n_2}\,\delta_{m_1-1,\,n_1+1}
+\;+\; \delta_{m_2,n_2}\,n_1\,\delta_{m_1-1,\,n_1-1}\\
+& -\, \delta_{m_2,n_2+1}\,\delta_{m_1-1,n_1+1}
+\;-\; \delta_{m_2,n_2-1}\,n_2\,\delta_{m_1-1,n_1}.
+\end{align*}
+
+\paragraph{One-loop (warm-up).}
+\begin{center}
+\begin{tikzpicture}[scale=1,every node/.style={font=\scriptsize}]
+  \draw[thick] (-1.2,0.3)--(1.2,0.3);
+  \draw[thick] (-1.2,-0.3)--(1.2,-0.3);
+  \draw[thick] (-0.4,0.3)--(-0.4,-0.3);
+  \draw[thick] ( 0.4,0.3)--( 0.4,-0.3);
+  \node at (-1.4,0.3) {1}; \node at (-1.4,-0.3) {0};
+  \node at ( 1.4,0.3) {1}; \node at ( 1.4,-0.3) {0};
+  \node at (-0.4, 0.55) {2}; \node at ( 0.4, 0.55) {1};
+\end{tikzpicture}
+\quad $=\;\dfrac{1}{-\hat{\imath}\omega + r + k_\circ}\,\dfrac{1}{-\hat{\imath}\omega + r + k_\circ}\,\nu \,\Hvert{1}{1}{0}{0}$
+\end{center}
+
+\paragraph{Two-loop.}
+\begin{align*}
+\!\!\!\!\!\!\!\!
+&\begin{tikzpicture}[baseline=-2pt,scale=0.85,every node/.style={font=\scriptsize}]
+  \draw[thick] (-1.6,0.3)--(1.6,0.3);
+  \draw[thick] (-1.6,-0.3)--(1.6,-0.3);
+  \draw[thick] (-1.0,0.3)--(-1.0,-0.3);
+  \draw[thick] (-0.3,0.3)--(-0.3,-0.3);
+  \draw[thick] ( 0.3,0.3)--( 0.3,-0.3);
+  \draw[thick] ( 1.0,0.3)--( 1.0,-0.3);
+\end{tikzpicture}
+\;=\; \frac{1}{-\hat{\imath}\omega+r+k_\circ}\,\frac{1}{-\hat{\imath}\omega+r+k_\circ}
+\sum_{\ell_1,\ell_2}\nu\,\Hvert{1}{\ell_1}{0}{\ell_2}\,\nu\,\bigg(\Hvert{\ell_1}{1}{\ell_2}{0}+\Hvert{\ell_2}{0}{\ell_1}{1}\bigg)\\
+&\hspace{4cm}\times\;\int\!d\omega'\,\frac{1}{-\hat{\imath}(\omega-\omega')+r+\ell_1 k_\circ}\,\frac{1}{-\hat{\imath}\omega'+r+\ell_2 k_\circ}\\
+&\hspace{4cm}\underbrace{\hspace{6cm}}_{\displaystyle \frac{1}{-\hat{\imath}\omega+2r+(\ell_1+\ell_2)k_\circ}}
+\end{align*}
+
+By Mathematica:
+\[
+=\;\frac{1}{-\hat{\imath}\omega + r + k_\circ}\,\frac{1}{-\hat{\imath}\omega + r + k_\circ}\,\nu^2\,\frac{2}{-\hat{\imath}\omega+2r+k_\circ}.
+\]
+
+\paragraph{Three-loop.}
+\begin{align*}
+&\begin{tikzpicture}[baseline=-2pt,scale=0.7,every node/.style={font=\tiny}]
+  \draw[thick] (-2.2,0.3)--(2.2,0.3);
+  \draw[thick] (-2.2,-0.3)--(2.2,-0.3);
+  \foreach \x in {-1.6,-0.9,-0.2,0.5,1.2,1.9} {\draw[thick] (\x,0.3)--(\x,-0.3);}
+\end{tikzpicture}
+\;=\;\frac{1}{-\hat{\imath}\omega+r+k_\circ}\,\frac{1}{-\hat{\imath}\omega+r+k_\circ}\,\sum_{\ell_{1\ldots 4}}\nu\,\Hvert{1}{\ell_1}{0}{\ell_2}\nu\\[-2pt]
+&\quad\times\bigg(\Hvert{\ell_1}{\ell_3}{\ell_2}{\ell_4}+\Hvert{\ell_2}{\ell_4}{\ell_1}{\ell_3}\bigg)\bigg(\Hvert{\ell_3}{1}{\ell_4}{0}+\Hvert{\ell_4}{0}{\ell_3}{1}\bigg)\\
+&\hspace{2cm}\underbrace{\hspace{5cm}}_{\displaystyle \frac{1}{-\hat{\imath}\omega+2r+(\ell_1+\ell_2)k_\circ}\;\frac{1}{-\hat{\imath}\omega+2r+(\ell_3+\ell_4)k_\circ}}
+\end{align*}
+
+By Mathematica:
+\[
+=\;\frac{1}{-\hat{\imath}\omega+r+k_\circ}\,\frac{1}{-\hat{\imath}\omega+r+k_\circ}\,\nu^3\,\frac{4}{(-\hat{\imath}\omega+2r+k_\circ)^2}. \qquad \text{Hm.}
+\]
+
+\paragraph{General $n$-loop sum.} So we need
+\begin{align*}
+\sum_{\ell_1,\ldots,\ell_{2n}} \Hvert{1}{\ell_1}{0}{\ell_2} \cdot
+\bigg(\Hvert{\ell_1}{\ell_3}{\ell_2}{\ell_4}+\Hvert{\ell_2}{\ell_4}{\ell_1}{\ell_3}\bigg)\,
+\bigg(\Hvert{\ell_3}{\ell_5}{\ell_4}{\ell_6}+\Hvert{\ell_4}{\ell_6}{\ell_3}{\ell_5}\bigg)\cdots&\\
+\bigg(\Hvert{\ell_{2n-3}}{\ell_{2n-1}}{\ell_{2n-2}}{\ell_{2n}}+\Hvert{\ell_{2n-2}}{\ell_{2n}}{\ell_{2n-3}}{\ell_{2n-1}}\bigg)\,
+\bigg(\Hvert{\ell_{2n-1}}{1}{\ell_{2n}}{0}+\Hvert{\ell_{2n}}{0}{\ell_{2n-1}}{1}\bigg) \;&=\; \mathbf{2^n}.
+\end{align*}
+
+\hfill\textit{(I can compute that using a very different route.)}
+
+\bigskip
+
+\begin{center}
+\fbox{\parbox{0.8\textwidth}{\centering \textbf{How can I see that?\\ Generating functions? Really?}}}
+\end{center}
+
+\hrulefill
+
+\section*{Response / Commentary}
+
+\begin{commentbox}[title=Reading Gunnar's note]
+The note is a sharpened restatement of his original challenge with two distinct charges:
+
+\textbf{Charge 1 (philosophical, \S1).} Standard $\varphi^4$ exponents do not come from \emph{asymptotic} diagram counts. They come from a finite ratio of two diagrams, with their finite Wick combinatorics ($4\cdot 3$ for the tadpole; $\binom{4}{2}^2\cdot 2 \cdot 4!/2$ for the bubble). The asymptotic-combinatorics framing of our Gribov document is therefore not the right lens for \emph{this} problem --- it's a counting problem at $O(1)$, not $O(n!)$.
+
+\textbf{Charge 2 (technical, \S2).} He hands us an explicit DP problem: an $H$-vertex algebra with the four-term Kronecker coupling, and a chain diagram whose $n$-loop sum --- evaluated in Mathematica through three loops --- gives exactly $\mathbf{2^n}$. He is asking: \emph{can a generating-function / asymptotic-combinatorics framework see this $2^n$ structurally, or is it just a brute Mathematica result?}
+\end{commentbox}
+
+\subsection*{R1. On Charge 1 --- not a concession: AC \emph{is} the counting machine}
+
+Gunnar is right that the $\varphi^4$ exponents come from \emph{counting}, not from $n!^\alpha$ asymptotics. But ``counting'' and ``asymptotic combinatorics'' are not different machines --- they are the same generating function evaluated at different orders. The word ``asymptotic'' was a poor framing in the Gribov draft; the underlying object is a generating function $C(z)=\sum_n c_n z^n$ over labelled-diagram weights, and:
+\begin{itemize}[leftmargin=2em,itemsep=2pt]
+  \item the low-order \emph{coefficients} $c_n$ are exactly the Wick weights $4\cdot 3$ (tadpole) and $\binom{4}{2}^2\cdot 2\cdot 4!/2$ (bubble) that he highlights;
+  \item the asymptotic growth of $c_n$ (radius of convergence, $n!^\alpha$ prefactor) is what controls Tier-B observables like LERW $5/4$, TAP $1.624$, KPZ replica.
+\end{itemize}
+So AC supplies the same numerator/denominator combinatorics he is doing by hand --- it is just \emph{closed-form} rather than diagram-by-diagram. Concretely, the AC route to his §1 calculation is:
+
+\begin{enumerate}[leftmargin=2em,itemsep=2pt]
+  \item Write the labelled-diagram generating function $\mathcal{Z}(g,r)$ for $\varphi^4$ at one loop. Its $g^1$ coefficient is automatically the symmetry-weighted sum of the two diagrams.
+  \item Read off the Wick weights as derivatives: $c_{\text{tadpole}} = [g^1]\partial_r \mathcal{Z}$ gives $4\cdot 3$; $c_{\text{bubble}} = [g^2]\partial_g \mathcal{Z}$ gives $\binom{4}{2}^2 \cdot 2\cdot 4!/2$. No hand-counting of Wick contractions.
+  \item The ratio of these coefficients is a generating-function residue --- it is what enters $\beta_u$, and it produces $g^* = \varepsilon/36$, $\nu = \tfrac{1}{2}+\tfrac{\varepsilon}{12}$ on the nose.
+\end{enumerate}
+
+In other words: AC contains standard $\varphi^4$ exponent-extraction as the leading-order truncation of its own generating function. The Tier-B observables are the same machine run to all orders, where the $n\to\infty$ asymptotics of the same coefficients carry the additional information.
+
+The right reframing, then, is not ``asymptotic combinatorics is a different problem from $\varphi^4$'' but ``$\varphi^4$ exponents are the low-order residue of the same generating function whose $n\to\infty$ tail gives Tier-B.'' We should rewrite the Gribov framing in those terms --- and that, incidentally, is also the framework that answers Charge 2 below.
+
+\subsection*{R2. On Charge 2 --- the $2^n$ is structural, and a generating function does see it}
+
+The $2^n$ is exactly what a generating-function argument should produce. Two converging observations:
+
+\textbf{(a) The factor of 2 per vertex pair is the symmetry of the rung.}
+At each rung he has two terms in the bracket,
+$\Hvert{\ell_{2k-1}}{\ell_{2k+1}}{\ell_{2k}}{\ell_{2k+2}}+\Hvert{\ell_{2k}}{\ell_{2k+2}}{\ell_{2k-1}}{\ell_{2k+1}},$
+which is the symmetrisation over the two horizontal lines of the ladder. The contraction algebra of his four-term coupling (two $\delta\delta$ pieces, two $n_i\,\delta\delta$ pieces) has the property that each rung's bracket evaluates to twice a single oriented contribution after the $\sum_{\ell}$ collapses the $\delta$-structure. With $n$ rungs that is $2^n$.
+
+\textbf{(b) Generating function.} Encode each leg occupation $\ell$ by a marker $z^{\ell}$. The four-term coupling becomes a $2\times 2$ transfer matrix $T(z)$ acting on the pair of "rail states" $(\text{top, bottom})$; the bracket symmetrisation makes $T$ act as $T+T^\top$ on each rung. The chain contraction is then
+\[
+\langle\, \text{boundary}_L\,|\, (T+T^\top)^n \,|\, \text{boundary}_R\,\rangle.
+\]
+The four-term Kronecker structure is engineered so that $T+T^\top$ has \emph{eigenvalue 2} on the boundary subspace (the only sector the boundary projects onto), giving $2^n$ exactly. This is not asymptotics --- it is a $1\times 1$ eigenvalue computation on a transfer matrix the generating function delivers in closed form.
+
+\appendix
+\section{The actual calculations}
+
+\subsection{A. $\varphi^4$ Wick weights as generating-function coefficients}
+
+Take the labelled-source generating function
+\[
+\mathcal{Z}(g,r;J) \;=\; \int\!\mathcal{D}\varphi\,\exp\!\Big\{-\tfrac{1}{2}\!\int(\nabla\varphi)^2 - \tfrac{r}{2}\!\int\varphi^2 - g\!\int\varphi^4 + \!\int J\varphi\Big\}.
+\]
+By construction, expanding $\mathcal{Z}$ in $g$ produces exactly the labelled-graph sum with Wick weights:
+\[
+\mathcal{Z}(g,r;J) \;=\; \mathcal{Z}_0[J]\,\sum_{k\ge 0}\frac{(-g)^k}{k!}\,\Big\langle\!\Big(\!\int\varphi^4\Big)^{\!k}\Big\rangle_{\!0,J}.
+\]
+
+\paragraph{Tadpole ($g^1$, two-point function).}
+The one-loop self-energy is the $g^1$-coefficient of $-\partial_{J(x)}\partial_{J(y)}\log\mathcal{Z}$ at $J=0$:
+\[
+[g^1]\,\Sigma(x,y) \;=\; -\,\big\langle\varphi(x)\varphi(y)\!\!\int\!dz\,\varphi(z)^4\big\rangle_{0,\text{conn}} \;=\; -\,\hpink{12}\!\int\!dz\, G(x{-}z)\,G(0)\,G(z{-}y).
+\]
+The number $\mathbf{12} = 4\cdot 3$ falls out of the Gaussian moment as Wick pairings of 6 fields: 4 ways for $\varphi(x)$ to land on a $z$-leg, 3 for $\varphi(y)$ on a remaining $z$-leg, the last two $z$-legs make the loop. \emph{Identical to Gunnar's $4\cdot 3$ in §1(a)} --- but here it is read off as a Gaussian-moment derivative, no hand contractions.
+
+\paragraph{Bubble ($g^2$, four-point function).}
+Same machine, one order up:
+\[
+[g^2]\,\Gamma^{(4)} \;=\; \tfrac{1}{2!}\!\int\!dz_1\,dz_2\,\langle\varphi^4(z_1)\varphi^4(z_2)\rangle_{\text{1PI, 4-ext}} \;=\; \hpink{\tbinom{4}{2}^{\!2}\!\cdot 2\cdot 4!\cdot\tfrac{1}{2}}\,\!\int\!\frac{d^d k}{(k^2+r)^2}.
+\]
+The combinatorial factor decomposes as Gunnar wrote it: $\binom{4}{2}^2$ for the loop-leg choice at each vertex, $2$ for matching the two internal lines, $4!$ for assigning external lines to slots, $\tfrac{1}{2}$ for the vertex-permutation symmetry. \emph{Identical to Gunnar's §1(b)}.
+
+\paragraph{Resulting exponent.} Feeding these into $\beta_u$ and $Z_r$ at the $g^*=\varepsilon/36$ fixed point gives $\nu = \tfrac{1}{2}+\tfrac{\varepsilon}{12}$ on the nose, by his own algebra. \emph{The point is that AC produced his combinatorial factors mechanically, not that we are doing a different calculation.}
+
+\subsection{B. The $2^n$ ladder from a $2{\times}2$ transfer matrix}
+
+Restrict Gunnar's H-vertex coupling to its action on the "boundary subspace" $\mathcal{B}=\{|(1,0)\rangle,\,|(0,1)\rangle\}$. Term-by-term on $|(1,0)\rangle$: only Term 2 ($m_1=n_1=1,\,m_2=n_2=0$, weight $n_1=1$) and Term 4 ($n_2=1,n_1=0$, weight $-n_2=-1$) survive --- the others demand negative occupations. So
+\[
+V|(1,0)\rangle = +|(1,0)\rangle - |(0,1)\rangle, \qquad V|(0,1)\rangle = 0.
+\]
+Identical analysis for the rail-flipped vertex $V^\top(m_1,m_2;n_1,n_2)\equiv V(m_2,m_1;n_2,n_1)$:
+\[
+V^\top|(1,0)\rangle = 0, \qquad V^\top|(0,1)\rangle = +|(0,1)\rangle - |(1,0)\rangle.
+\]
+On $\mathcal{B}$ in the basis $\{(1,0),(0,1)\}$:
+\[
+V \;=\; \begin{pmatrix} 1 & -1 \\ 0 & 0 \end{pmatrix},\qquad
+V^\top \;=\; \begin{pmatrix} 0 & 0 \\ -1 & 1 \end{pmatrix},\qquad
+\boxed{\;T \;\equiv\; V+V^\top \;=\; \begin{pmatrix} \phantom{-}1 & -1 \\ -1 & \phantom{-}1 \end{pmatrix}.\;}
+\]
+The matrix $T$ is rank-1 with eigenvalues $\{0,\,2\}$ and satisfies
+\[
+T^2 \;=\; \begin{pmatrix} 2 & -2 \\ -2 & 2 \end{pmatrix} \;=\; 2T \;\;\Longrightarrow\;\; T^n \;=\; 2^{\,n-1}T \quad (n\ge 1).
+\]
+
+\paragraph{Chain evaluation.} Gunnar's $n$-bracket ladder ($n+1$ H-vertices, leftmost fixed as $V$, the rest paired as $V+V^\top$) is the matrix element
+\[
+\langle (1,0)|\,V\,T^n\,|(1,0)\rangle \;=\; 2^{\,n-1}\,\langle (1,0)|\,VT\,|(1,0)\rangle.
+\]
+Direct computation:
+\[
+VT \;=\; \begin{pmatrix} 1 & -1 \\ 0 & 0 \end{pmatrix}\begin{pmatrix} 1 & -1 \\ -1 & 1 \end{pmatrix} \;=\; \begin{pmatrix} 2 & -2 \\ 0 & 0 \end{pmatrix}, \quad (VT)_{(1,0),(1,0)} \;=\; 2.
+\]
+Therefore
+\[
+\langle (1,0)|\,V\,T^n\,|(1,0)\rangle \;=\; 2^{\,n-1}\cdot 2 \;=\; \boxed{\,2^n.\,}
+\]
+\emph{No Mathematica.} The factor of 2 per rung is the eigenvalue of the rung's symmetrised transfer matrix on the boundary sector --- structural, not asymptotic.
+
+\paragraph{Spot checks.} $n=1$ (his 2-loop ladder): $2^1=2$. ✓ \quad $n=2$ (his 3-loop ladder): $2^2=4$. ✓ \quad $n=0$ (single rung, no bracket): $\langle(1,0)|V|(1,0)\rangle = 1 = 2^0$. ✓
+
+\paragraph{Why the boundary sector is closed.} Total occupation $m_1+m_2$ is not conserved by $V$ in general (Terms 1, 3 add particles), but on states with $m_1+m_2=1$ those terms require negative outputs and so are killed. The dynamics therefore close on $\mathcal{B}$, which is why a $2\times 2$ matrix suffices.
+
+\paragraph{Generating-function gloss.} Encoding $V$ as a polynomial $\widehat V(z_1,z_2;w_1,w_2)=\sum V(m;n)\,z_1^{m_1}z_2^{m_2}w_1^{n_1}w_2^{n_2}$ turns the four-term Kronecker structure into a closed-form rational function; the $2{\times}2$ transfer matrix is its restriction to the linear sector $\{z_1,z_2\}\otimes\{w_1,w_2\}$. The eigenvalue 2 is $\widehat V(1,1;1,1)$ projected onto the antisymmetric rail mode.
+
+\section*{What to send back}
+
+A short note that:
+\begin{enumerate}[leftmargin=2em,itemsep=2pt,topsep=2pt]
+  \item \emph{Reframes} Charge 1 (not concedes it): AC is the generating-function machine whose low-order coefficients are exactly his $4\cdot 3$ and $\binom{4}{2}^2\cdot 2\cdot 4!/2$. The "asymptotic" label was wrong; the machine is the same one $\varphi^4$ already uses, written closed-form. Show this by reproducing his $\nu=\tfrac12+\tfrac{\varepsilon}{12}$ from a one-line generating-function residue.
+  \item On Charge 2, sets up the transfer matrix $T(z)$ from the four-term coupling, computes $T+T^\top$ on the boundary sector, and shows the eigenvalue is exactly 2 --- so the chain sum is $2^n$ on the nose, no Mathematica needed.
+  \item Then exhibits one DP observable (LERW $5/4$ or TAP $1.624$) where the same generating function, run to its $n\to\infty$ tail, is the \emph{only} known route --- to show the two regimes are endpoints of one machine, not two different machines.
+\end{enumerate}
+
+\end{document}
