@@ -2412,6 +2412,191 @@ Comparing JT05 Eq.~(57a) the simple-pole bracket is
 $(-3 + (9/2)L)/32 = -3/32 + (9/64)L$ exactly.
 \end{cfacbox}
 
+\subsection{How the causal reduction works (with pictures)}
+\label{app:causal-reduction}
+
+The bridge between Reggeon-causal propagators and the relativistic IBP
+solver is the thesis~\cite{amarteifio2019} \S 2.5.3.2 reduction.  We
+explain it pictorially here.
+
+\subsubsection{The set-up}
+
+\begin{stdbox}[Reggeon vs.\ relativistic propagators]
+A standard relativistic propagator is $1/D$ with $D = k^2 + m^2$;
+loop integrals are over $\dd^d k$.  A Reggeon (causal) propagator
+is $1/D$ with
+\[
+  D \;=\; -i\omega + \lambda(\tau + p^2),
+\]
+and loop integrals carry an extra $\dd \omega/(2\pi)$ measure.  The
+extra $\omega$-integration is the ``causal fingerprint'' of the
+non-equilibrium theory.
+
+The IBP solver in \texttt{rdft/ac/ibp\_solver/} expects relativistic
+propagators.  We need to do something with the $\omega$-integration
+to use it on the Reggeon graphs.
+\end{stdbox}
+
+\subsubsection{Residue calculus on causal poles}
+
+\begin{cfacbox}[The contour-integral observation]
+Each loop frequency $\omega_l$ appears linearly in some subset of
+propagators.  In a graph with $L$ loops, the $L$ frequency integrals
+$\int \prod_l (\dd\omega_l/2\pi)$ can be performed by closing each
+contour in a half-plane and summing residues at the causal poles.
+
+Equivalently, the integrations are implemented by $L$ delta-function
+substitutions $\delta(\Sigma_l)$, where $\Sigma_l$ is the linear
+combination of Schwinger parameters dictated by the $l$-th
+fundamental circuit of the graph (the edge-basis matrix $E_f$, thesis
+\S 2.5.3.2 / Eq.~2.28).  The residue method and the delta-function
+method give the same answer; the delta-function form is what we
+implement.
+\end{cfacbox}
+
+\subsubsection{Pictures: bubble}
+
+\begin{cfacbox}[Reggeon bubble $\to$ Euclidean bubble]
+\begin{center}
+\begin{tikzpicture}[font=\footnotesize, baseline]
+  % Left: Reggeon bubble with frequency-flow arrows
+  \node[circle, fill=black, inner sep=1.2pt] (l1) at (-5.0, 0) {};
+  \node[circle, fill=black, inner sep=1.2pt] (l2) at (-3.0, 0) {};
+  \draw[thick, ->] (l1) to[bend left=60] node[above]{$\alpha_0,\,\omega$} (l2);
+  \draw[thick, <-] (l1) to[bend right=60] node[below]{$\alpha_1,\,\omega$} (l2);
+  \draw[thick] (-5.7, 0) -- (l1);
+  \draw[thick] (l2) -- (-2.3, 0);
+  \node at (-4.0, -1.4) {\textbf{Reggeon bubble}};
+  \node at (-4.0, -1.85) {\scriptsize causal: $\dd\omega/(2\pi) \int$};
+
+  % Arrow with delta-function
+  \draw[->, very thick, draw=cfacline]
+       (-1.9, 0) -- node[above]{\scriptsize $\delta(\alpha_1 - \alpha_0)$}
+                  node[below]{\scriptsize \emph{contour}}
+       (0.3, 0);
+
+  % Right: Euclidean bubble with identified Schwinger parameter
+  \node[circle, fill=black, inner sep=1.2pt] (r1) at (1.0, 0) {};
+  \node[circle, fill=black, inner sep=1.2pt] (r2) at (3.0, 0) {};
+  \draw[thick] (r1) to[bend left=60] node[above]{$\alpha_0$} (r2);
+  \draw[thick] (r1) to[bend right=60] node[below]{$\alpha_0$} (r2);
+  \draw[thick] (0.3, 0) -- (r1);
+  \draw[thick] (r2) -- (3.7, 0);
+  \node at (2.0, -1.4) {\textbf{Euclidean bubble}};
+  \node at (2.0, -1.85) {\scriptsize $\Psi = 2\alpha_0$};
+\end{tikzpicture}
+\end{center}
+The two edges' Schwinger parameters get \emph{identified} ($\alpha_0
+= \alpha_1$) by the delta function $\delta(\alpha_1 - \alpha_0)$
+arising from the single loop's frequency integration.  The reduced
+Symanzik polynomial is $\Psi = \alpha_0 + \alpha_1\big|_{\alpha_1 =
+\alpha_0} = 2\alpha_0$, which is the ``one effective Schwinger
+parameter with multiplicity 2'' that a relativistic IBP would see.
+\end{cfacbox}
+
+\subsubsection{Pictures: sunset}
+
+\begin{cfacbox}[Reggeon sunset $\to$ diagonal Euclidean]
+\begin{center}
+\begin{tikzpicture}[font=\footnotesize, baseline]
+  % Left: Reggeon sunset (3 parallel propagators between 2 vertices)
+  \node[circle, fill=black, inner sep=1.2pt] (sl) at (-5.0, 0) {};
+  \node[circle, fill=black, inner sep=1.2pt] (sr) at (-3.0, 0) {};
+  \draw[thick, ->] (sl) to[bend left=70] node[above]{$\alpha_0,\,\omega_1$} (sr);
+  \draw[thick, ->] (sl) to node[above, midway]{$\alpha_1,\,\omega_2$} (sr);
+  \draw[thick, ->] (sl) to[bend right=70] node[below]{$\alpha_2,\,\omega_3$} (sr);
+  \draw[thick] (-5.7, 0) -- (sl);
+  \draw[thick] (sr) -- (-2.3, 0);
+  \node at (-4.0, -1.5) {\textbf{Reggeon sunset}};
+  \node at (-4.0, -1.95) {\scriptsize 2 loops; 2 frequency ints};
+
+  % Arrow
+  \draw[->, very thick, draw=cfacline]
+       (-1.9, 0) -- node[above]{\scriptsize $\delta(\alpha_1{-}\alpha_0),\,\delta(\alpha_2{-}\alpha_0)$}
+       (0.3, 0);
+
+  % Right: Euclidean diagonal sunset (all three alphas identified)
+  \node[circle, fill=black, inner sep=1.2pt] (esl) at (1.0, 0) {};
+  \node[circle, fill=black, inner sep=1.2pt] (esr) at (3.0, 0) {};
+  \draw[thick] (esl) to[bend left=70] node[above]{$\alpha_0$} (esr);
+  \draw[thick] (esl) to node[above, midway]{$\alpha_0$} (esr);
+  \draw[thick] (esl) to[bend right=70] node[below]{$\alpha_0$} (esr);
+  \draw[thick] (0.3, 0) -- (esl);
+  \draw[thick] (esr) -- (3.7, 0);
+  \node at (2.0, -1.5) {\textbf{Euclidean sunset}};
+  \node at (2.0, -1.95) {\scriptsize $\Psi = 3\alpha_0^2$};
+\end{tikzpicture}
+\end{center}
+Two delta functions (one per loop) identify all three Schwinger
+parameters: $\alpha_0 = \alpha_1 = \alpha_2$.  The reduced Symanzik
+polynomial is $\Psi = (\alpha_0 \alpha_1 + \alpha_0 \alpha_2 +
+\alpha_1 \alpha_2)\big|_{\alpha_1 = \alpha_2 = \alpha_0} = 3\alpha_0^2$
+--- exactly the diagonal contraction of the textbook 2-loop sunset
+Symanzik.
+\end{cfacbox}
+
+\subsubsection{What the reduction actually does}
+
+\begin{cfacbox}[Algorithmic recipe]
+For a graph $G$ with $L$ loops and $E$ internal edges:
+\begin{enumerate}[leftmargin=2em]
+  \item \textbf{Build the edge-basis matrix} $E_f \in \mathbb{Z}^{L
+    \times E}$.  Each row $l$ corresponds to a fundamental circuit;
+    entry $(E_f)_{l, e} \in \{-1, 0, +1\}$ indicates whether edge $e$
+    is in the $l$-th circuit and with what orientation.  This is a
+    pure graph-theoretic computation: pick a spanning tree $T$; each
+    non-tree edge defines a fundamental circuit (the unique cycle
+    formed by the non-tree edge plus the tree path between its
+    endpoints).
+  \item \textbf{Form the linear constraints}
+    $\Sigma_l = \sum_e (E_f)_{l,e}\, \alpha_e$, one per loop.
+  \item \textbf{Substitute}: solve each $\Sigma_l = 0$ for one
+    Schwinger parameter (the leading one in canonical order),
+    yielding $L$ substitution rules $\alpha_{e_l} = \cdots$ that
+    eliminate $L$ degrees of freedom.
+  \item \textbf{Apply the substitutions} to the first and second
+    Symanzik polynomials $\Psi$ and $\Phi$.  The result $(\Psi', \Phi')$
+    depends on $E - L$ Schwinger parameters --- i.e., on the
+    \emph{spatial} integrations only.
+\end{enumerate}
+
+The output $(\Psi', \Phi')$ is the parametric integrand of a
+relativistic / Euclidean Feynman integral.  This is the input format
+that a standard IBP solver consumes.
+
+The recipe involves no integration: it is graph-theoretic
+($E_f$ from the spanning tree) plus rational linear algebra (the
+substitutions).  Implemented in
+\texttt{rdft/integrals/parametric.OmegaIntegration}; verified test
+\#9 of \texttt{run\_all\_tests.py}.
+\end{cfacbox}
+
+\subsubsection{Why this works: the broadcasting principle}
+
+\begin{stdbox}[Topological interpretation, after thesis Remark 32]
+Each $\delta$-substitution can be read in two equivalent ways:
+\begin{itemize}[leftmargin=2em]
+  \item \textbf{As a graph contraction $G //\!P$}: the propagator $P$
+    that carried the residue pole is contracted (its endpoints
+    identified, its edge removed/identified with its parallel
+    edges).
+  \item \textbf{As kinematics broadcasting}: any external momentum or
+    mass $\pm i\omega_l$ that flowed on $P$ is ``broadcast'' to the
+    parallel edges, so the residue value depends only on what
+    survives on the contracted graph.
+\end{itemize}
+The bubble: contracting either edge gives a single line with the sum
+of the two masses.  The sunset: contracting two of the three edges
+gives a single line with the sum of the three masses.
+
+The Reggeon-graph perspective and the Euclidean-graph perspective are
+related by this contraction; the rationals on the IBP-reduction side
+do not know whether the input was Reggeon-causal or
+relativistic-Euclidean, only that they got a Symanzik polynomial of
+a specific structure.  This is why a single IBP solver can serve
+both worlds.
+\end{stdbox}
+
 \subsection{Code correspondence: pen-and-paper $\leftrightarrow$ SymPy}
 \label{app:code-corresp}
 
@@ -2448,6 +2633,10 @@ $(d-3)$ Laporta coefficient on $I[1,1,1]$
   & \texttt{rdft/ac/ibp\_solver/sunset\_identity.py}\\
 Full Laporta triangulation, $I[1,1,1]$ as master
   & \texttt{rdft/ac/ibp\_solver/triangulate.py}\\
+Causal $\to$ Euclidean reduction (thesis \S 2.5.3.2): edge-basis
+  matrix $E_f$, $\delta$-substitutions on Schwinger parameters
+  & \texttt{rdft/integrals/parametric.OmegaIntegration};\newline
+    test \#9: \texttt{rdft/ac/gribov/test\_causal\_reduction.py}\\
 End-to-end (8 tests)
   & \texttt{rdft/ac/gribov/run\_all\_tests.py}\\
 \bottomrule
