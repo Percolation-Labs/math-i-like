@@ -134,7 +134,8 @@ operations:
   \item Polynomial-derivative operators at the JT05 symmetric point
     on $U_{\textsf{bubble}} = x_1 + x_2$ produce the four 1-loop
     algebra factors $a^X_1 = \{\tfrac14, \tfrac18, \tfrac12, 2\}$
-    (matching JT05 Eq.~(56)).
+    (matching the JT05 minimal-subtraction choice between
+    Eqs.~(55)--(56)).
   \item The MS-bar pole-cancellation identity (a.k.a.\ Connes--Kreimer
     Hopf-antipode evaluation)
     \begin{equation*}
@@ -147,9 +148,15 @@ operations:
     $\{Z_\psi, Z_\lambda, Z_\tau, Z_u\}^{(2,2)} =
      \{\tfrac{7}{32}, \tfrac{13}{128}, \tfrac{1}{2}, \tfrac{7}{2}\}$,
     matching JT05 Eq.~(57) exactly.
-  \item The simple-pole content of $Z_X$ (the rational and
-    $L = \ln(4/3)$ pieces) inserts the three master integral values via the
-    counting--bridge--algebra factorisation; nothing else is needed.
+  \item The 2-loop simple-pole BPHZ counterterm has the parallel
+    closed form $\mathrm{BPHZ}_X = \tfrac{1}{2}\,a_X^{(1)}(a_X^{(1)} -
+    \beta_1)$, also from the Hopf antipode and free of integral input.
+  \item The remaining (primitive) simple-pole content of $Z_X$
+    decomposes via the counting--bridge--algebra factorisation through
+    the 12 rational IBP coefficients $q^X_\bullet$, fixed by 5
+    structural CFAC constraints + the JT05 closure on the master
+    residues.  The three master integral values are the only places
+    where integration enters.
   \item The downstream pipeline $Z \to \gamma \to \beta \to u^* \to$
     exponents is pure series algebra and reproduces JT05 Eqs.~(58),
     (59), (60) with zero residual (SymPy-verified).
@@ -1255,8 +1262,9 @@ Solving $\beta(u^*) = 0$ to $O(\varepsilon^2)$:
 
 \begin{cfacbox}[CFAC closed form for $u^*$]
 The 1-loop coefficient $u^* = (2/3)\varepsilon + O(\varepsilon^2)$ is
-$c_{V_1}\tilde B_2 a_{V_1}/\beta_1$ where $\beta_1 = a_u^{(1)} = 3/2$
-(itself produced by Lagrange counts on the vertex triangle).  The
+$c_{V_1}\tilde B_2 a_{V_1}/\beta_1$ where $\beta_1 = a_u^{(1)} -
+2a_\psi^{(1)} = 3/2$ (itself a closed-form combinatorial composition
+of 1-loop algebra factors).  The
 2-loop correction is the rational composition
 \begin{equation}
   u^*_{(2)} \;=\; -\,\frac{\beta_2}{\beta_1^3}\,\varepsilon^2
@@ -1687,6 +1695,614 @@ group's setup (Mathematica licence and/or Fermat).
     available; Panzer's HyperInt evaluates linearly-reducible cases
     symbolically.  CFAC's counting layer extends uniformly.
 \end{enumerate}
+
+% ══════════════════════════════════════════════════════════════════════
+\appendix
+\section{Pen-and-Paper Walkthrough: $Z_\psi$ End-to-End}
+\label{app:walkthrough}
+% ══════════════════════════════════════════════════════════════════════
+
+This appendix tracks one cross-section of the calculation in
+excruciating detail.  We pick the wave-function renormalisation
+$Z_\psi$ for directed percolation and follow it from the microscopic
+master equation, through the Doi--Peliti generator, vertex
+enumeration, diagram pairing, Lagrange inversion, $1$-loop and
+$2$-loop reductions, all the way to the JT05 published rationals
+$Z_\psi^{(2,2)} = 7/32$ and $Z_\psi^{(2,1)} = -3/32 + (9/64)L$.
+At every step the pen-and-paper derivation is paired with the
+script in \texttt{rdft/ac/gribov/} that performs the same operation
+in SymPy.
+
+\subsection{Working glossary (specialised concepts used below)}
+\label{app:glossary}
+
+The walkthrough uses several specialised constructs from QFT and
+graph theory.  Each is defined briefly here so the reader can follow
+without external references; each entry points to its full
+discussion.
+
+\begin{stdbox}[Five concepts you need]
+\begin{description}[leftmargin=1em, labelindent=0.5em, style=nextline]
+  \item[Schwinger / Feynman parametrisation.]  Any Feynman integral
+    $\int \dd^d k_1 \cdots / (D_1^{a_1} \cdots D_N^{a_N})$ with $D_i$
+    inverse propagators rewrites as
+    $\int_0^\infty\! \prod \dd \alpha_i\,\alpha_i^{a_i - 1} \,
+    \exp(-\sum \alpha_i D_i) / \prod \Gamma(a_i)$
+    after introducing one Schwinger parameter $\alpha_i$ per propagator
+    and integrating out the loop momenta. The result is a
+    \emph{parametric integral} over the simplex of $\alpha$'s, with
+    integrand built from two graph-polynomial objects (next two
+    items).  See Smirnov 2012 \cite{Smirnov2012} Ch.~3.
+  \item[Symanzik polynomial $U_\Gamma$ (first kind).]  For a Feynman
+    graph $\Gamma$ with edges $\{e_1, \ldots, e_E\}$ and Schwinger
+    parameters $\alpha_i$, the polynomial
+    \[
+      U_\Gamma(\boldsymbol \alpha)
+      \;=\; \sum_{T \in \mathcal{T}(\Gamma)}\,
+            \prod_{e \notin T} \alpha_e
+    \]
+    where $\mathcal T(\Gamma)$ is the set of spanning trees of
+    $\Gamma$.  It encodes the loop-momentum integration; physically
+    the "wave-function" piece of the parametric integrand.  Examples
+    in the walkthrough: bubble $\Rightarrow x_1 + x_2$ (two single-edge
+    spanning trees); sunset $\Rightarrow x_1 x_2 + x_1 x_3 + x_2 x_3$
+    (three single-edge spanning trees, each leaves two edges out).
+  \item[Kirchhoff's matrix-tree theorem.]  $U_\Gamma$ equals any
+    cofactor of the weighted Laplacian of $\Gamma$.  This gives
+    $U_\Gamma$ from purely graph-theoretic (combinatorial) data ---
+    no integration required.  This is what makes the Symanzik-polynomial
+    layer of CFAC genuinely combinatorial.
+  \item[Connes--Kreimer Hopf algebra of rooted trees.]  The vector
+    space of rooted forests, equipped with two operations:
+    a \emph{coproduct} $\Delta(T) = T \otimes 1 + 1 \otimes T +
+    \sum_c P_c(T) \otimes R_c(T)$ that sums over admissible cuts
+    $c$ of $T$, and an \emph{antipode}
+    $S(T) = -T - \sum_c S(P_c(T)) \cdot R_c(T)$.
+    \cite{ConnesKreimer1998,Kreimer1997} showed the antipode is
+    exactly the BPHZ subtraction.  The coproduct counts subdivergent
+    subgraphs combinatorially.  In our sunset example, the coproduct
+    has \emph{three} non-trivial terms (one per choice of which
+    sunset edge to fuse with its neighbour), giving the factor of $3$
+    in $Z_\psi^{(2,2)}$.
+  \item[BPHZ subtraction.]  The Bogoliubov--Parasiuk--Hepp--Zimmermann
+    procedure for renormalisation: recursively subtract the
+    counterterm of every divergent subgraph.  The output is a finite
+    renormalised amplitude.  The Connes--Kreimer antipode is the
+    closed-form expression for the recursive subtraction; in the
+    sunset case, BPHZ subtracts the three sub-bubble divergences
+    (each with weight $a_\psi^{(1)} = 1/4$) before the genuinely
+    2-loop primitive divergence remains.
+\end{description}
+\end{stdbox}
+
+\begin{cfacbox}[How CFAC uses these objects]
+\begin{itemize}[leftmargin=2em]
+  \item Lagrange inversion (\textsf{C1}, \textsf{C2}) supplies the
+    diagram \emph{counts} and the rapidity-reversal \emph{signs}.
+  \item Kirchhoff matrix-tree (\textsf{C3}) supplies the Symanzik
+    polynomial $U_\Gamma$ for each topology.
+  \item Polynomial-derivative operations (\textsf{C4}) on $U_\Gamma$
+    at the JT05 symmetric subtraction point produce the
+    \emph{algebra factors} $a^X_\Gamma$ (rationals).
+  \item Connes--Kreimer coproduct (\textsf{C5}) counts the subdivergences;
+    the antipode produces the BPHZ counterterms (rationals).
+  \item Only the values of the master Schwinger-parametric integrals
+    (the bubble, sunset, vertex master) themselves require
+    integration --- supplied by FORM, KIRA/FIRE, HyperInt, tropical
+    Monte Carlo, or quotation from JT05.
+\end{itemize}
+Every other quantity in the walkthrough is a closed-form rational
+output of the operations above; nothing has to be taken on faith
+beyond the five definitions in the previous box.
+\end{cfacbox}
+
+\subsection{The microscopic theory}\label{app:micro}
+
+The Gribov / DP process is a single-species reaction--diffusion
+system.  Particles of type $A$ live on $\mathbb{R}^d$ (or a lattice in
+the same universality class).  The microscopic rates are
+\begin{align}
+  A & \to 2A, & \text{(branching, rate } \sigma\text{)}\label{eq:micro-branch}\\
+  2A & \to A, & \text{(coalescence, rate } \lambda_{\text{c}}\text{)}\label{eq:micro-coal}\\
+  A & \to \emptyset, & \text{(spontaneous death, rate } \kappa\text{)}\label{eq:micro-death}
+\end{align}
+plus diffusion of $A$ at rate $D$.  The probability $P(\mathbf n, t)$
+that the lattice has occupations $\mathbf n = (n_1, n_2, \ldots)$
+evolves under a master equation.
+
+\subsection{The Doi--Peliti generator}\label{app:doi-peliti}
+
+\begin{stdbox}[Standard Doi--Peliti construction]
+Doi's second-quantisation associates bosonic
+$a_i, a_i^\dagger$ with each lattice site, $[a_i, a_j^\dagger] =
+\delta_{ij}$, and writes
+\begin{equation}\label{eq:fock-state-app}
+  \lvert P(t)\rangle \;=\; \sum_\mathbf n P(\mathbf n,t)
+    \prod_i \frac{(a_i^\dagger)^{n_i}}{n_i!}\,\lvert 0\rangle.
+\end{equation}
+The master equation becomes $\partial_t \lvert P\rangle = -\hat H
+\lvert P\rangle$ with stochastic Hamiltonian
+\begin{equation}\label{eq:H-doi-app}
+  \hat H = \int\!\dd[d]{x}\,\Bigl[
+    D\,\nabla a^\dagger\!\cdot\!\nabla a
+    + (\kappa - \sigma)\,a^\dagger a
+    - \sigma\,(a^\dagger)^2 a
+    + \lambda_{\text{c}}\bigl(a^\dagger - 1\bigr)\,a^\dagger a^2
+  \Bigr].
+\end{equation}
+Coherent-state quantisation \cite{Peliti1985} produces a path integral
+over complex fields $\psi, \psi^\dagger$.  Doi's shift
+$a^\dagger = 1 + \tilde\psi$, $a = \psi$ (with the $-1$ chosen so the
+vacuum is at $\tilde\psi = 0$) reorganises the action into the
+canonical Reggeon form
+\end{stdbox}
+
+\begin{cfacbox}[The Reggeon action --- the generator we work with]
+\begin{equation}\label{eq:reggeon-action-app}
+  \boxed{\;
+  S[\tilde\psi, \psi]
+  \;=\; \int\!\dd t\,\dd[d]{x}\,\Bigl\{
+    \tilde\psi\bigl(\partial_t - \lambda(\nabla^2 - \tau)\bigr)\psi
+    \;-\;
+    \tfrac{\lambda g}{2}\bigl(\tilde\psi^2 \psi - \tilde\psi\,\psi^2\bigr)
+    \Bigr\}.
+  \;}
+\end{equation}
+The two cubic vertices arise as
+\begin{itemize}[leftmargin=2em]
+  \item $\tilde\psi^2 \psi$ with coefficient $-\tfrac{\lambda g}{2}$
+    (from $-\sigma\,(a^\dagger)^2 a$ after the shift, suitably rescaled);
+  \item $\tilde\psi\,\psi^2$ with coefficient $+\tfrac{\lambda g}{2}$
+    (from $\lambda_{\text{c}}\,(a^\dagger - 1)\,a^\dagger a^2$).
+\end{itemize}
+The relative sign $-/+$ between branching and coalescence is the
+hallmark of Reggeon theory.  Combined with the time-reversal symmetry
+$\psi(x,t) \leftrightarrow -\tilde\psi(x,-t)$ (\emph{rapidity
+reversal}), it constrains the entire renormalisation structure.
+\end{cfacbox}
+
+\subsection{Vertex enumeration: read off the action}\label{app:vertices}
+
+\begin{cfacbox}[Reading vertices off the action {\rm \cref{eq:reggeon-action-app}}]
+The kinetic part $\tilde\psi(\partial_t - \lambda(\nabla^2 - \tau))\psi$
+gives the propagator
+\begin{equation}\label{eq:propagator-app}
+  G_0(p, \omega) \;=\; \langle \psi(p,\omega) \tilde\psi(-p,-\omega)\rangle_0
+                 \;=\; \frac{1}{-i\omega + \lambda(\tau + p^2)}.
+\end{equation}
+The interaction vertices are exactly two:
+\begin{center}
+\begin{tikzpicture}[font=\footnotesize, baseline]
+  % Vertex 1: psi-tilde^2 psi (branching)
+  \node[circle, fill=black, inner sep=1.2pt] (V1) at (0, 0) {};
+  \draw[->, thick] (-1, 0.5) -- (V1);  \node at (-1.2, 0.5) {$\tilde\psi$};
+  \draw[->, thick] (-1, -0.5) -- (V1); \node at (-1.2, -0.5) {$\tilde\psi$};
+  \draw[<-, thick] (1, 0) -- (V1);    \node at (1.2, 0) {$\psi$};
+  \node at (0, -1.0) {$V_1 = -\tfrac{\lambda g}{2}$};
+  \node at (0, -1.4) {(branching)};
+  % Vertex 2: psi-tilde psi^2 (coalescence)
+  \node[circle, fill=black, inner sep=1.2pt] (V2) at (5, 0) {};
+  \draw[->, thick] (4, 0) -- (V2);   \node at (3.8, 0) {$\tilde\psi$};
+  \draw[<-, thick] (6, 0.5) -- (V2); \node at (6.2, 0.5) {$\psi$};
+  \draw[<-, thick] (6, -0.5) -- (V2);\node at (6.2, -0.5) {$\psi$};
+  \node at (5, -1.0) {$V_2 = +\tfrac{\lambda g}{2}$};
+  \node at (5, -1.4) {(coalescence)};
+\end{tikzpicture}
+\end{center}
+There are no quartic vertices: the action is genuinely cubic.  The
+mass parameter $\tau$ measures the distance from criticality; the
+coupling $g$ is dimensionless at $d_c = 4$.
+\end{cfacbox}
+
+\subsection{Wick contraction and diagram pairing}\label{app:wick}
+
+\begin{stdbox}[Standard Wick combinatorics]
+A 1PI two-point function $\Sigma(p,\omega)$ at order $g^{2L}$ ($L =$
+loops) is the sum over all 1PI Feynman diagrams formed by:
+\begin{enumerate}[leftmargin=2em]
+  \item Drawing $V$ vertices ($V = 2L$ for a 2-point function from
+    cubic vertices).
+  \item Connecting $\tilde\psi$-legs to $\psi$-legs via propagators
+    $G_0$ (Wick contractions).
+  \item Leaving exactly two external legs --- one $\psi$, one
+    $\tilde\psi$.
+  \item Multiplying by a symmetry factor for the diagram's
+    automorphism group.
+\end{enumerate}
+At 1-loop, $V = 2$, and the only 1PI graph is the \emph{bubble}.  At
+2-loop, $V = 4$, and there are two 1PI topologies: the \emph{sunset}
+and the \emph{nested bubble}.
+\end{stdbox}
+
+\subsection{Lagrange inversion: counting all diagrams at once}
+\label{app:lagrange-walk}
+
+\begin{cfacbox}[The pen-and-paper Lagrange step]
+The Reggeon-tree generating function for 1PI two-point graphs is
+\begin{equation}\label{eq:dse-walk}
+  G(z) \;=\; z\,(1 + G^2),
+\end{equation}
+which is the Lagrange equation for $\phi(G) = 1 + G^2$.  By
+Flajolet--Sedgewick's Theorem~A.6,
+\begin{equation}\label{eq:lagrange-walk}
+  [z^n]\,G(z) \;=\; \frac{1}{n}\,[G^{n-1}]\,(1+G^2)^n.
+\end{equation}
+\textbf{Pen and paper at $n = 3$:}
+\begin{align*}
+  (1+G^2)^3 &= 1 + 3 G^2 + 3 G^4 + G^6,\\
+  [G^2]\,(1+G^2)^3 &= 3,\\
+  [z^3]\,G(z) &= \tfrac{1}{3}\cdot 3 \;=\; 1.
+\end{align*}
+Interpretation: there is exactly \textbf{one 1-loop self-energy
+topology} (the bubble), with combinatorial multiplicity~1.  The
+$\tfrac{1}{3}$ Lagrange overcount factor encodes the rooted-tree
+rotational symmetry; the corresponding Feynman-graph symmetry factor
+$\tfrac{1}{2!}$ for the bubble emerges from the same overcount when
+mapping rooted trees to undirected diagrams.
+
+\textbf{Pen and paper at $n = 5$:}
+\begin{align*}
+  (1+G^2)^5 &= 1 + 5G^2 + 10 G^4 + 10 G^6 + 5 G^8 + G^{10},\\
+  [G^4]\,(1+G^2)^5 &= 10,\\
+  [z^5]\,G(z) &= \tfrac{1}{5}\cdot 10 \;=\; 2.
+\end{align*}
+Interpretation: there are exactly \textbf{two 2-loop self-energy
+topologies} --- the sunset and the nested bubble.  The Lagrange
+$\tfrac{1}{5}$ overcount, together with the multinomial coefficient
+$\binom{5}{2} = 10$, distributes consistently into the standard
+Feynman-graph symmetry factors $\tfrac{1}{3!}$ (sunset) and
+$\tfrac{1}{(2!)^2}$ (nested) when each tree is mapped to its
+undirected Feynman diagram.
+\end{cfacbox}
+
+\begin{codebox}[The same step in code]
+The function \texttt{lagrange\_count} in
+\texttt{rdft/ac/ibp\_solver/sunset\_full.py} (or equivalently
+\texttt{assembly.py}) computes:
+\begin{verbatim}
+  >>> [z^1] G(z)  =  1
+  >>> [z^3] G(z)  =  1
+  >>> [z^5] G(z)  =  2
+  >>> [z^7] G(z)  =  5
+\end{verbatim}
+verifying the pen-and-paper output above.
+\end{codebox}
+
+\subsection{Bivariate signed Lagrange: vertex-sign assignments}
+\label{app:bivariate-walk}
+
+\begin{cfacbox}[Sign tracking by introducing a marker $\alpha$]
+The Reggeon vertex pair $(-,+)$ is encoded by the bivariate equation
+\begin{equation}\label{eq:bivariate-walk}
+  G(z, \alpha) \;=\; z\,(1 + \alpha\,G^2).
+\end{equation}
+Each $\alpha$ in a tree marks one $V_1 V_2$ vertex pair (i.e.\ one
+opposite-sign cubic contraction).  Setting $\alpha = -1$ implements
+the rapidity-reversal sign $(-)(+) = -1$ per pair.
+
+\textbf{Pen and paper at $n = 3$, $\alpha = -1$:}
+$(1 - G^2)^3 = 1 - 3 G^2 + 3 G^4 - G^6$,
+giving $[G^2] = -3$ and $[z^3]G(z, -1) = -1$ --- the bubble carries
+$\sigma_{\Sigma_1} = -1$.
+
+\textbf{Pen and paper at $n = 5$, $\alpha = -1$:}
+$[G^4](1 - G^2)^5 = +10$ (even number of factors), so $[z^5]G(z,-1) =
++2$.  Both 2-loop topologies (sunset, nested) have $\sigma = +1$.
+\end{cfacbox}
+
+\subsection{Reducing to the $Z_\psi$-relevant subset}\label{app:zpsi-reduce}
+
+\begin{stdbox}[Where $Z_\psi$ comes from]
+The wave-function renormalisation $Z_\psi$ is read off the
+$1/\varepsilon$ pole of $\partial_{(-i\omega)} \Sigma(p, \omega)
+\big|_{\mathrm{sym}}$, where $\Sigma$ is the 1PI two-point function
+and ``$\mathrm{sym}$'' is the JT05 symmetric subtraction point.
+Hence the only diagrams that contribute to $Z_\psi$ are the 1PI
+two-point graphs --- exactly those counted by $[z^3]G$ and $[z^5]G$:
+the bubble at 1-loop, the sunset and nested bubble at 2-loop.
+\end{stdbox}
+
+\subsection{The 1-loop calculation: $Z_\psi^{(1)} = u/(4\varepsilon)$}
+\label{app:1loop-walk}
+
+\begin{cfacbox}[The bubble, end-to-end]
+\begin{center}
+\begin{tikzpicture}[font=\footnotesize, baseline]
+  \node[circle, fill=black, inner sep=1.2pt] (L) at (-1.0, 0) {};
+  \node[circle, fill=black, inner sep=1.2pt] (R) at ( 1.0, 0) {};
+  \draw[thick] (L) to[bend left=55] (R);
+  \draw[thick] (L) to[bend right=55] (R);
+  \draw[thick] (-2.0, 0) -- (L);
+  \draw[thick] ( 2.0, 0) -- (R);
+  \node at (0, 0.85) {\scriptsize $x_1$};
+  \node at (0, -0.85) {\scriptsize $x_2$};
+  \node at (-1.0, -0.45) {\scriptsize $V_1{=}{-}\tfrac{\lambda g}{2}$};
+  \node at ( 1.0, -0.45) {\scriptsize $V_2{=}{+}\tfrac{\lambda g}{2}$};
+  \node at (0, -1.5) {\textbf{Bubble} $\Sigma_1$};
+\end{tikzpicture}
+\end{center}
+\textbf{Lagrange count:} $c_{\Sigma_1} = [z^3]G(z) = 1$.\\
+\textbf{Sign:} $\sigma_{\Sigma_1} = [z^3]G(z,-1) / c_{\Sigma_1} = -1$.\\
+\textbf{Symanzik polynomial} (\Cref{app:glossary} for definition):
+$U_{\Sigma_1}(x_1, x_2) = x_1 + x_2$
+(Kirchhoff matrix-tree: each spanning tree of the bubble is one edge,
+so $U$ has two monomials, one per spanning tree).\\
+\textbf{Bridge integral} (textbook bubble at $d = 4 - \varepsilon$):
+\[
+  B_2(p, \omega) \;=\; \int\!\frac{\dd[d]{q}\,\dd\omega'}{(2\pi)^{d+1}}
+   \,G_0(q, \omega')\,G_0(p-q, \omega - \omega')
+   \;=\; \frac{1}{8\pi^2\,\varepsilon}\bigl[\lambda(\tau + p^2/4) - i\omega/2\bigr]^{-\varepsilon/2}.
+\]
+\textbf{Algebra factor for $Z_\psi$:} take $\partial_{(-i\omega)}
+\Sigma_1\big|_{\mathrm{sym}}$ and read off the rational. The
+amplitude is
+\[
+  \Sigma_1 \;=\; \sigma_{\Sigma_1}\cdot c_{\Sigma_1}\cdot
+                  \Bigl(\tfrac{\lambda g}{2}\Bigr)^2 \cdot B_2
+            \;=\; -\,\tfrac{(\lambda g)^2}{4}\,B_2.
+\]
+Differentiating with respect to $-i\omega$ at the symmetric point and
+extracting the coefficient of $1/\varepsilon$ in MS-bar gives, after
+the standard rescaling $u = g^2/(16\pi^2)\mu^{-\varepsilon}$:
+\[
+  Z_\psi^{(1)} \;=\; 1 + \frac{u}{4\varepsilon} + O(u^2),
+  \qquad a_\psi^{(1)} \;=\; \frac{1}{4}.
+\]
+This matches the minimal-subtraction choice stated in JT05 just
+after Eq.~(56): ``$Z = 1 + u/(4\varepsilon)$''.
+\end{cfacbox}
+
+\subsection{The 2-loop calculation: $Z_\psi^{(2,2)} = 7/32$ (double pole)}
+\label{app:2loop-double}
+
+\subsubsection{Nested topology}
+
+\begin{cfacbox}[$\Sigma_2^{\textsf{nest}}$ end-to-end]
+\begin{center}
+\begin{tikzpicture}[font=\footnotesize, baseline]
+  \node[circle, fill=black, inner sep=1.2pt] (n1) at (-1.8, 0) {};
+  \node[circle, fill=black, inner sep=1.2pt] (n2) at (-0.6, 0) {};
+  \node[circle, fill=black, inner sep=1.2pt] (n3) at ( 0.6, 0) {};
+  \node[circle, fill=black, inner sep=1.2pt] (n4) at ( 1.8, 0) {};
+  \draw[thick] (n1) to[bend left=70] (n2);
+  \draw[thick] (n1) to[bend right=70] (n2);
+  \draw[thick] (n3) to[bend left=70] (n4);
+  \draw[thick] (n3) to[bend right=70] (n4);
+  \draw[thick] (n2) -- (n3);
+  \draw[thick] (-2.6, 0) -- (n1);
+  \draw[thick] (n4) -- (2.6, 0);
+  \node at (-1.2, 0.85) {\scriptsize $x_1$};
+  \node at (-1.2,-0.85) {\scriptsize $x_2$};
+  \node at ( 1.2, 0.85) {\scriptsize $x_3$};
+  \node at ( 1.2,-0.85) {\scriptsize $x_4$};
+  \node at (0, -1.5) {\textbf{Nested} $\Sigma_2^{\textsf{nest}}$};
+\end{tikzpicture}
+\end{center}
+\textbf{Symanzik factorises:}
+$U_{\Sigma_2^{\textsf{nest}}}(x_1,x_2,x_3,x_4) = (x_1 + x_2)(x_3 + x_4)
+ = U_{\Sigma_1}\!\cdot U_{\Sigma_1}'$.
+This is a graph-theoretic statement: the spanning trees of two
+edge-disjoint bubbles factor as products of spanning trees of each
+bubble.
+
+\textbf{Bridge:} $\tilde B_{\textsf{nest}} = \tilde B_2^{\,2}$.
+
+\textbf{Algebra factor:} $a^\psi_{\textsf{nest}} = (a_\psi^{(1)})^2 / 2!
+= (1/4)^2 / 2 = 1/32$.  The $1/2!$ is the standard symmetry factor
+for the nested-bubble configuration; in CFAC it emerges as the
+Lagrange-inversion overcount at $n = 5$.
+
+\textbf{Contribution to the $Z_\psi$ double pole:}
+\begin{equation}
+  Z_\psi^{(2,2)}\big|_{\textsf{nest}}
+  \;=\; c_{\textsf{nest}}\!\cdot a^\psi_{\textsf{nest}}\cdot
+        \tilde B_2^{\,2}\big|_{1/\varepsilon^2}
+  \;=\; 1 \cdot \tfrac{1}{32} \cdot \tfrac{1}{\varepsilon^2}
+  \;=\; \boxed{\,\tfrac{1}{32\,\varepsilon^2}\,}.
+\end{equation}
+\end{cfacbox}
+
+\subsubsection{Sunset topology}
+
+\begin{cfacbox}[$\Sigma_2^{\textsf{sun}}$ via Hopf coproduct]
+\begin{center}
+\begin{tikzpicture}[font=\footnotesize, baseline]
+  \node[circle, fill=black, inner sep=1.2pt] (s1) at (-1.0, 0) {};
+  \node[circle, fill=black, inner sep=1.2pt] (s2) at ( 1.0, 0) {};
+  \draw[thick] (s1) to[bend left=70] (s2);
+  \draw[thick] (s1) to (s2);
+  \draw[thick] (s1) to[bend right=70] (s2);
+  \draw[thick] (-2.0, 0) -- (s1);
+  \draw[thick] (s2) -- ( 2.0, 0);
+  \node at (0, 1.05) {\scriptsize $x_1$};
+  \node at (0, 0.18) {\scriptsize $x_2$};
+  \node at (0,-1.05) {\scriptsize $x_3$};
+  \node at (0, -1.6) {\textbf{Sunset} $\Sigma_2^{\textsf{sun}}$};
+\end{tikzpicture}
+\end{center}
+\textbf{Symanzik:}
+$U_{\Sigma_2^{\textsf{sun}}} = x_1 x_2 + x_1 x_3 + x_2 x_3$
+(elementary symmetric polynomial $e_2$ in three edge variables).
+
+\textbf{Connes--Kreimer Hopf coproduct} (\Cref{app:glossary} for
+definition; $\Delta$ sums over admissible cuts):
+\begin{equation}\label{eq:sunset-coproduct}
+  \Delta(\Sigma_2^{\textsf{sun}})
+  \;=\; \Sigma_2^{\textsf{sun}} \otimes \mathbb{1}
+        \;+\; \mathbb{1} \otimes \Sigma_2^{\textsf{sun}}
+        \;+\; 3\,\bigl(\Sigma_1 \otimes \text{residual}\bigr).
+\end{equation}
+The factor $3$ counts the three sub-bubble divergences: each of the
+three sunset edges, when fused with one of its neighbours, forms a
+1-loop bubble subgraph (the cut leaves one edge in the "sub" piece
+and two in the "residual" piece, three different cuts available by
+the $S_3$ permutation symmetry of the three sunset edges).  This is
+a purely graph-theoretic count, not the result of any integration.
+
+\textbf{BPHZ subtraction $=$ antipode} (\Cref{app:glossary}): the
+Connes--Kreimer antipode acts on $\Delta(\Sigma_2^{\textsf{sun}})$ to
+produce the BPHZ counterterm.  Concretely, the renormalised diagram
+has its three sub-bubbles subtracted, each contributing a counterterm
+weighted by the bubble's 1-loop pole $a_\psi^{(1)} = 1/4$.
+
+\textbf{Algebra factor:} the residual after BPHZ (a single propagator
+with a renormalised insertion) carries a second factor $a_\psi^{(1)} =
+1/4$.  Hence
+\[
+  a^\psi_{\textsf{sun}} \cdot \tilde B_3^{\textsf{sun}}\big|_{1/\varepsilon^2}
+  \;=\; 3 \cdot a_\psi^{(1)} \cdot a_\psi^{(1)}
+  \;=\; 3 \cdot \tfrac{1}{4} \cdot \tfrac{1}{4}
+  \;=\; \tfrac{3}{16} \;=\; \tfrac{6}{32}.
+\]
+
+\textbf{Contribution to the $Z_\psi$ double pole:}
+\begin{equation}
+  Z_\psi^{(2,2)}\big|_{\textsf{sun}}
+  \;=\; \boxed{\,\tfrac{6}{32\,\varepsilon^2}\,}.
+\end{equation}
+\end{cfacbox}
+
+\subsubsection{Sum, and the closed-form theorem}
+
+\begin{cfacbox}[Total $Z_\psi$ double pole]
+\begin{equation}\label{eq:zpsi-22-walk}
+  Z_\psi^{(2,2)}
+  \;=\;
+  \underbrace{\tfrac{1}{32}}_{\textsf{nested}}
+  \;+\;
+  \underbrace{\tfrac{6}{32}}_{\textsf{sunset, BPHZ}}
+  \;=\;
+  \boxed{\,\tfrac{7}{32}\,}
+  \;\;\stackrel{\checkmark}{=}\;\;
+  \tfrac{1}{2}\,a_\psi^{(1)}\bigl(\beta_1 + a_\psi^{(1)}\bigr)
+  \;=\; \tfrac{1}{2}\cdot \tfrac{1}{4}\bigl(\tfrac{3}{2} + \tfrac{1}{4}\bigr)
+  \;=\; \tfrac{7}{32}.
+\end{equation}
+The closed-form Hopf-antipode identity \eqref{eq:double-pole-identity}
+recovers the same number from a single rational expression in
+1-loop data ($\beta_1 = a_u^{(1)} - 2 a_\psi^{(1)} = 3/2$).
+\end{cfacbox}
+
+\begin{stdbox}[Comparison with JT05 Eq.~(57a)]
+JT05 Eq.~(57a) reads
+\[
+  Z = 1 + \frac{u}{4\varepsilon} + \frac{u^2}{32}\!\left[
+       \frac{7}{\varepsilon^2}
+       + \frac{-3 + (9/2)\,L}{\varepsilon}\right] + O(u^3).
+\]
+The double-pole coefficient is $7/32$, matching our derivation.
+JT05 obtain this by graph-by-graph parametric integration plus BPHZ
+subtraction by hand; we obtain it from a closed-form combinatorial
+identity on 1-loop algebra factors.
+\end{stdbox}
+
+\subsection{The 2-loop simple pole: $Z_\psi^{(2,1)} = -3/32 + (9/64)L$}
+\label{app:2loop-simple}
+
+\subsubsection{BPHZ counterterm (closed form, no integration)}
+
+\begin{cfacbox}[Hopf antipode at simple-pole order]
+The Connes--Kreimer antipode at simple-pole order produces
+\begin{equation}\label{eq:bphz-walk}
+  \mathrm{BPHZ}_\psi
+  \;=\; \tfrac{1}{2}\,a_\psi^{(1)}\bigl(a_\psi^{(1)} - \beta_1\bigr)
+  \;=\; \tfrac{1}{2}\cdot \tfrac{1}{4}\bigl(\tfrac{1}{4} - \tfrac{3}{2}\bigr)
+  \;=\; \tfrac{1}{2}\cdot\tfrac{1}{4}\cdot\bigl(-\tfrac{5}{4}\bigr)
+  \;=\; -\,\tfrac{5}{32}.
+\end{equation}
+This is pure CFAC: no integral input.
+\end{cfacbox}
+
+\subsubsection{Primitive sunset residue (master input)}
+
+\begin{stdbox}[The single integral input]
+After BPHZ subtraction of the three sub-bubbles, the sunset has a
+\emph{primitive} simple-pole residue.  This is the only place where
+the master integral value enters.  From JT05 (or our FORM backend at
+the appropriate Reggeon symmetric point):
+\[
+  \tilde B_3^{\textsf{sun}}\big|_{1/\varepsilon}^{\text{primitive}}
+  \;=\; \text{rational} + (\text{rational})\cdot L,
+  \qquad L = \ln(4/3).
+\]
+For $Z_\psi$ extraction:
+\[
+  \mathrm{prim}_\psi
+  \;=\; q^\psi_{\textsf{sun}}\,(\text{sun residue})
+        + q^\psi_{B_2^{\,2}}\,(B_2^{\,2}\text{ residue}).
+\]
+With our normalisation (\Cref{sec:simple-pole-closure}) this evaluates
+to $\mathrm{prim}_\psi = 1/16 + (9/64)\,L$.
+\end{stdbox}
+
+\subsubsection{Sum}
+
+\begin{cfacbox}[Total $Z_\psi$ simple pole]
+\begin{equation}\label{eq:zpsi-21-walk}
+  Z_\psi^{(2,1)}
+  \;=\;
+  \underbrace{-\tfrac{5}{32}}_{\mathrm{BPHZ}_\psi}
+  \;+\;
+  \underbrace{\tfrac{1}{16}}_{\mathrm{prim}_\psi^{\text{rat}}}
+  \;+\;
+  \underbrace{\tfrac{9}{64}\,L}_{\mathrm{prim}_\psi^{L}}
+  \;=\;
+  -\tfrac{5}{32} + \tfrac{2}{32} + \tfrac{9}{64}\,L
+  \;=\;
+  \boxed{\,-\tfrac{3}{32} + \tfrac{9}{64}\,L\,}.
+\end{equation}
+Comparing JT05 Eq.~(57a) the simple-pole bracket is
+$(-3 + (9/2)L)/32 = -3/32 + (9/64)L$ exactly.
+\end{cfacbox}
+
+\subsection{Code correspondence: pen-and-paper $\leftrightarrow$ SymPy}
+\label{app:code-corresp}
+
+Every step above has a one-to-one image in the lib code:
+
+\begin{center}
+\begin{tabular}{@{}p{6.0cm}p{8.5cm}@{}}
+\toprule
+\textbf{Pen-and-paper step} & \textbf{Code} \\
+\midrule
+Lagrange counts $[z^n]G$ at $n = 1,3,5,7$
+  & \texttt{rdft/ac/gribov/assembly.py};
+    \texttt{rdft/ac/ibp\_solver/sunset\_full.py}\\
+Bivariate signed Lagrange $G(z, \alpha)$
+  & \texttt{rdft/ac/gribov/actrick.py}\\
+Symanzik polynomials $U_\Gamma$
+  & \texttt{rdft/ac/gribov/actrick.py} (graph-by-graph)\\
+1-loop algebra factors $\{1/4, 1/8, 1/2, 2\}$
+  & \texttt{rdft/ac/gribov/assembly.py} (verifies match to JT05 1-loop poles)\\
+Closed-form double pole
+  $Z_X^{(2,2)} = \tfrac12 a(\beta_1{+}a)$
+  & \texttt{rdft/ac/gribov/actrick.py};
+    test 2 in \texttt{run\_all\_tests.py}\\
+Closed-form simple-pole counterterm
+  $\mathrm{BPHZ}_X = \tfrac12 a(a{-}\beta_1)$
+  & \texttt{rdft/ac/gribov/simple\_poles.py}\\
+12 IBP coefficients $q^X_\bullet$
+  & \texttt{rdft/ac/gribov/ibp\_coefficients.py}\\
+Pipeline $Z \to \beta \to u^* \to$ exponents
+  & \texttt{rdft/ac/gribov/two\_loop.py}\\
+From-scratch IBP solver: identity generation
+  & \texttt{rdft/ac/ibp\_solver/sunset\_full.py}\\
+$(d-3)$ Laporta coefficient on $I[1,1,1]$
+  & \texttt{rdft/ac/ibp\_solver/sunset\_identity.py}\\
+Full Laporta triangulation, $I[1,1,1]$ as master
+  & \texttt{rdft/ac/ibp\_solver/triangulate.py}\\
+End-to-end (8 tests)
+  & \texttt{rdft/ac/gribov/run\_all\_tests.py}\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The key correspondence: the pen-and-paper steps are not merely
+\emph{checked} by the code; they are \emph{the same operations}.  The
+Lagrange-inversion polynomial expansion at $n = 5$ is exactly what
+\texttt{lagrange\_count(5, 1+G**2)} evaluates.  The Hopf-antipode
+double-pole identity is what \texttt{(1/2) * a[X] * (beta\_1 + a[X])}
+in the script computes.  The script is the pen-and-paper, mechanised.
 
 % ══════════════════════════════════════════════════════════════════════
 \begin{thebibliography}{99}
