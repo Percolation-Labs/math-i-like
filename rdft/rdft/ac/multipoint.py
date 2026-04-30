@@ -1,6 +1,8 @@
 """
 rdft.ac.multipoint
 ===================
+Tier: 2 (extension)
+
 Multi-point correlation generating functions via n-variable CFAC.
 
 Extends Theorem IIb (multivariate DSE) to n marking variables that

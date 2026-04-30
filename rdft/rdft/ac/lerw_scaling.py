@@ -1,6 +1,8 @@
 """
 rdft.ac.lerw_scaling
 ====================
+Tier: 3 (research)
+
 Finite-size scaling of LERW on Z^d tori, driven by the enumeration
 layer.
 

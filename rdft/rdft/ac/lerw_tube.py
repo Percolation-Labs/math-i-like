@@ -1,6 +1,8 @@
 """
 rdft.ac.lerw_tube
 =================
+Tier: 3 (research)
+
 LERW on Z^3 tubes (N x N periodic cross-section, finite length L).
 
 The initial hope: each N gives an algebraic generating function

@@ -1,6 +1,8 @@
 """
 rdft.ac.replica_closed
 ======================
+Tier: 3 (research)
+
 Closed-form expressions for the KPZ replica rate on Z.
 
 This module carries the analytic deliverables that complement the

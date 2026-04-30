@@ -36,26 +36,23 @@ That is the content of **Theorem I**. Theorem II extends to transcendental, mult
 
 ### Applications (specific systems)
 
-- **`manna_c3_slotting.tex`** — The C₃ stratum for the Manna / conserved-DP class. Uses the Le Doussal–Wiese depinning mapping as external field-theoretic input, combined with the CFAC stratum classification. Includes a methodological warning section on a wrong-path "DP plus small correction" framing that looked successful but wasn't.
+- **`ldw_kirchhoff_recovery.tex`** — CFAC rederivation of the Le Doussal–Wiese–Chauve two-loop roughness coefficient `c = 0.14331`, to relative error 2×10⁻⁴. The most rigorous numerical demonstration that CFAC reaches 2-loop FRG results from combinatorial primitives.
+
+- **`manna_c3_slotting.tex`** — The `C₃` stratum for the Manna / conserved-DP class. Headline is explicitly labelled a *Slotting Conjecture*: algebraic accessibility of `C₃` is proven, the skeleton `τ₀ = 4/3` matches observation to within 3–5%, but the rigorous derivation of `γ₃` from the RPV action is deferred. Non-trivial cross-check: `τ₀ = 4/3` also equals `ν_⊥ = 1/(2−ζ)` read off LDW's `ζ = 5/4`. Includes the methodological warning about a wrong-path "DP plus small correction" framing.
 
 - **`ac_ants.tex`** — Ant colonies as canonical coupled particle-field systems. Six predictions verified by simulation. The "recipe book" test case for the framework.
 
-- **`ldw_kirchhoff_recovery.tex`** — CFAC rederivation of the Le Doussal–Wiese–Chauve two-loop roughness coefficient `c = 0.14331`, to relative error 2×10⁻⁴. The most rigorous numerical demonstration that CFAC reaches 2-loop FRG results from combinatorial primitives.
+### Work-in-progress / supporting papers
 
-- **`cfac_paper.tex`** — Foundational framing paper (CFAC as a reorganisation of standard Doi-Peliti / MSR field theory).
+Four papers previously sitting here have been moved to **`../wip/cfac/`** because they either restate material already contained in the theorem papers / this README, or (in one case) rewrite classical results in CFAC language without producing new constants or theorems. They are preserved as part of the record:
 
-- **`cfac_experiments.tex`** — Landscape / computational-experiments paper. DSE rate-space plots, signed-tree Monte Carlo, stratification tests.
+- **`wip/cfac/cfac_paper.tex`** — The original foundational framing paper (CFAC as a reorganisation of Doi–Peliti / MSR). Largely superseded by Theorem I + this README; retained for historical reference to the framing.
 
-- **`dse_landscape.tex`** — The visual / geometric view of the DSE stratification in coupling-space slices.
+- **`wip/cfac/cfac_experiments.tex`** — Landscape / computational-experiments paper. DSE rate-space plots, signed-tree Monte Carlo, stratification tests. Useful material, but overlaps with the stratification figure in Theorem II and with `dse_landscape`.
 
-### Enumerative boundary (the "Tier B" layer)
+- **`wip/cfac/dse_landscape.tex`** — Visual / geometric view of the DSE stratification in coupling-space slices. Short companion piece; more naturally a figure-and-commentary appendix to Theorem I than a standalone paper.
 
-- **`enumerative_boundary.tex`** — *Counting Past the Boundary*. Applies the generating-function perspective to problems where the polynomial / D-finite hypothesis of Theorem I fails. Covers:
-  - **LERW in `d = 3`** as Kirchhoff enumeration (spanning-tree generating functions on the cubic lattice, recovering the Kenyon 5/4 / Kozma 1.624 numerics).
-  - **TAP complexity** in spin glasses as ribbon-graph enumeration (genus expansion of the Kac–Rice integrand).
-  - **KPZ upper-tail** universality as replica-CRN enumeration (tilted directed polymers as multi-replica Lagrange systems).
-
-  These are "Tier B" because the full stratification theorem doesn't apply — the generating functions are non-D-finite, matrix-valued, or replica-limited — but the COUNTING content is still organised and specific constants are recovered via direct enumeration. This is the empirical boundary of Theorem I and a menu of extensions.
+- **`wip/cfac/enumerative_boundary.tex`** — *Counting Past the Boundary*. Rewrites three classical results (LERW as Kirchhoff ratio via Wilson's algorithm; TAP complexity via Harer–Zagier ribbon-graph enumeration; KPZ upper tails as replica CRN with Schur structure) in CFAC enumeration language. The paper itself concedes "these are not new mathematics" and that none produces the open exponent in closed form — `ν_3` remains a finite-size scaling extraction of a known Kirchhoff ratio; TAP `Φ_0` is still open for general `p`-spin; KPZ moments only control the integer-`n` side of the replica continuation. Valuable as an honest scope-widening note, but does not deliver the results the earlier README pitch claimed ("Kenyon 5/4 / Kozma 1.624 recovered") — the Kenyon value is SLE₂, and Kozma's is extracted numerically, not derived.
 
 ### Field-theory extensions (the "plug in physical ansatz" layer)
 
@@ -96,7 +93,7 @@ Within this scope, CFAC provides:
 
 **Outside the stated scope:** non-`D`-finite generating functions (SAW, LERW in `d=3` except via Kirchhoff enumeration, lattice Green's functions in general); matrix-valued observables (Kac–Rice determinants, TAP complexity beyond 1-genus approximation, random matrix theory); full conformal-field-theory spectra (beyond the leading scaling operator); real-time dynamics (transport, Kubo, Keldysh); and topology / gauge / integrable structures where the combinatorics is radically different.
 
-The enumerative-boundary layer (`enumerative_boundary.tex`) addresses a few of these by direct counting arguments, recovering specific numerical constants (Kenyon 5/4, Kozma ≈1.624) without the full theorem. The field-theory extensions layer addresses the rest by plugging in standard RG / OPE / EFT-matching machinery alongside CFAC's combinatorial skeleton.
+The enumerative-boundary note (`wip/cfac/enumerative_boundary.tex`) rewrites some of these cases (LERW, TAP, KPZ upper tails) in CFAC enumeration language, but — as that paper itself states — without producing the open exponents in closed form; it is a scope-widening exercise rather than a result-delivering one. The field-theory extensions layer addresses the rest by plugging in standard RG / OPE / EFT-matching machinery alongside CFAC's combinatorial skeleton.
 
 ---
 
@@ -150,11 +147,11 @@ The phrase "plug in physical ansatz" is literal: the framework does not ban you 
 1. `cfac_theorem.tex` § 1–3 — the core theorem and stratification claim.
 2. `cfac_theorem.tex` scope section (§ Discussion) — what CFAC does and does not do.
 3. `cfac_theorem_II.tex` — the three extensions (admissible, multivariate, log-corrected) with proofs.
-4. `manna_c3_slotting.tex` — the canonical worked non-DP example + methodological warning.
-5. `ldw_kirchhoff_recovery.tex` — the 2-loop validation.
-6. `enumerative_boundary.tex` — where the theorem stops and direct enumeration takes over.
+4. `ldw_kirchhoff_recovery.tex` — the 2-loop validation (strongest numerical result).
+5. `manna_c3_slotting.tex` — canonical non-DP application + methodological warning (slotting claim is conjectural — see the paper's own status grading).
+6. `ac_ants.tex` — six predictions verified by simulation.
 7. Field-theory extension modules in `rdft/ac/` — concrete demos.
-8. `cfac_paper.tex`, `ac_ants.tex`, `cfac_experiments.tex` — supporting material.
+8. `../wip/cfac/` — superseded framing (`cfac_paper`), landscape material (`cfac_experiments`, `dse_landscape`), and the scope-widening enumeration note (`enumerative_boundary`).
 
 ---
 

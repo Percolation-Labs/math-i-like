@@ -1,6 +1,8 @@
 """
 rdft.ac.lagrange
 ================
+Tier: 1 (core)
+
 Lagrange inversion and Dyson-Schwinger equations as combinatorial objects.
 
 The Dyson-Schwinger equation (DSE) for the dressed propagator:

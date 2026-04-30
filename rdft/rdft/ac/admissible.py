@@ -1,6 +1,8 @@
 """
 rdft.ac.admissible
 ===================
+Tier: 2 (extension)
+
 Stratification framework extended to TRANSCENDENTAL (non-polynomial)
 DSE kernels.  Addresses TODO-1 from docs/problems.md.
 

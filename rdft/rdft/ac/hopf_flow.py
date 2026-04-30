@@ -1,6 +1,8 @@
 """
 rdft.ac.hopf_flow
 ==================
+Tier: 2 (extension)
+
 Connes-Kreimer Hopf algebra of rooted forests, applied to the RG flow
 side of the CFAC framework.
 

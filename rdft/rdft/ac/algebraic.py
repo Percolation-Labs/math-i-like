@@ -1,6 +1,8 @@
 """
 rdft.ac.algebraic
 =================
+Tier: 1 (core)
+
 Algebraic curve singularity analysis via Newton polygon and Puiseux expansion.
 
 Given a polynomial F(T, z) = 0 (the DSE defining T as an algebraic function

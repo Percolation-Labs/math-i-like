@@ -1,6 +1,8 @@
 """
 rdft.ac.replica_transfer
 ========================
+Tier: 3 (research)
+
 Transfer-matrix evaluation of the KPZ n-walker replica CRN.
 
 For the lattice directed polymer with Gaussian disorder (variance 1),

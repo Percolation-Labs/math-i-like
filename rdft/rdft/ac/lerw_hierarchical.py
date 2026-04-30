@@ -1,6 +1,8 @@
 """
 rdft.ac.lerw_hierarchical
 =========================
+Tier: 3 (research)
+
 LERW on self-similar hierarchical lattices ("combinatorial animals"
 for Z^d LERW).
 

@@ -1,6 +1,8 @@
 """
 rdft.ac.transfer
 ================
+Tier: 1 (core)
+
 Flajolet-Odlyzko transfer theorem for coefficient asymptotics.
 
 Given a generating function A(z) with dominant singularity at z* of type:

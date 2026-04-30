@@ -1,6 +1,8 @@
 """
 rdft.ac.log_corrections
 ========================
+Tier: 2 (extension)
+
 Algebraic-logarithmic singularities in CFAC asymptotics.  Addresses
 TODO-18 from docs/problems.md.
 

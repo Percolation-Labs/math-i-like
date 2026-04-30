@@ -1,0 +1,4421 @@
+arXiv:cond-mat/0409670v1 [cond-mat.stat-mech] 24 Sep 2004
+
+The Field Theory Approach to Percolation
+Processes
+
+Hans-Karl Janssen
+Institut für Theoretische Physik III, Heinrich-Heine-Universität,
+40225 Düsseldorf, Germany
+
+Uwe C. Täuber
+Department of Physics, Virginia Polytechnic Institute and State University,
+Blacksburg, VA 24061-0435, USA
+
+Abstract
+We review the field theory approach to percolation processes. Specifically, we focus
+on the so-called simple and general epidemic processes that display continuous nonequilibrium active to absorbing state phase transitions whose asymptotic features
+are governed respectively by the directed (DP) and dynamic isotropic percolation
+(dIP) universality classes. We discuss the construction of a field theory representation for these Markovian stochastic processes based on fundamental phenomenological considerations, as well as from a specific microscopic reaction-diffusion model realization. Subsequently we explain how dynamic renormalization group (RG) methods can be applied to obtain the universal properties near the critical point in an
+expansion about the upper critical dimensions dc = 4 (DP) and 6 (dIP). We provide
+a detailed overview of results for critical exponents, scaling functions, crossover phenomena, finite-size scaling, and also briefly comment on the influence of long-range
+spreading, the presence of a boundary, multispecies generalizations, coupling of the
+order parameter to other conserved modes, and quenched disorder.
+Key words:
+Percolation, epidemic processes, directed percolation, dynamic isotropic
+percolation, active to absorbing phase transitions, renormalization group theory,
+dynamic critical phenomena, crossover
+PACS: 64.60.Ak, 05.40.-a, 64.60.Ht, 82.20.-w
+
+Preprint submitted to Elsevier Science
+
+22 October 2018
+
+1
+
+Introduction
+
+1.1 Percolation Processes
+
+The investigation of the formation and the stationary properties of random
+structures has been an exciting topic in statistical physics for many years. Since
+it provides an intuitively appealing and transparent model of the irregular
+geometry emerging in disordered systems, percolation has provided a leading
+paradigm for random structures. Bond percolation constitutes perhaps the
+simplest percolation problem. Two fundamental variants of bond percolation
+have been introduced in the past: In the isotropic percolation (IP) problem
+the bonds connecting the sites of a regular lattice (in d spatial dimensions) are
+randomly assigned to be open (with probability p) or blocked (with probability
+1−p), and an agent may traverse an open bond in either direction. In contrast,
+in the directed percolation (DP) problem the open bonds can be passed only
+from one of the two connecting sites, whence the allowed passage direction
+globally defines a preferred direction in space, see FIG. 1.
+In these terms, percolation can be viewed as the passage of an agent through
+an irregularly structured medium, in the sense that the agent can propagate
+through certain regions, whereas it cannot traverse other areas. Though percolation represents one of the simplest models for random systems, it has in fact
+many applications. Moreover, it yields a prototypical non-equilibrium phase
+transition: For small values of p, regions with open bonds form disconnected
+clusters of typical linear extension ξ, wherein the agent becomes localized or
+trapped. For p > pc , a critical threshold value for the frequency of open bonds,
+the probability for the existence of an infinite connected accessible cluster becomes non-zero. Therefore, an agent on an infinite cluster is not confined to
+a finite region of space any more, but may percolate through the entire system. This percolation transition defines a genuine critical phenomenon as encountered in equilibrium statistical mechanics, with ξ providing the divergent
+length scale as pc is approached. It turns out that many, microscopically quite
+different percolation-type systems share their critical properties either with
+
+Fig. 1. Directed percolation (DP) in two dimensions: bonds connecting the lattice
+sites can only be passed from left to right.
+
+2
+
+Fig. 2. Two-dimensional critical isotropic (left) and directed (right, with preferred
+direction down) percolation clusters. (From Ref. [55]).
+
+IP or DP. Thus, the phase transitions in IP and DP, the latter distinguished
+from the former through the broken spatial isotropy, define genuine universality classes. For reviews on isotropic and directed percolation the reader is
+referred to Refs. [1,2,3]. Critical IP and DP clusters are shown in FIG. 2.
+Broadbent and Hammersley [4] first directed attention to the dynamics of percolation processes. In contrast to random diffusion, in percolation processes
+the spreading of agents is mainly governed by the disordered structure of the
+medium. Consequently, they define stochastic growth processes where agents
+randomly generate offspring at neighboring sites, with rates determined by
+the susceptibility of the medium. The agents themselves decay spontaneously,
+thereby producing debris. In this way the medium becomes exhausted, and
+its susceptibility is randomly diminished. Hence, static DP in d + 1 spatial
+dimensions can be directly interpreted as a Markov process in d spatial and
+1 time dimension. The preferred (propagation) direction defines the temporal
+axis, and the history of the process yields the debris that forms the (d + 1)dimensional spatially anisotropic directed percolation clusters. In contrast, in
+a dynamical isotropic percolation (dIP) process the agents grow from a seed in
+an expanding stochastic annulus in d spatial dimensions leaving behind the debris in their wake. This debris then forms d-dimensional isotropic percolation
+clusters.
+Remarkably, the renormalized field theory of DP has appeared originally in
+elementary particle physics in the guise of Reggeon field theory [5,6,7]. Grassberger et al. [8,9] pointed out that Reggeon field theory is not a Hamiltonian
+field theory but constitutes a stochastic process for which they coined the
+name Gribov process. It represents a stochastic version of Schlögl’s ‘first reaction’ [10]. Subsequently, the formal connection of Reggeon field theory to DP
+was explicitly demonstrated [11,12,13], and Janssen and Grassberger stated
+the DP conjecture: The critical behavior of an order parameter field with
+Markovian stochastic dynamics, decoupled from any other slow variable, that
+3
+
+Fig. 3. Directed percolation represented as a forest fire under the influence of a
+storm from left to right; burning trees are depicted as red, and burned dead trunks
+are shown black.
+
+describes a transition from an active to an inactive, absorbing state (where
+all dynamics ceases) should be in the DP universality class [13,14]. The field
+theory of dIP was initiated by Grassberger’s formulation of the general epidemic process (GEP) on a lattice, and his statement that near criticality this
+process produces isotropic percolation clusters [15]. This insight led to the
+construction of the renormalized field theory for the dIP universality class
+[16,17].
+
+1.2 Universality Principles of Percolation
+It is tempting to express percolation processes in the language of an epidemic
+disease such as blight in a large orchard, the spreading of bark beetles in a
+forest, or proliferation of a forest fire, as depicted in FIG. 3. Here, the susceptible individuals or healthy trees form the medium, and the disease, blight,
+beetles, or fire represent the agent. The sick individuals, the befallen or burning trees may randomly infect neighboring individuals. The sick individuals
+are allowed to recover, becoming susceptible anew. This behavior defines the
+so-called simple epidemic process (SEP), also known as epidemic with recovery [18]. Properties of the SEP near the ensuing critical point separating the
+endemic and pandemic phases (whose precise location depends on the susceptibility of the individuals) shares the universal properties of DP. In contrast,
+in a situation where the sick individuals die out or become immune as opposed
+to susceptible again, the medium is eventually exhausted. This scenario defines the general epidemic process (GEP), also termed epidemic with removal
+[18,19,20]. Its universal properties are governed by the dIP universality class.
+The statistical properties of the debris clusters that are left behind after the
+disease is extinguished are described by static IP.
+In the recent physical literature, basically two different methods have been
+employed to construct field theories of percolation processes. The first approach starts from a specific microscopic stochastic reaction-diffusion model
+4
+
+formulated in terms of a master equation on a lattice. Basically it consists of
+a description of the random walks generated by diffusing and reacting particles. A field theory is then obtained through a representation of the master
+equation by means of a bosonic creation/destruction operator formalism and
+introduction of coherent-state path integrals, followed by a naive continuum
+limit [21,22,23,24,25]. The second method, to be applied in the first part of
+this article, takes a more universal, phenomenological perspective, and can
+be viewed as a dynamical analog of the established Landau-Ginzburg-Wilson
+approach to static critical phenomena. It is based on formulating the fundamental principles shared by all systems in a given universality class, and
+directly employs a mesoscopic stochastic continuum theory. Of course, one
+has to a-priori define the slow dynamic fields in the theory, typically local
+densities of the order parameter and any conserved quantities, as characterizing the universality class under consideration. This approach assumes that
+on a mesoscopic scale the motion of the fast microscopic variables can be absorbed into the statistical properties of the stochastic equations of motion for
+the relevant slow variables. The corresponding stochastic processes should be
+Markovian provided all slow variables are retained. Taking into account the
+general (symmetry, conservation, etc.) properties that define the universality
+class, the stochastic field theory is constructed using small-density and gradient expansions, i.e., long-wavelength and low-frequency approximations that
+focus on the infrared (IR) properties of the system.
+For percolation processes, the fundamental statement regarding the slow variables consists in the assertion that percolation near the critical point can be
+described by a Markov process that only depends upon the density n(r, t) of
+activated sick parts of the medium and, in the case of dIP, upon the density
+of the debris m(r, t). In terms of the field n the density of the debris is given
+Rt
+n(r, t′ ) dt′, where λ denotes an appropriate kinetic coefby m(r, t) = λ −∞
+ficient. Indeed, this assumption that percolation can be described solely in
+terms of n becomes manifest in typical lattice simulations of such processes.
+Near the critical point one observes a patchwork of regions consisting of correlated active neighboring sites and vacuum regions devoid of any activity.
+In stark contrast to this picture, simulations for branching and annihilating
+random walks show anticorrelating behavior, namely widely separated single
+active sites propagating on isolated paths and reacting only after encounter
+[3,26].
+We now proceed to formulate four principles that allow the explicit construction of a mesoscopic stochastic description of percolation processes. We shall
+describe the universal aspects of the dynamics of n beginning with the DP
+universality class:
+(i) The susceptible medium becomes locally infected, depending on the density n of neighboring sick individuals. The infected regions recover after
+5
+
+a brief time interval.
+(ii) The state with n ≡ 0 is absorbing. This state is equivalent to the extinction of the disease.
+(iii) The disease spreads out diffusively via the short-range infection (i) of
+neighboring susceptible regions.
+(iv) Microscopic fast degrees of freedom may be captured as local noise or
+stochastic forces that respect statement (ii), i.e., the noise alone cannot
+regenerate the disease.
+For the dIP universality class, we need to modify principles (i) and (ii) by
+(i’) The susceptible medium becomes infected, depending on the densities
+n and m of sick individuals and the debris, respectively. After a brief
+time interval, the sick individuals decay into the immune debris. The
+debris ultimately stops the disease locally by exhausting the supply of
+susceptible regions.
+(ii’) The states with n ≡ 0 and any spatial distribution of m are absorbing.
+These states are equivalent to the extinction of the disease.
+It is important to realize that the mechanism (i’) introduces memory into
+the stochastic process. Note that we do not explicitly assume diffusive motion of the sick individuals. All that is needed is aR spreading mechanism for
+the agent, here the disease itself: ∂t n(t, r)|spread = dd r P (r − r′ ) n(t, r′ ) with
+a spreading probability P (r) that is assumed short-range, hence allowing to
+approximate its propagation by simple diffusion. However, this scenario by
+no means excludes reaction-diffusion systems where the “infected” particles
+themselves spread out diffusively, if otherwise the general percolation principles are satisfied.
+
+2
+
+Field Theory Representation of Percolation Processes
+
+2.1 Dynamic Response Functional for Stochastic Percolation Processes
+We proceed to set up the stochastic equations of motion for percolation processes according to the general principles formulated in the preceding section,
+∂t n(r, t) = V(r, t) , ∂t m(r, t) = λ n(r, t) ,
+(1)
+or, in a discretized version (in the Itô sense) {t} → {tk } with tk+1 = tk + ∆,
+n(r, tk+1 ) = n(r, tk ) + ∆V(r, tk ) ,
+
+m(r, tk+1 ) = m(r, tk ) + λ ∆n(r, tk ) . (2)
+
+Here, V(r,t) denotes a random density that has yet to be constructed, and the
+second equations for m only appear for the dIP process. For simplicity we shall
+6
+
+suppress spatial arguments in the following considerations. The Markovian
+assumption implies that the stochastic variables V(tk ) are uncorrelated at
+different times, and that the statistical properties of V(tk ) depend solely upon
+n(tk ) and m(tk ). As a consequence, the generating function of the cumulants
+of V (i.e., the Laplace transform of the corresponding probability distribution)
+must have the general form
+
+
+exp ∆
+
+X
+k
+
+
+
+
+
+V(tk ) ñ(tk+1 ) = exp ∆
+
+∞
+XX
+ñ(tk+1 )lk
+
+lk !
+
+k lk =1
+
+
+
+Klk [n(tk ), m(tk )] , (3)
+
+where the overbar denotes the statistical average over the fast microscopic
+degrees of freedom. The ñ(tk ) constitute independent new variables. Of course,
+in the DP process the cumulants Kl are independent of the debris m.
+The statistical properties of the stochastic process are fully encoded in the
+simultaneous probability density of the history {n(t0 ), n(t1 ), . . . , n(tk ), . . .}:
+P({n(t)}) =
+=
+
+Y h
+k
+
+δ n(tk+1 ) − n(tk ) − ∆V(tk )
+
+i
+
+(4)
+
+X
+h
+i
+dñ(tk+1 )
+exp
+ñ(tk+1 ) ∆V(tk ) + n(tk ) − n(tk+1 ) .
+2πi
+k
+k
+
+Z Y
+
+Upon inserting (3) and reverting to continuous time, we may then formally
+write P as a path integral over functions ñ(t):
+P({n(t)}) =
+
+Z
+
+D[ñ] exp
+
+Z
+
+dt
+
+( ∞
+X ñ(t)l
+l=1
+
+l!
+
+Kl [n(t), m(t)] − ñ(t) ∂t n(t)
+
+)
+
+.
+
+(5)
+
+This expression is always to be interpreted through the preceding prepoint
+(Itô) discretization; we note that this specifically implies θ(t ≤ 0) = 0 for the
+Heaviside function that enters the dynamic response functions. The integration
+over the ‘response variable’ ñ runs along the imaginary axis from −i∞ to +i∞.
+However, this path can be analytically deformed in finite regions. Therefore ñ
+can attain real contributions.
+All cumulants Kl are subject to a fundamental constraint as a consequence of
+the existence of the absorbing state(s): they must vanish for n = 0. Assuming
+that the functionals Kl can be expanded in powers of n and m, this implies
+that all Kl (n, m) ∝ n or higher powers of n. Moreover, as we shall demonstrate
+below, the higher cumulants Kl with l ≥ 3 are irrelevant in the RG sense. Thus,
+the remaining task is to find the functional forms of the mean-field part K1
+and the Gaussian stochastic force correlator K2 . After reducing the statistical
+properties of V to these two terms, the stochastic equation of motion for n
+7
+
+may be written in the usual Langevin form (in the Itô interpretation)
+∂t n(t) = K1 [n(t), m(t)] + ζ(t) ,
+
+(6a)
+
+ζ(t) ζ(t′) = K2 [n(t), m(t)] δ(t − t′ ) .
+
+(6b)
+
+Note that K2 ≥ 0 since our theory is based on a real field n. This is in
+contrast to the path integral representation of the theory of random walks
+subject to pair annihilation which may formally lead to a negative second
+cumulant [24,25].
+Statistical averages of any functional of the slow variable n can now be performed by means of path integrals over the fields n and ñ with the weight
+exp(−J ) [27,28,29]; reinstating the spatial arguments, the integral measure
+Q
+here is D[ñ, n] = r,t dñ(r, t) dn(r, t)/2πi. Retaining only K1 and K2 , the
+dynamic response functional J from Eq. (5) becomes
+J =
+
+Z
+
+
+
+h
+
+i
+
+dt ñ(t) ∂t n(t) − K1 [n(t), m(t)] −
+
+
+
+1
+ñ(t)2 K2 [n(t), m(t)] .
+2
+
+(7)
+
+Here integrations over d-dimensional space are implicit.
+Fundamental principles (ii) and (ii’) classify DP and dIP as absorbing state
+systems: Any finite realization will reach an absorbing state in a finite time τabs
+with probability 1. However, in the active pandemic state above the critical
+percolation threshold pc , τabs grows exponentially with the system size Ld .
+It is thus appropriate to set τabs → ∞ in the thermodynamic limit L →
+∞. The assertion that principles (i)–(iv) lead to the DP universality class is
+known in the literature as the DP conjecture [13,14]. The diffusive spreading
+of the disease renders the cumulants K1 and K2 local functionals of n and
+m, whence a gradient expansion is appropriate. The absorbing state condition
+then inevitably implies
+K1 (n, m) = R(n, m) n + λ ∇2 n + . . . ,
+
+(8)
+
+where the ellipsis denotes higher-order gradient terms. In the same manner,
+h
+
+i
+
+K2 (n, m; r − r′ ) = 2 Γ(n, m) n + λ′ (∇2 n) − λ′′ n∇2 + . . . δ(r − r′ ) .
+
+(9)
+
+The contributions with kinetic coefficients λ′ and λ′′ can be interpreted as
+purely diffusional noise if λ′′ = 2λ′ . Yet here these terms simply arise from the
+gradient expansion. We shall demonstrate below that these as well as higherorder terms are in fact irrelevant for the critical properties of percolation.
+Naturally, the dependence of m is absent for DP.
+Furthermore, n and m are small quantities near the critical point. This allows
+for a low-density expansion
+
+
+
+
+R(n, m) = −λ τ + g1 n + g2 m + . . . ,
+8
+
+
+
+
+
+Γ(n, m) = λ g3 + . . . ,
+
+(10)
+
+with g2 = 0 for DP. To ensure stability, the coupling constants gi are assumed
+to be positive; otherwise one has to extend the expansion to the subsequent
+powers. Note that there is no general reason for g3 to vanish as is the case
+for interacting random walks [24,25]. Discarding the irrelevant higher-order
+expansion terms, indicated by the ellipsis in Eqs. (8)–(10), and inserting into
+Eq. (7), we at last arrive at the fundamental dynamic response functional for
+percolation processes:
+J =
+
+Z
+
+ h
+
+
+
+
+
+
+
+i
+
+
+
+dd r dt ñ ∂t + λ τ − ∇2 + λ g1 n + g2 m − g3 ñ n − q ñ .
+
+(11)
+
+Here we have introduced an additional external source q = q(r, t) for the
+agent. Specifically, a seed inserted at the origin r = 0 at time t = 0 in order to
+initialize a spreading process is modeled by q(r, t) = δ(r) δ(t). The evaluation
+of the path integrals is always restricted by the initial and final conditions
+n(t → −∞) = 0 = ñ(t → +∞), respectively. After eliminating the fast
+microscopic degrees of freedom, and thereby focusing on the IR properties of
+the relevant slow variables, the wave vectors q of the fluctuations of the Fourier
+transformed fields nq (t) and ñq (t) is clearly limited by a momentum cutoff Λ.
+Correspondingly, those fluctuations are effectively set to zero for |q| ≫ Λ.
+2.2 Master Equation Field Theory for a Specific Reaction-Diffusion Model
+An alternative approach to constructing a field theory representation for a
+stochastic system starts from the classical master equation that defines the
+process microscopically. For reaction-diffusion systems, one may formulate the
+reactions in a straightforward manner in terms of (bosonic) creation and annihilation operators, and therefrom via coherent-state path integrals proceed
+to a field theory action [21,22,25]. This method invokes no phenomenological assumptions or explicit coarse-graining, but does rely on a the validity of
+a ‘naive’ continuum limit. One may thus view this procedure in analogy to
+the derivation of the Φ4 theory from a soft-spin Ising model on a lattice by
+directly taking the limit of zero lattice constant. Universal features do not
+immediately become apparent in such a treatment, whereas the approach laid
+out in the preceding section focuses on general principles and in this sense
+rather corresponds to the Landau-Ginzburg-Wilson model for second-order
+equilibrium phase transitions. The phenomenological construction certainly
+requires considerable a-priori insight on the defining universal features of a
+given system, but its benefit is considerable predictive power. Yet there are
+cases, such as pure pair annihilation processes [23,24] or branching and annihilating random walks with even offspring [30], for which as yet only the
+master equation formulation has led to successful field theory representations.
+In these processes the random-walk properties of individual particles govern
+the essential physics; hence the microscopic picture is essential and a meso9
+
+scopic description simply in terms of the particle density would be erroneous.
+On the other hand, proceeding from the microscopic model via taking a naive
+continuum limit definitely fails, e.g., for the pair contact process with diffusion
+(PCPD) [31,32].
+We shall consider here a specific reaction-diffusion model that displays an
+active to absorbing state phase transition which, according to our general
+principles, should belong to the percolation universality classes. Yet reactiondiffusion systems do of course not provide an exact description of, e.g., directed
+bond percolation or the contact process since they differ manifestly with respect to the microscopic details. We note that one may also construct a direct
+field theory representation for the pair connectivity of bond-percolating system [12,33]. As usual in reaction-diffusion models, the activated particles both
+represent the diffusing agents and may locally create new offspring. We introduce the following reaction scheme:
+ρ
+
+σ
+
+A ⇄ 2A ,
+
+A → ∅,
+
+(12a)
+
+A→B,
+
+A+B → B,
+
+(12b)
+
+κ
+µ
+
+ν
+
+supplemented with hopping of the agents A to nearest-neighbors on a ddimensional lattice with sites (i, j, . . .) with diffusion constant λ. The backreaction in (12a) may also be viewed as effectively capturing mutual exclusion
+on the same site. The reactions in (12b) are specific to dIP where the presence
+of the produced debris B suppresses the agent A.
+The reaction rules (12) are reformulated in terms of a master equation that describes the time dependence of the probability P ({n, m}, t) for a given configuration of site occupation numbers {n} = (. . . , ni , . . .) and {m} = (. . . , mi , . . .)
+of the agent A and the debris B, respectively. The configuration probability is
+P
+encoded in the state vector |P (t)i = {n,m} P ({n, m}, t) |{n, m}i in a bosonic
+Fock space spanned by the basis |{n, m}i. These vectors as well as the stochastic processes in the master equation are then expressed through the action
+of bosonic creation and annihilation operators {â, b̂} and {a, b}, respectively,
+which are defined via âi |. . . , ni , . . .i = |. . . , ni + 1, . . .i, and ai |. . . , ni , . . .i =
+ni |. . . , ni − 1, . . .i, etc. Subsequently, the master equation can be written in
+the form
+∂t |P (t)i = −H |P (t)i
+
+(13)
+
+with an appropriate non-Hermitean pseudo-Hamilton operator [21,22,25]. For
+10
+
+example, the reaction scheme (12) leads to H = Hdiff + Hreac with
+Hdiff = λ
+
+X
+
+<i,j>
+
+Hreac =
+
+X 
+
+
+
+âi − âj ai =
+
+
+
+
+λ X
+âi − âj ai − aj ,
+2 <i,j>
+
+
+
+
+
+
+(14a)
+
+
+
+ρ 1 − âi âi ai + κ âi − 1 âi a2i + σ âi − 1 ai
+
+i
+
+
+
+
+
+
+
+
+
+
+
++ µ âi − b̂i ai + ν âi − 1 b̂i bi ai .
+
+(14b)
+
+Here < i, j > denotes a pair of neighboring sites.
+In order to compute statistical averages it is necessary to introduce the proQ
+jection state h·| = h0| i exp(ai + bi ). Using the identity h·| âi = h·| = h·| b̂i one
+easily finds the expectation value of an observable A({n, m}) at time t:
+hAi(t) =
+
+X
+
+A({n, m}) P ({n, m}, t) = h·|A({âa, b̂b})|P (t)i ,
+
+{n,m}
+
+(15)
+
+where in the last expression n and m are replaced with the operators âa and b̂b,
+respectively. The formal solution of the equation of motion (13) reads |P (t)i =
+exp(−tH) |P (0)i. Following standard procedures [23,25] the expectation value
+(15) can be expressed as a path integral
+hAi(t) =
+
+Z
+
+D[â, b̂, a, b] A({âa, b̂b}) exp(−S[â, b̂, a, b]) ,
+
+(16)
+
+with an exponential weight that defines a field theory action. After applying
+a (naive) continuum limit, the action becomes
+S=
+
+Z
+
+
+
+dd r dt (â − 1) ∂t a + λ ∇â · ∇a + (â − 1) (σ − ρ â + κ âa) a
+
+
++ (b̂ − 1) ∂t b + µ(â − b̂) a + ν(â − 1) b̂ba .
+
+(17)
+
+Here, the fields â(r, t), a(r, t), b̂(r, t), and b(r, t) correspond to the coherentstate eigenvalues of the bosonic creation and annihilation operators. The
+integrations are subject to âa ≥ 0, b̂b ≥ 0, and the final conditions are
+â(r, t → ∞) = 1 = b̂(r, t → ∞). Thus often a field shift according to â = 1+ ã,
+b̂ = 1 + b̃ is useful. The new variables b̃ then appear only linearly in the action (17). Hence, they can be integrated out, which results in the differential
+equation constraint
+∂t b = (µ − ν ãb) a ,
+(18)
+and the new action
+S=
+
+Z
+
+h
+
+i
+
+dd r dt ã ∂t − λ∇2 + (σ + µ − ρ) + (κ a + ν b − ρ ã) + κ ãa a ,
+
+(19)
+
+where b is given by the solution of Eq. (18). If we now discard all fourth-order
+terms which should become irrelevant after the application of coarse-graining
+11
+
+near the critical point, the action (19) attains the same form as the response
+functional (11), with the correct sign of the coupling constants.
+Physically, however, the fields are of different origin: Whereas n in the action
+J represents the fluctuating density of the active medium, the field a in (17)
+or (19) results from the bosonic annihilation operators for the random walks;
+therefore, a generally is a complex-valued quantity, and only â has to be real
+and non-negative. Thus, the action (19) derived above really is akin to the
+original Reggeon field theory [5,6,7]. This can be remedied by means of a
+quasi-canonical transformation to proper density variables â = 1+ã = exp(ñ),
+a = n exp(−ñ), b̂ = 1 + b̃ = exp(m̃), and b = m exp(−m̃). After integrating
+by parts the action (17) then becomes
+S=
+
+Z
+
+
+
+d
+
+h
+
+d r dt ñ ∂t n + λ ∇ñ · ∇n − n(∇ñ)2
+h
+
+ih
+
+i
+
+i
+
++ 1 − exp(−ñ) σ − ρ exp(ñ) + κn n
+h
+
+i
+
+h
+
+
+
+i
+
++ m̃ ∂t m + µ 1 − exp(m̃ − ñ) n + ν 1 − exp(−ñ) m n .
+
+(20)
+
+Integration over m̃, followed by the expansion of the exponentials, and dispensing with fourth-order terms finally leads to
+S′ =
+
+Z
+
+
+
+h
+
+dd r dt ñ ∂t n − λ ñ ∇2 n + n(∇ñ)2
+h
+
+i
+
+
+
+ρ+σ i
++ ñ (σ + µ − ρ) + κ n + ν m −
+ñ n ,
+2
+
+(21)
+
+with ∂t m = µ n. This action again acquires the same form as the response
+functional (11). Aside from the different meaning of the fields, it is reminiscent
+of the action (19) without the fourth-order contributions. However, irrelevant
+diffusional noise arises in the action (21), and the noise term ∝ ñ2 comes with
+a slightly different coupling constant that is invariably negative, even in the
+“free” case with ρ = 0. Hence, as remarked above, the stochastic processes
+described by the actions S and S ′ are in fact distinct, yet their universal
+features are identical. They will however usually differ with respect to nonasymptotic, non-universal details.
+
+2.3 Mean-Field Theory and Naive Scaling Dimensions
+
+The first approximation in the evaluation of path integrals generally consists
+of a Gaussian truncation in the action J with respect to the fluctuations
+about the maximum of the statistical weight exp(−J ). The extrema are in
+12
+
+turn determined from the saddle-point (mean-field) equations
+
+
+
+
+δJ
+0=
+= ∂t + λ(τ − ∇2 ) + λ(g1 n + g2 m − 2g3 ñ) n − q ,
+δñ
+
+
+δJ
+2
+0=
+= − ∂t + λ(τ − ∇ ) + λ(2g1 n + g2 m − g3 ñ) ñ
+δn
+Z
++ λ g2
+
+∞
+
+t
+
+dt′ n(t′ ) ñ(t′ ) .
+
+(22a)
+
+(22b)
+
+For t → ∞, the stable homogeneous stationary solutions in the case of homogeneous vanishing source q = 0 are ñ = 0, and n = 0 if τ > 0. For τ < 0 we
+obtain n = |τ |/g1 for g2 = 0 (DP), and n = 0, m = |τ |/g2 for g1 = 0 (dIP).
+This demonstrates that within the mean-field approximation the critical point
+is located at τ = 0, and in its vicinity on the active side the order parameter
+vanishes as n ∼ |τ |β with critical exponent β = 1.
+Now let us scale spatial distances x by a convenient mesoscopic length scale
+µ−1 ≫ Λ−1 . Consequently we find the naive scaling dimensions λt ∼ µ−2 ,
+τ ∼ µ2 , and g2 /g1 ∼ µ2 . Hence, in the asymptotic long-time and large-distance
+limit, τ and g2 /g1 constitute relevant parameters, flowing to ∞ under successive RG scale transformations. The last relation shows that the coupling g1
+becomes irrelevant, provided g2 > 0 (dIP). Since the action J is dimensionless, we find from Eq. (11) that ñn ∼ µd . It is characteristic of the field theory
+for spreading phenomena with an absorbing state that the dynamic response
+functional J contains a redundant parameter [34] that must be eliminated by
+a suitable rescaling
+ñ = K −1 s̃ ,
+
+n = Ks ,
+
+m = KS ,
+
+(23)
+
+with an amplitude K that generally carries nonvanishing scaling dimension.
+Because both the lowest-order non-vanishing coupling constants in the meanfield part of the action and the stochastic noise strength are clearly required
+for a meaningful non-trivial perturbation expansion, it is convenient to choose
+K such that the corresponding couplings attain the same scaling dimensions.
+Thus we set 2Kg1 = 2K −1 g3 = g in the case of DP, and Kg2 = 2K −1 g3 = g for
+dIP, where K −1 parametrizes, e.g., the line of DP transitions in the DomanyKinzel automaton [35]. We note that this amplitude characterizes the nonuniversal “lacunarity” property of percolating clusters which tends to zero
+in the case of compact percolation. The dynamic response functional now
+assumes the two distinct forms
+Z
+
+ h
+
+
+
+i
+λg
+(s − s̃) s − λh s̃ ,
+JDP = d r dt s̃ ∂t + λ(τ − ∇ ) +
+2
+ 
+
+Z
+i
+λg
+d
+2
+JdIP = d r dt s̃ ∂t + λ(τ − ∇ ) +
+(2S − s̃) s − λh s̃ ,
+2
+d
+
+2
+
+(24a)
+(24b)
+
+for DP and dIP, respectively, where λh = K −1 q. Hence, a seed at the origin,
+i.e., a sick individual at (r, t) = (0, 0), is represented by λh(r, t) = K −1 δ(r)δ(t).
+13
+
+After fixing the redundancy in this manner the naive scaling of the fields and
+couplings is uniquely given by
+DP:
+dIP:
+
+s ∼ s̃ ∼ µd/2 ,
+S ∼ s̃ ∼ µ
+
+g ∼ µ(4−d)/2 ,
+
+(d−2)/2
+
+s∼µ
+
+,
+
+(d+2)/2
+
+(25a)
+,
+
+g∼µ
+
+(6−d)/2
+
+.
+
+(25b)
+
+From the scaling dimensions of the couplings g we infer the upper critical
+dimensions dc = 4 for DP, and dc = 6 for dIP. At this point it is also straightforward to show that all higher-order terms in the gradient and density expansions that we had neglected before in fact acquire negative scaling dimensions
+near dc . This proves that those terms are indeed irrelevant for the asymptotic
+IR scaling behavior. Note that relevance and irrelevance are assigned here
+with reference to the Gaussian theory. After discarding the irrelevant terms,
+the dynamic response functionals (25) display duality invariance with respect
+to time inversion,
+DP: s̃(t) ↔ −s(−t) ,
+
+dIP: s̃(t) ↔ −S(−t) .
+
+(26)
+
+However, in general these symmetries only hold asymptotically.
+2.4 IR Problems and Renormalization
+The important goal of statistical theories is the determination of correlation
+and response functions (generally called Green’s functions) of the dynamical
+variables as functions of their space-time coordinates, as well as of the relevant control parameters. In a compact form, one attempts to determine the
+cumulant generating functional
+W[H, H̃] = ln
+
+Z
+
+
+
+
+
+D[s̃, s] exp − J [s̃, s] + (H, s) + (H̃, s̃) .
+
+(27)
+
+Functional derivatives with respect to the sources H and H̃,
+δ N +Ñ W
+[δH N ][δ H̃ Ñ ]
+
+H=H̃=0
+
+= h[sN ][s̃Ñ ]i(cum) =: GN,Ñ ,
+
+(28)
+
+define the Green’s functions (here we suppress all space and time coordinates).
+In general, an exact expression for W[H, H̃] cannot be found and one must resort to a perturbational evaluation. Perturbation theory is developed starting
+from the Gaussian contribution exp(−J0 ) to the weight, and the subsequent
+expansion of the remainder exp(−Ji ), where Ji = J − J0 .
+The different contributions to the perturbation series are graphically organized in successive order of closed loops in terms of linked diagrams which, in
+14
+
+translationally invariant theories, can be decomposed into one-line irreducible
+amputated Feynman diagrams that represent the building blocks for the vertex
+functions. The generating functional for the vertex functions Γ[s̃, s] is related
+to the cumulant generating functional via the Legendre transformation
+Γ[s̃, s] + W[H, H̃] = (H, s) + (H̃, s̃) ,
+δW
+δW
+with s =
+,
+, s̃ =
+δH
+δ H̃
+
+(29a)
+(29b)
+
+and vice versa. It is easy to see that to zero-loop (‘tree’) order Γ[s̃, s] is identical
+to J [s̃, s]. The vertex functions are defined via the functional derivatives
+δ N +Ñ Γ[s̃, s]
+[δ Ñ s̃][δsN ]
+
+=: ΓÑ ,N ,
+
+(30)
+
+s̃=s=0
+
+and they are represented by irreducible diagrams if Γ1,0 = 0. Note that all the
+Γ0,N necessarily vanish as a consequence of causality. The Gaussian parts of
+the response functionals Eqs. (24) define the propagator
+hs(r, t)s̃(r′ , t′ )i0 =: G(r − r′ , t − t′ ) ,
+Z
+exp(iq · r − iωt)
+G(r, t) =
+,
+q,ω −iω + λ(q2 + τ )
+
+(31a)
+(31b)
+
+where the momentum integral is limited by the ultraviolet (UV) cutoff Λ. We
+have within the tree approximation
+Γ1,1 (q, ω) = G1,1 (q, −ω)−1 = iω + λ(q2 + τ ) + loop corrections .
+
+(32)
+
+The non-linear contributions from Ji yield the vertices of the field theory.
+As is common with quantum and statistical field theories, the naive perturbation expansion, here based on our response functionals (24), is problematic
+for several reasons [36,37,38,39,40,41,42]. To be specific, consider the inverse
+susceptibility χ(τ, g, Λ, ε)−1 = λ−1 Γ1,1 (q = 0, ω = 0) = τ + O(g 2) that describes the linear response to a stationary homogeneous external source. We
+shall be interested in how the structure of the theory depends on the spatial
+dimension d as encoded in the parameter ε = dc − d. First, the perturbation
+series in g 2 in general is divergent. Although it is characterized by a vanishing radius of convergence, it presumably constitutes an asymptotic series and
+should be resummable. Yet more severe problems arise from the massless critical limit. The critical point τc , defined implicitly by χ(τc , g, Λ, ε)−1 = 0, may
+by dimensional arguments be written in the form
+τc = g 4/ε S(gΛ−ε/2, ε) .
+
+(33)
+
+However, the function S(z, ε) is not calculable by means of perturbation theory, since it diverges in the limit z → 0 for all positive ε ≤ 2. The limit
+15
+
+S(0, ε) =: S(ε) does exist for ε > 2, and an analytic continuation to ε ≤ 2
+defines the dimensionally regularized Symanzik function S(ε). But now S(ε)
+displays simple IR poles at all ε = 2/n with positive integers n. Note that at
+these discrete points τc ∝ g 2n .
+Let us now introduce the new variable τ̂ = τ − τc . The vertex functions
+ΓÑ ,N ({q, ω}, τ̂), regarded as functions of τ̂ instead of τ , are free of IR singularities for τ̂ 6= 0, but they require the perturbationally inaccessible function
+(33). In order to eliminate the IR poles completely from the calculation in
+any dimension d < dc , it is possible at this stage to change variables to the
+correlation length squared [39],
+ξ(τ̂ , g, Λ)2 =
+
+∂
+.
+ln Γ1,1 (q, ω)
+∂q2
+q2 =ω=0
+
+(34)
+
+Since the function ξ, which does not display IR poles either, should be a monotonic function of τ̂ , it can be inverted to τ̂ = τ̂ (ξ, g, Λ) with τ̂ (∞, g, Λ) = 0.
+Finally one may substitute τ̂ by τ̂ (ξ, g, Λ) and thus arrive at vertex functions
+written in terms of ξ, i.e., Γ̂Ñ ,N ({q, ω}, ξ, g, Λ) = ΓÑ ,N ({q, ω}, τ̂(ξ, g, Λ), g, Λ),
+which are now calculable in perturbation theory and are devoid of IR singularities for ε > 0 and ξ < ∞.
+We return to the consideration of the analytical properties of the response
+function. Dimensional analysis yields
+χ(τ, g, Λ)−1 = τ̂ F (τ̂ Λ−2 , gΛ−ε/2, ε) ,
+
+(35)
+
+with the perturbational expansion
+F (θ, z, ε) = 1 +
+
+∞
+X
+
+fn (θ, ε) z 2n .
+
+(36)
+
+n=1
+
+For ε > 0, the functions fn are divergent in the critical limit θ → 0, a direct
+consequence of the fact that χ−1 ∼ |τ̂ |γ for τ̂ → 0 with a critical exponent γ 6=
+1 if d < dc . Hence, a series in ln θ appears to be produced by the perturbational
+expansion which needs to be properly resummed.
+Wilson’s momentum-shell renormalization procedure [43] fully avoids the IR
+problems of the naive perturbation expansion. Furthermore, in contrast to
+renormalized field theory, Wilson’s approach does not require the elimination
+of the IR-irrelevant couplings prior to deriving the RG flow equations, and so
+pre-asymptotic critical as well as crossover properties are calculable. However,
+even though Wilson’s RG procedure in that sense is superior to the fieldtheoretic method, it is generally not advisable for a systematic calculation
+of universal properties to higher then one-loop order. In contrast, the fieldtheoretic RG method [36,37] does not proceed by successive elimination of
+16
+
+short-wavelength degrees of freedom and a rescaling of parameters, but instead
+exploits the UV-renormalizability of the perturbation expansion for d ≤ dc to
+enable a mapping from the critical to a non-critical region in parameter space
+wherein perturbational calculations are unproblematic. Both methods are fully
+equivalent with respect to describing asymptotic and universal features.
+We rename the original bare fields and parameters according to s → s̊, s̃ →
+˚
+s̃, τ → τ̊ , etc. In accord with the symmetries (26) we choose the following
+multiplicative renormalizations
+˚
+s̃ = Z̃ 1/2 s̃ ,
+
+s̊ = Z 1/2 s ,
+λ̊ = (Z Z̃)
+Z̃ = Z
+
+−1/2
+
+Zλ λ ,
+
+for DP ,
+
+τ̊ = Zλ−1 Zτ τ + τ̊c ,
+Z̃ = Zλ
+
+Gε g̊ 2 = Z̃ −1 Zλ−2 Zu uµε ,
+h̊ = Z
+
+1/2
+
+Zλ−1 h ,
+
+(37a)
+(37b)
+
+for dIP ,
+
+(37c)
+
+where Gε = Γ(1 + ε/2)/(4π)d/2 is a convenient amplitude. u represents the
+dimensionless coupling constant, and τ = 0 at the critical point. The renormalization constants Z··· = Z··· (u, µ/Λ, ε) can be chosen in a UV-renormalizable
+theory in such a way that
+Γ̊Ñ ,N ({q, ω},τ̊,g̊, λ̊, Λ) =
+
+
+
+
+
+
+
+1
+−∆
+,
+Γ
+({q,
+ω},
+τ,
+u,
+λ,
+µ)
+1
++
+O
+(Λξ)
+Ñ ,N
+Z̃ Ñ /2 Z N/2
+(38a)
+
+G̊N,Ñ ({r, t},τ̊,g̊, λ̊, Λ) = Z
+
+N/2
+
+Z̃
+
+Ñ /2
+
+
+
+
+
+GN,Ñ ({r, t}, τ, u, λ, µ) 1 + O (Λξ)
+
+−∆
+
+
+
+,
+
+(38b)
+
+with ∆ = 2 + O(ε). Within each successive order of the perturbation expansion, the renormalized vertex functions ΓÑ ,N are thereby rendered finite and
+well-defined. Note that the physical bare and the renormalized vertex function
+display the same dependence on the variables (q, ω, τ ) in the limit (Λξ) → ∞
+up to nonuniversal amplitudes. In principle, the infinite cutoff limit is unphysical and only employed here to develop a systematic RG mapping that works
+effectively to higher orders in the loop expansion. The theory becomes only
+UV renormalizable at the upper critical dimension dc (super-renormalizable
+below dc ) because we have previously eliminated all IR-irrelevant couplings
+and shifted the relevant control parameters (here, τ ) to be zero at the critical
+point. Indeed, the problematic UV and IR singularities are linked precisely
+at the critical dimension d = dc . For d > dc the field theory is IR-finite and
+UV-infinite, whereas conversely for d < dc it is IR-infinite and UV-finite.
+For d ≤ dc , the renormalization factors diverge in three distinct limits The
+first two represent UV divergences, while the third one constitutes an IR
+singularity: ln Z··· (u, µ/Λ, ε) → ∞ if
+(1) µ/Λ → 0, ε = 0, u fixed;
+(2) µ/Λ = 0, ε → 0, u fixed;
+17
+
+l→0
+
+l→0
+
+(3) µ/Λ → lµ/Λ −→ 0, u → u(l) −→ u∗ , ε > 0 fixed.
+Here u∗ denotes the first nontrivial zero of the Gell-Mann–Low function β(u)
+to be introduced below, and u(l) is the solution of the RG flow equation
+l du(l)/dl = β(u(l)). Hence, the determination of the Z factors from the UV
+divergences provides us at the same time with important information on the
+critical IR singularities and thereby on critical exponents. This observation
+lies at the heart of the field-theoretic RG method. Explicit calculations of the
+renormalization constants are facilitated if one first takes the continuum limit
+Λ → ∞ with ε > 0 (dimensional regularization) together with the requirement
+that the Z factors absorb just the ε poles (minimal subtraction). Notice that
+this minimal dimensional regularization does not at all require an ε expansion.
+Yet the continuum limit raises subtle problems in the realm of statistical
+physics [40,42]. For example, one may conclude from the above remarks that
+the full range from zero to infinity of the bare coupling constant g̊ is mapped
+only to the interval [0, u∗ ] which lies between the UV-stable fixed point u = 0
+and the IR-stable fixed point u = u∗ . Values of u larger than u∗ are excluded.
+On the other hand, there exist many pre-asymptotic simulational and experimental results, e.g., for the three-dimensional Ising model near the critical
+point and some polymer systems, which are linked to this strong-coupling region that does not include an UV-stable fixed point. In Wilson’s RG approach
+this regime can be reached by a choosing suitable initial values of the relevant
+and irrelevant couplings, and a finite UV cutoff Λ. The UV-renormalized field
+theory should therefore with Λ → ∞ should therefore be accepted as an effective field theory where the influences of irrelevant couplings and the finite
+cutoff are implicitly encoded in the full range of the coupling u also above the
+fixed point.
+
+2.5 RG Flow Equations and Critical Exponents
+
+Next, we compare renormalized vertex functions from the same bare theory,
+but which are renormalized at two different external momentum scales µ and
+lµ, respectively. The bare vertex
+functions are held fixed, and we shall hence
+−∆
+corrections. Then it follows from Eq. (38) that
+forth neglect the O (Λξ)
+
+
+ΓÑ ,N ({q, ω}, τ, u, λ, µ) = XÑ ,N u, u(l)
+
+
+−1
+
+
+
+
+
+
+
+ΓÑ ,N {q, ω}, τ (l), u(l), λ(l), lµ ,
+(39a)
+
+
+
+
+GN,Ñ ({r, t}, τ, u, λ, µ) = XÑ ,N u, u(l) GN,Ñ {r, t}, τ (l), u(l), λ(l), lµ ,
+(39b)
+
+18
+
+where XÑ ,N = X̃ Ñ /2 X N/2 and
+
+
+
+
+X̃ u(l), u = lim
+
+Λ→∞
+
+
+
+Z̃ u(l), lµ/Λ, ε
+Z̃(u, µ/Λ, ε)
+
+
+
+,
+
+
+
+
+
+X u(l), u = lim
+
+Λ→∞
+
+
+
+Z u(l), lµ/Λ, ε
+Z(u, µ/Λ, ε)
+
+
+
+.
+
+(40)
+This is the desired mapping. If τ /µ ≪ 1, the left-hand site of Eq. (39) is
+IR-problematic, whereas for an appropriate l ≪ 1 the vertex function on the
+right-hand site is unproblematic if we choose τ (l)/(lµ)2 ≈ 1. It is expected
+that liml→0 u(l) = u∗ , and the leading critical properties are transformed to
+the functions X̃ and X.
+Casting this mapping in differential form yields the renormalization group
+equation (RGE). We let Λ → ∞ and define the RG functions as logarithmic
+derivatives with respect to the normalization scale µ, holding bare parameters
+fixed,
+∂u
+,
+∂ ln µ 0
+∂ ln τ
+κ(u) =
+,
+∂ ln µ 0
+
+β(u) =
+
+∂ ln Z
+,
+∂ ln µ 0
+∂ ln λ
+ζ(u) =
+.
+∂ ln µ 0
+
+γ(u) =
+
+γ̃(u) =
+
+∂ ln Z̃
+,
+∂ ln µ 0
+
+(41a)
+(41b)
+
+Consider the renormalized Green’s functions
+h
+
+i
+
+GN,Ñ ({r, t}, τ, u, λ, µ) = lim Z −N/2 Z̃ −Ñ /2 G̊N,Ñ ({r, t},τ̊ ,g̊, λ̊, Λ) ;
+Λ→∞
+
+(42)
+
+using the definitions (41) it is straightforward to derive the RGE
+
+
+
+
+∂
+∂
+∂ 1
+∂
++β + (Nγ + Ñ γ̃) GN,Ñ ({r, t}, τ, u, λ, µ) = 0 . (43)
+µ +ζλ +κτ
+∂µ
+∂λ
+∂τ
+∂u 2
+
+The solution of this partial differential equation is provided by the method of
+characteristics, which solve the ordinary differential equations
+µ̄(l) = lµ ,
+l
+
+dū
+= β(ū) ,
+dl
+
+l
+
+d ln X
+= γ(ū) ,
+dl
+d ln τ̄
+l
+= κ(ū) ,
+dl
+
+l
+
+d ln X̃
+= γ̃(ū) ,
+dl
+d ln λ̄
+l
+= ζ(ū) ,
+dl
+
+(44a)
+(44b)
+
+with the initial conditions X(1) = 1 = X̃(1), ū(1) = u, τ̄ (1) = τ , and λ̄(1) = λ.
+This yields the general expression
+GN,Ñ ({r, t}, τ, u, λ, µ) = X(l)N/2 X̃(l)Ñ /2 GN,Ñ ({r, t}, τ̄(l), ū(l), λ̄(l), lµ) .
+(45)
+In the critical limit l → 0 the characteristic equations provide us with the
+asymptotic scaling laws. From Eqs. (44) we learn that ū(l) flows to a stable
+19
+
+fixed point u∗ , given as a zero of the RG beta function β(u∗) = 0, provided
+the first derivative β ′ ((u∗ ) > 0. With the definitions
+η = γ(u∗ ) ,
+
+η̃ = γ̃(u∗ ) ,
+
+ν −1 = 2 − κ(u∗ ) ,
+
+z = 2 + ζ(u∗) ,
+
+(46)
+
+and employing dimensional scaling, we obtain from Eq. (45) the asymptotic
+form for the Green’s functions
+
+
+
+
+(as)
+
+GN,Ñ ({r, t}, τ, u, λ, µ) = AN ÃÑ lδN,Ñ FN,Ñ {lµr, lz Aλ λµ2 t}, l−1/ν Aτ τ /µ2 .
+(47)
+Here, A, Ã, Aλ , and Aτ represent four non-universal amplitudes. The symmetries (26) provide us with scaling relations between the critical exponents.
+For DP, Eq. (37c) implies γ = γ̃, whereas γ = γ̃ + 2ζ for dIP. Thus we obtain
+η̃ = η
+
+for DP ,
+
+2(z − 2) = η − η̃
+
+for dIP .
+
+(48)
+
+The scaling functions FN,Ñ are universal, and the exponents δN,Ñ are given by
+β
+(N + Ñ) ,
+ν
+β
+δN,Ñ = (N + Ñ) + zN ,
+ν
+δN,Ñ =
+
+d+η
+2
+d − 2 + η̃
+β=ν
+2
+β=ν
+
+for DP
+
+(49a)
+
+for dIP .
+
+(49b)
+
+Consequently, there are only three independent scaling exponents η, z, and ν.
+In principle, a similar reduction may be found also for the number of independent non-universal amplitudes. However, the rescaling (23) introduces an
+additional amplitude K related to A and Ã by K 2 = A/Ã.
+In summary, we have established that percolation processes near the critical
+point are asymptotically described by universal scaling functions with three
+scaling exponents, but four non-universal amplitudes. The remaining task is
+to explicitly calculate the Z factors and the universal scaling functions in the
+non-critical region by means of perturbation theory. There are two methods to
+avoid the non-calculable Symanzik function. Either one changes variables from
+the parameter τ to the correlation length ξ, see Eq. (34), which is invariant
+under renormalization: ˚
+ξ(τ̊ ,g̊, Λ) = ξ(τ, u, µ), and then calculates perturbationally the derivative of τ by ξ −2 which eliminates τc [39]. Alternatively, one
+may apply, in addition to the perturbation expansion, a dimensional ε expansion which formally sets τc to zero, see Eq. (33).
+
+3
+
+Field Theory of Directed Percolation
+
+Directed percolation constitutes perhaps the simplest model of a strictly nonequilibrium system that displays a continuous phase transition. In this respect
+20
+
+t
+000
+111
+000
+111
+
+q
+
+t’ = G(q,t−t’)
+= − 001100110011
+
+= λg
+
+Fig. 4. Elements of the diagrammatic perturbation expansion: propagator (top) and
+three-point vertices (bottom).
+
+its role is comparable with the paradigmatic Ising model for equilibrium critical phenomena. Correspondingly, the DP field theory as given by the response
+functional (24a) can be regarded as the non-equilibrium analog of the φ4 field
+theory. In the following sections we shall consider the renormalized DP field
+theory and the ensuing asymptotic scaling of important quantities in detail.
+3.1 Perturbation Theory, Renormalization, and Asymptotic Scaling
+As stated before, the perturbation expansion is arranged loop-wise with respect to the harmonic part of the response functional (24a). In the momentumtime representation, the propagator (31b) reads
+h
+
+i
+
+G̊(q, t) = θ(t) exp −λ̊(τ̊ + q 2 )t ,
+
+(50)
+
+where the Heaviside step function is defined with θ(t = 0) = 0. This follows
+from the Itô discretization of the path integral and ensures causality. The
+anharmonic coupling terms in JDP define the elements of the graphical perturbation expansion, depicted in FIG. 4: An arrow marks a s̃-“leg”, and we
+conventionally draw diagrams with the arrowss always directed to the left (i.e.,
+we employ ascending time ordering from right to left). The perturbation series
+of the translationally invariant field theory can be analyzed through calculation of the vertex functions ΓÑ ,N ({q, ω}) that correspond to the one-particle
+irreducible “amputated” graphs.
+We are now ready to consider the renormalization of the DP field theory. To
+this end, we evaluate all diagrammatic contributions to the vertex functions to
+a given loop order by means of dimensional regularization, and subsequently
+absorb the UV divergences order by order in the loop expansion into a suitable
+renormalization of the fields and model parameters. We choose the scheme
+(37) and determine the renormalization constants in the minimal subtraction
+prescription. Absorbing the ε poles of the naively divergent vertex functions
+into Z factors in fact renormalizes the full theory. The naively divergent vertex
+functions carry non-negative scaling dimensions. In the case of DP, these are
+Γ1,1 ∼ µ2 and Γ1,2 = −Γ2,1 ∼ µε , schematically illustrated in FIG. 5.
+We will now explicitly determine the renormalizations to one-loop order. The
+primitively divergent one-loop graphs are shown in FIG. 6. We begin by ex21
+
+pressing the one-loop contribution to the propagator self-energy, FIG. 6(a), as
+a function of external momentum q and frequency ω:
+λ̊g̊ 2 Z
+1
+6(a) = −
+2 p iω/λ̊ + 2τ̊ + (p − q/2)2 + (p + q/2)2
+!
+Gε −ε/2 2 2τ̊
+iω q2
+=
++
++ ... .
+τ̊
+λ̊g̊
++
+2ε
+2 − ε 2λ̊
+4
+
+(51)
+
+Here we have retained only terms linear in ω and q2 . These are the contributions that display poles in ε = 4 − d. The first term in the brackets has an IR
+singularity at ε = 2 (d = 2). This pole can be eliminated by changing from
+the variable τ to the correlation length ξ as an independent parameter. Here,
+for simplicity, we just employ the ε expansion. For the extraction of the divergences of the vertex function Γ1,2 , the external momenta and frequencies may
+be set to zero. The contribution from the diagram in FIG. 6(b) then becomes
+6(b) = 2λ̊g̊
+
+3
+
+Z
+
+p
+
+h
+
+1
+
+2(τ̊ + p2 )
+
+i2 =
+
+Gε −ε/2 3
+τ̊
+λ̊g̊ .
+ε
+
+(52)
+
+Combining the zero-loop expressions with the results of this short calculation,
+we obtain the one-loop vertex functions to the desired order in ω and q2 :
+
+
+
+
+
+
+Gε 2 −ε/2
+Gε 2 −ε/2
++ λ̊ q2 1 −
+g̊ τ̊
+g̊ τ̊
+4ε
+8ε
+
+
+Gε
++ λ̊τ̊ 1 −
+g̊ 2 τ̊ −ε/2 + . . . ,
+ε(2 − ε)
+
+Γ̊1,1 = iω 1 −
+
+and
+
+
+
+
+
+(53)
+
+
+
+Gε 2 −ε/2
+Γ̊1,2 = λ̊g̊ 1 −
++ ... .
+(54)
+g̊ τ̊
+ε
+In order to absorb the ε poles into renormalization factors, we employ the
+
+q, ω
+
+=−
+
+Fig. 5. The naively divergent vertex functions Γ1,1 and Γ1,2 = −Γ2,1 in the DP field
+theory.
+
+111
+000
+111
+000
+
+111
+000
+
+0011
+0011
+
+111
+000
+(a)
+
+0011
+
+11
+00
+11
+00
+
+(b)
+
+Fig. 6. The one-loop Feynman diagrams for DP.
+
+22
+
+111
+000
+111
+000
+
+111
+000
+111
+000
+
+1100
+111
+000
+
+111
+000
+111
+000
+
+0011
+111
+000
+111
+000
+
+111
+000
+111
+000
+
+00110011
+
+111
+000
+111
+000
+0011
+
+0011
+(b)
+
+(a)
+
+Fig. 7. The two-loop diagrams for the propagator self-energy.
+
+scheme (37), (38a) using Z̃ = Z. To one-loop order we arrive at
+ ε/2 
+
+
+
+
+
+ ε/2 
+
+u µ
++ λ q Zλ −
+8ε τ
+
+ ε/2 
+u
+µ
++ λ τ Zτ −
++ ... ,
+ε(2 − ε) τ
+
+u µ
+Γ1,1 = iω Z −
+4ε τ
+
+2
+
+(55)
+
+and
+
+
+Gε Γ1,2
+
+2
+
+
+
+= µ ε λ2 u Z u −
+
+ ε/2 
+
+2u µ
+ε τ
+
+.
+
+(56)
+
+Therefore, the ε poles are eliminated by the minimal choices Z = 1 + u/4ε,
+Zλ = 1 + u/8ε, Zτ = 1 + u/2ε, and Zu = 1 + 2u/ε.
+The two-loop graphs for the propagator self-energy and the three-point vertex
+are depicted in FIG. (7) and (8), respectively. The ensuing explicit Z factors
+
+111
+000
+111
+000
+
+1100 00110011
+111
+1100 000
+111
+00110011000
+1100
+(a)
+
+111
+000
+111
+000
+
+111
+000
+111
+000
+111 0011
+000
+00110011
+111
+000
+0011
+0011 + 2
+11
+00
+0011
+111
+000
+11
+00
+11
+00
+111
+111
+000
+111
+000
+1100 1100 0011 000
+(b)
+
+111
+000
+111 + 1
+111 000
+000
+111 1100
+000
+111 000
+000
+111
+111
+000
+(d)
+
+1100 1100
+00110011 1100
+111
+000
+111
+000
+111
+000
+111
+000
+111
+000
+(h)
+
+(c)
+
+111
+000
+111 0011
+000
+111
+000
++1
+11
+00
+0011011100 0011 0011
+111
+000
+00110011 00110011000
+111 00110011
+111 0011 0011
+000
+
+11
+00110011 00
+001100110011
+0011
+1100 0011
+(e)
+
+(g)
+
+(f)
+
+00110011
+111
+000
+111
+000
+111
+000
+111
+000
+111111
+000
+00110011 000
+111 0011 + 1
+0011 000
+111
+000
+0011 000
+111
+000
+11
+00
+111
+111
+000
+0011
+111 0011 0011
+000
+(i)
+
+(j)
+
++3
+
+0011
+0011
+111000
+000
+111 0011
+00110011 0011 000
+111
+111
+000
+(k)
+
+Fig. 8. The two-loop diagrams for the three-point vertex function; the digits indicate
+the number of different possible time orderings.
+
+23
+
+read [13,44,45]
+
+
+
+
+u
+9 4 u2
+7
++
+− 3 + ln
++ O(u3) ,
+4ε
+ε
+2 3 32ε
+
+
+u
+13 31 35 4 u2
+Zλ = 1 +
++
+−
++
+ln
++ O(u3) ,
+8ε
+4ε 16
+8
+3 32ε
+
+ 2
+u
+16
+u
+Zτ = 1 +
++
+−5
++ O(u3) ,
+2ε
+ε
+32ε
+
+
+2u
+4
+7u2
+Zu = 1 +
++
+−1
++ O(u3) .
+ε
+ε
+8ε
+Z =1+
+
+(57a)
+(57b)
+(57c)
+(57d)
+
+The RG functions then follow directly from Eqs. (41),
+
+
+
+
+u
+4 3u2
+γ(u) = − + 2 − 3 ln
++ O(u3) ,
+4
+3 32
+
+
+u
+4 u2
+ζ(u) = − + 17 − 2 ln
++ O(u3) ,
+8
+3 256
+
+
+4 7u2
+3u
+− 7 + 10 ln
++ O(u3) ,
+κ(u) =
+8
+3 256
+
+
+
+
+3u
+4 u2
+3
+β(u) = − ε +
+− 169 + 106 ln
++ O(u ) u .
+2
+3 128
+
+(58a)
+(58b)
+(58c)
+(58d)
+
+The IR-stable fixed point u∗ is determined via β(u∗ ) = 0 by means of the ε
+expansion,
+
+
+
+
+169
+53
+4
+2ε
+1+
+ε + O(ε2) .
+(59)
++
+ln
+u∗ =
+3
+288 144 3
+As a consequence, the general asymptotic scaling results (46) and (47) are
+finally found to carry the ε-expanded special DP critical exponents
+
+
+
+
+
+
+
+
+ε
+25
+161 4
+1+
+ε + O(ε2) ,
++
+ln
+6
+288
+144
+3
+
+
+
+
+ε
+67
+59
+4
+z =2−
+1+
+ε + O(ε2) ,
++
+ln
+12 
+288 144 3 
+
+
+1
+ε
+107
+17
+4
+ν= +
+1+
+ε + O(ε2) ,
+−
+ln
+2 16
+288
+144
+3
+
+
+
+
+d+η
+ε
+11
+53
+4
+β=ν
+ε + O(ε2) ,
+=1− 1−
+−
+ln
+2
+6
+288 144 3
+η=−
+
+(60a)
+(60b)
+(60c)
+(60d)
+
+with δN,Ñ = (N + Ñ )β/ν.
+3.2 Critical Properties of Directed Percolation
+Equipped with the important general asymptotic scaling results for the DP
+Green’s functions, which followed directly from the knowledge of the Z factors,
+24
+
+we are now in the position to determine the critical properties of dynamic as
+well as static observables.
+
+3.2.1 Dynamic Observables
+Using the asymptotic scaling form (47), the number N(t, τ ) of active particles
+generated by a seed at the origin is given by
+N(t, τ ) =
+
+Z
+
+dd r G1,1 (r, t; τ, u; λ, µ)
+
+= µ−d A Ã l2β/ν−d F̃1,1 (q = 0, lz Aλ λµ2 t, l−1/ν Aτ τ /µ2 )
+= AN tθs ΦN (Bτ τ t1/νk ) .
+
+(61)
+
+Here we have introduced the exponents
+θs = γ ′ /zν ,
+
+νk = z ν ,
+
+γ ′ = dν − 2β ,
+
+(62)
+
+and the non-universal amplitude combinations
+AN = µ−d Aθt s A Ã F̃1,1 (0, 1, 0) ,
+
+At = λµ2 Aλ ,
+
+1/νk
+
+Bτ = µ−2 At
+
+Aτ .
+
+(63)
+
+ΦN (x) is a universal scaling function normalized to ΦN (0) = 1.
+As shown in Ref. [46], the survival probability P (t, τ ) of an active cluster
+emanating from a seed at the origin is asymptotically given by
+P (t, τ ) = − lim he−kN s̃(r = 0, −t)i = −G0,1 (0, −t; τ, k = ∞, u; λ, µ) , (64)
+k→∞
+
+R
+
+with N = dd x s(x, 0), and where the Green’s function G0,1 is calculated with
+the response functional Jk = JDP + kN . Note that because of the duality
+invariance (26) the survival probability P (t, τ ) is in fact related to the mean
+asymptotic density of the active particles ρ(t, τ ; ρ0 ) for a process which starts
+with a homogeneous active density ρ0 by
+A P (t, τ ) = Ã ρ(t, τ ; ∞) .
+
+(65)
+
+Recalling the scaling form (47) of G0,1 we deduce that
+P (t, τ ) = AP t−δs ΦP (Bτ τ t1/νk ) ,
+
+(66)
+
+with
+δs = β/zν ,
+
+s
+AP = A−δ
+t Ã F0,1 (0, 1, 0, ∞) .
+
+(67)
+
+Again, ΦP (x) represents a universal function normalized to ΦP (0) = 1. ΦP (x)
+tends to zero exponentially for x → ∞, and asymptotically to CP |xkβ for
+25
+
+x → −∞, where CP is a universal constant. Thus, we find the percolation
+probability, for τ < 0,
+P∞ (τ ) = A∞ |τ |β ,
+
+A∞ = AP Bτβ CP .
+
+(68)
+
+The extension of a active cluster at time t generated by a seed at the origin is
+measured by the radius of gyration R(t, τ ) of the active particles, as defined
+via
+R d 2
+d r r G1,1 (r, t)
+∂ ln G̃1,1 (q, t)
+2
+R
+R (t, τ ) =
+.
+(69)
+=
+−
+2d dd r G1,1 (r, t)
+∂q 2
+q=0
+
+From the asymptotic scaling law (47) we infer
+
+z
+2
+−1/ν
+Aτ τ /µ2 )
+∂ ln G̃1,1 (q, t)
+−2 ∂ ln F̃1,1 (q, l Aλ λµ t, l
+= (lµ)
+∂q 2
+∂q 2
+q=0
+q=0
+
+= (lµ)−2 fR (lz Aλ λµ2 t, l−1/ν Aτ τ /µ2 ) ,
+
+(70)
+
+whence for the radius of gyration we obtain the asymptotic scaling form
+R2 (t, τ ) = AR tzs ΦR (Bτ τ t1/νk ) ,
+
+(71)
+
+with
+zs = 2/z ,
+AR = µ−2 Azt s fR (1, 0) ,
+(72)
+where again ΦR (x) is a universal function normalized to ΦR (0) = 1. The four
+quantities AN , AP , AR , and Bτ define a measurable complete set of nonuniversal amplitudes for any system belonging to the DP universality class.
+Once these amplitudes are determined, all other observables attain universal
+values.
+The last dynamic observable we consider here is the active density ρ(t, τ ; ρ0 )
+for finite initial ρ0 ,
+ρ(t, τ ; ρ0 ) = G1,0 (0, t; τ, ρ0 , u; λ, µ) .
+
+(73)
+
+The initial density ρ0 is introduced into the response functional (24a) via a
+source h(r, t) = λ−1 ρ0 δ(t). No new initial renormalization [47] is involved since
+the perturbation theory is based solely on the causal propagator (the correlators do not enter), and initial correlations are irrelevant. Hence, according to
+the scheme (37), the renormalization of ρ0 is given by
+ρ̊0 = Z̃ −1/2 ρ0 ,
+
+(74)
+
+which leads to an additional derivative term 21 γ̃ ρ0 ∂/∂ρ0 in the RGE (43).
+Thus a new dependence on X̃(l)1/2 ρ0 and Ã l(η̃−d)/2 ρ0 /µd/2 arises in Eqs. (45)
+and (47), respectively, which leads to
+ρ(t, τ ; ρ0 ) = Aρ t−δs Φρ (Bτ τ t1/νk , Bρ ρ0 tδs +θi ) ,
+26
+
+(75)
+
+where Φρ (x, y) is universal with Φρ (x, ∞) = ΦP (x) and Φρ (x, y) = Φ′ρ (x) y +
+O(y 2). The non-universal amplitudes are
+Bρ = µ−d/2 Ã Aδt s +θi ,
+
+Aρ = (A/Ã) AP ,
+
+(76)
+
+and the initial scaling exponent is
+θi = −η/z .
+
+(77)
+
+3.2.2 Static Observables
+A steady state with DP dynamics can be generated by introducing a homogeneous and time-independent external source of activity h in the response functional (24a). In such a steady state one can then measure static,
+time-independent observables, such as the mean density of activated particles
+and their fluctuations [48]. Recall, however, that DP defines genuine nonequilibrium systems; hence, there is no fluctuation-dissipation theorem that
+would relate the correlations of the order parameter to its response to an external conjugated field. Dynamic correlation and response functions therefore
+constitute independent observables.
+In order to obtain the equation of state, i.e., the order parameter M as a
+function of τ and h in the steady state, we perform the variable shift s → M +s
+and determine M = G1,0 (τ, h, u, λ, µ) by the ‘no-tadpole’ requirement hsi = 0.
+After this shift, the linear and harmonic part of the response functional become
+JDP,0 =
+
+Z
+
+ 
+
+
+
+λgM 2
+s̃
+2
+ 
+
+dd r dt s̃ ∂t + λ(τ + gM − ∇2 ) s −
+
+
+
+
++λ M τ +
+
+gM
+2
+
+
+
+− h s̃ .
+
+(78)
+
+As a consequence, aside from the propagator the perturbation expansion is
+now based on a correlator induced by the noise vertex ∼ s̃2 . We will present
+no details of the calculation here, but merely state the equation of state in a
+parametric form, as derived in a two-loop approximation in Ref. [49]:
+τ = aR (1 − θ) ,
+
+M = Rβ θ ,
+
+h = bR∆ θ(2 − θ) + O(ε3 ) ,
+
+(79)
+
+where a and b are non-universal amplitudes that can be related to the previously introduced fundamental four amplitudes, and the exponent ∆ is given
+by
+∆= β+γ,
+γ = (z − η)ν .
+(80)
+
+The parameter R ≥ 0, which measures the distance to the critical point, and
+the parameter range 0 ≤ θ ≤ 2 are required to describe the entire phase
+diagram in the critical region.
+27
+
+As a simple application of this parametric representation we briefly discuss
+the susceptibility χ = ∂M/∂h|τ , which satisfies a power law for h → 0,
+χ = χ± |τ |−γ ,
+
+(81)
+
+with amplitudes χ+ and χ− that correspond to the cases τ > 0 and τ < 0,
+respectively. We obtain
+b χ = R−γ
+
+1 − (1 − β) θ
+.
+∆ θ(2 − θ) + 2(1 − θ)2
+
+(82)
+
+Therefore the universal amplitude ratio χ− /χ+ can be expressed to order ε2
+in terms of the order parameter exponent β as
+i
+εh
+χ−
+= 2β − 1 + O(ε3 ) = 1 − 1 + 0.067 ε + O(ε2) .
+χ+
+3
+
+(83)
+
+The susceptibility χ may also be represented by the integral over space and
+time of the Green’s function G1,1 :
+χ=λ
+
+Z
+
+dd r dt G1,1 (r, t; τ, h, u, λ, µ) = |τ |−γ f± (|τ |−∆ h) .
+
+(84)
+
+In contrast, the mean-square fluctuation χ′ = h(∆N)2 i/V of the activated
+particle number are given by
+′
+
+χ =
+
+Z
+
+′
+
+dd r dt G2,0(r, t; τ, h, u, λ, µ) = |τ |−γ f±′ (|τ |−∆ h) ,
+
+(85)
+
+where the exponent γ ′ is defined by Eq. (62) and differs from γ. A one-loop
+calculation yields
+θ
+′
+b′ χ′ = R−γ
+,
+(86)
+1 + αθ
+
+
+with the non-universal parameter b′ and α = 61 + 41 ln 3/2 ε + O(ε2).
+3.2.3 Logarithmic Corrections at the Upper Critical Dimension
+Above the upper critical dimension dc = 4, where mean-field theory is applicable, the coupling constant g tends to zero under the renormalization group
+transformation. However, g represents a dangerously irrelevant variable here,
+since it scales various observables, and setting g = 0 rigorously leads either to
+zero or infinity for relevant quantities. The twofold nature of g as both a relevant scaling variable and an irrelevant loop-expansion generating parameter is
+lucidly exposed by writing the generating functional for the vertex functions
+(29) in the form
+Γ[s̃, s; τ, g] = g −2 Φ[gs̃, gs; τ, u] .
+(87)
+28
+
+The expansion of the functional Φ[ϕ̃, ϕ; u] into a series with respect to u =
+Gε µ−ε g 2 yields the loop expansion. The zeroth-order term g −2Φ[gs̃, gs; 0] is
+just the response functional (24) itself, i.e., J represents the mean-field contribution to the dynamic ‘free energy’ Γ. The scaling form of the generating
+functional (27) for the cumulants that corresponds to (87) reads
+W[H, H̃; τ, g] = g −2Ω[gH, g H̃; τ, u] .
+
+(88)
+
+To leading order in the logarithmic corrections, we may neglect the dependence
+of Ω and Φ on u. (For the next-to-leading corrections see Ref. [50].)
+Solving the characteristic equation (44) for ū at the upper critical dimension
+(ε = 0) yields to leading order for l → 0:
+ū(l) = 1/β2 | ln l| ,
+
+(89)
+
+where we introduce the Taylor expansion f (u) = f0 + f1 u + f2 u2 + . . . for any
+of the RG flow functions f = γ, ζ, κ, β. Thus, from Eq. (58d), β2 = 3/2 for
+DP. The remaining characteristics are all of the same structure, namely
+l
+
+d ln Q
+= q(ū) .
+dl
+
+(90)
+
+Here, Q stands for X, ln τ̄ , and ln λ̄, respectively, whereas q represents either
+γ, κ, or ζ, as defined in Eq. (41). To leading order, Eq. (90) is solved by
+Q(l) ∝ | ln l|−q1 /β2 Q(1) .
+
+(91)
+
+Combining everything we obtain asymptotically
+W[H, H̃; τ, g; λ, µ] ≃ | ln l|
+h
+
+i
+
+× Ω | ln l|−5/12 H, | ln l|−5/12 H̃; | ln l|−1/4 τ, 0; | ln l|1/12 λ, lµ ,
+
+(92)
+
+where the non-universal amplitudes have been absorbed into the variables.
+Taking the required functional derivatives at H̃ = 0, H(r, t) = λh+ρ0 δ(t) and
+employing dimensional scaling then yields the asymptotic Green’s functions
+with the logarithmic scaling corrections at dc = 4:
+GN,Ñ ({r, t}, τ, u, λ, µ) ∝ | ln l|(l2 | ln l|−5/12 )N +Ñ
+
+× FN,Ñ ({lr, l2 | ln l|1/12 t}; l−2 | ln l|−1/4 τ, l−4 | ln l|−1/2 h, l−2 | ln l|−5/12 ρ0 ) . (93)
+29
+
+From this general result we find for the dynamical observables
+
+
+
+
+N(t, τ ) = (ln t)1/6 fN (ln t)−1/6 tτ ,
+
+(94a)
+
+
+(ln t)1/2 
+fP (ln t)−1/6 tτ ,
+t
+
+
+2
+R (t, τ ) = t (ln t)1/12 fP (ln t)−1/6 tτ ,
+
+P (t, τ ) =
+
+(94b)
+(94c)
+
+
+(ln t)
+fρ (ln t)−1/6 tτ, (ln t)−1/3 tρ0 )
+t
+
+
+= (ln t)1/6 ρ0 f¯ρ (ln t)−1/6 tτ, (ln t)−1/3 tρ0 .
+1/2
+
+ρ(t, τ ) =
+
+(94d)
+
+The logarithmic correction for the percolation probability becomes
+P∞ (τ ) = Cθ(−τ ) |τ || ln |τ ||1/3 .
+
+(95)
+
+and the equation of state and the fluctuations in the steady state read to
+leading order
+h√
+i
+√
+1/3
+M = A τ 2 + Bh − τ ln τ 2 + Bh
+,
+(96a)
+"
+#
+√
+1/6
+τ
+χ′ = A′ 1 − √ 2
+,
+(96b)
+ln τ 2 + Bh
+τ + Bh
+where A, A′ , B, and C are non-universal amplitudes.
+3.2.4 Finite-Size Scaling
+We end this section by discussing a method that allows the explicit calculation
+of finite-size effects in DP [51]. We will consider the model defined by the
+action (24a), in a finite cubic geometry of linear size L with periodic boundary
+conditions. Expanding the fields in Fourier modes
+s(r, t) =
+
+X
+
+eiq·r s(q, t) ,
+
+s̃(r, t) =
+
+q
+
+X
+
+eiq·r s̃(q, t) ,
+
+(97)
+
+q
+
+where each component of q only assumes discrete values, namely multiples of
+2π/L, it is clear that the (q = 0)-mode cannot be treated perturbatively at
+the critical point τ = h = 0, since the propagator displays an isolated pole at
+q = 0. Therefore, in order to evaluate finite-size effects, one has to construct
+an effective dynamic response functional for the (q = 0)-mode (which subsequently has to be treated non-perturbatively) by tracing out all modes with
+q 6= 0.
+Upon decomposing the fields
+s(r, t) = Φ(t) + ϕ(r, t) ,
+with
+
+Z
+
+dd r ϕ(r, t) =
+
+30
+
+Z
+
+s̃(r, t) = Φ̃(t) + ϕ̃(r, t) ,
+
+(98a)
+
+dd r ϕ̃(r, t) = 0 ,
+
+(98b)
+
+one can separate the (q = 0)-modes Φ(t) and Φ̃(t) from their orthogonal
+complements ϕ(r, t) and ϕ̃(r, t). After performing this decomposition in the
+action JDP we obtain
+#
+
+( "
+
+Z
+
+)
+
+
+λg 
+Φ − Φ̃ Φ − λ h Φ̃ ,
+(99a)
+dt Φ̃ ∂t + λ τ +
+2
+( "
+)
+#
+Z
+
+λg
+λg  2
+(1)
+d
+2
+2
+JDP = dt d r ϕ̃ ∂t + λ(τ − ∇ ) + (Φ − Φ̃) ϕ +
+,
+Φ̃ϕ − Φϕ̃
+2
+2
+(99b)
+Z
+
+
+λg
+(2)
+dt ddr ϕ̃ ϕ − ϕ̃ ϕ .
+(99c)
+JDP =
+2
+(0)
+JDP = Ld
+
+Integrating over all modes with q 6= 0 we arrive at the effective action
+(eff)
+JDP = − ln
+
+Z
+
+
+
+(0)
+
+(1)
+
+(2)
+
+
+
+(0)
+
+D[ϕ̃, ϕ] exp −JDP −JDP −JDP = JDP [Φ̃, Φ]+Σ[Φ̃, Φ] . (100)
+
+The contribution Σ[Φ̃, Φ] can now be analyzed perturbatively by means of a
+double expansion in powers of the fields Φ̃ and Φ that arise in the vertices of
+(1)
+JDP , and in the number of loops due to insertion of extra vertices originat(2)
+ing from JDP . Up to and including terms of third order in Φ̃, Φ, and after
+renormalization, one finds [51]
+(eff)
+JDP = Ld
+
+Z
+
+( 
+
+)
+
+
+
+
+λĝ 
+dt Φ̃ r̂ ∂t + λ τ̂ +
+Φ − Φ̃ Φ − λ h Φ̃ .
+2
+
+(101)
+
+In dimensions d ≤ 4, the functions r̂(τ, L), τ̂ (τ, L), and ĝ(τ, L) display scaling
+properties that follows from the RGE. For d > 4, the contributions stemming
+from Σ[Φ̃, Φ] can be neglected asymptotically, whence r̂ ≃ 1, τ̂ ≃ τ , and ĝ ≃ g.
+We proceed by rescaling the fields and the time scale according to
+Φ(t) = α M(s) ,
+
+Φ̃(t) = α M̃ (s) ,
+
+α = r̂ −1/2 L−d/2 ,
+
+λt = βs ,
+
+β = 2ĝ −1 r̂ 3/2 Ld/2 ,
+
+(102a)
+(102b)
+
+and thereby obtain for the effective response functional
+)
+
+(103)
+
+a = 2r̂ −1/2 ĝ −1 τ̂ Ld/2 = a0 + a1 τ L1/ν + O (τ L1/ν )2 ,
+
+(104a)
+
+b = 2r̂ ĝ −1 h Ld = b0 + O(τ L1/ν ) h L∆/ν ,
+
+
+
+(104b)
+
+(eff)
+JDP =
+
+Z
+
+(
+
+
+
+
+
+ds M̃ ∂s + a + M − M̃
+
+
+
+M − b Φ̃ ,
+
+where the two parameters a and b are given by
+
+and
+
+
+
+
+
+
+
+
+
+
+
+α = r̂ −1/2 L−d/2 = α0 + O(τ L1/ν ) L−β/ν .
+31
+
+(105)
+
+For d > 4, we have a ∝ g −1Ld/2 τ + cg L2−d/2 and b ∝ g −1 Ld h. Hence, besides
+the finite-size scaling of the control parameter τ and the source h, an additional
+shift a0 results from the elimination of the (q 6= 0)-modes. However, above
+four dimension this shift is proportional to gL2−d/2 and represents the leading
+correction. The Green’s functions for the spatially averaged variables Φ(t)
+(eff)
+and Φ̃(t) are now calculated with the response functional JDP [M̃ , M; a, b],
+Eq. (103). Consequently
+GN,Ñ ({t}, τ, h, g, L) = h[Φ]N [Φ̃]Ñ i(cum) = αN +Ñ FN,Ñ ({2s}, a, b) ,
+
+(106)
+
+and above four dimension, i.e., in the mean-field region, we obtain asymptotically
+GN,Ñ ({t}, τ, h, g, L) = L−(N +Ñ )d/2 FN,Ñ ({λgL−d/2 t}, g −1Ld/2 τ, 2g −1Ld h) .
+(107)
+The scaling functions FN,Ñ can be evaluated by an alternative approach. Via
+the equivalence of the response functional (103) with the Itô-Langevin equation, which in turn is equivalent to a corresponding Fokker-Planck equation
+for the probability density P(M, s) of the stochastic variable M, we obtain
+
+
+i
+i
+∂
+∂2 h
+∂ h
+(a + M)M − b P(M, s) +
+MP(M,
+s)
+.
+P(M, s) =
+∂s
+∂M
+∂M 2
+
+(108)
+
+In particular, the stationary solution Pst (M) for b > 0 is easily found,
+Pst (M) = CM
+
+b−1
+
+"
+
+
+
+
+
+#
+
+1
+exp − a + M M ,
+2
+
+(109)
+
+where C represents a finite normalization constant. All the moments of the
+averaged agent density ρ can now be expressed in terms of parabolic cylinder
+functions. In particular, for d > 4, and at criticality (a = 0), using ρ ∝ Φ ∝
+L−d/2 M, one arrives at
+
+
+hρN i = Aρ L−d/2
+
+N Γ(N/2 + A
+
+Γ(Ah
+
+d
+h L h)
+,
+Ld h)
+
+(110)
+
+where Aρ and Ah are non-universal amplitudes, and Γ(x) denotes Euler’s
+Gamma function. Specifically, Binder’s cumulant Q is given by the simple
+expression
+2
+1
+hρ4 i
+= −
+.
+(111)
+Q := 1 −
+2
+2
+3hρ i
+3 Ah Ld h
+This function has been measured to high precision in recent simulations [52].
+32
+
+4
+
+Field Theory of Dynamic Isotropic Percolation
+
+We consider now the field theory of dynamic isotropic percolation. We are
+interested in the dynamic as well as static (emerging as t → ∞) properties
+of isotropic percolation. As mentioned earlier, the static debris clusters after
+the activation process have ceased are described by the usual static percolation theory near the critical threshold. Of course, we could base our entire
+RG analysis on the full dynamic functional JdIP as given in Eq. (24b), and
+extract the static from the full dynamic behavior by taking the limit t → ∞
+in the end. This would imply, however, that we would have to determine all
+the required renormalizations from the dynamic Feynman graphs, composed
+of the diagrammatic elements encoded in the action JdIP . Fortunately, there is
+a considerably more economic approach which is based on taking the so-called
+quasi-static limit. Imagine that we initiate a process through external activity
+sources λ h(r, t) = k(r) δ(t), localized in time at t = 0; but we are interested
+only at Green’s functions of the debris at t = ∞. We will see shortly that
+the perturbation expansion simplifies tremendously in this limit. All renormalization factors but one can be calculated directly using this much simpler
+method. Thus, only for the single remaining renormalization do we have to resort to the full dynamic response functional JdIP . Taking the quasi-static limit
+amounts to switching the fundamental field variable from the agent density to
+R
+the final density of debris ϕ(r) := S(r, ∞) = λ 0∞ dt s(r, t) that is ultimately
+left behind by the epidemic, and the associated response field ϕ̃(r) = s̃(r, 0).
+In particular, the Green’s functions corresponding to the correlation functions
+Q
+h i ϕ(ri )ϕ̃(0)i will turn out to be important for our analysis, since they actually encode the static properties of the debris percolation cluster emanating
+from a seed that is localized at the origin at time t = 0.
+
+4.1 Quasistatic Field Theory
+
+4.1.1 Quasistatic Hamiltonian
+Following up on the previous remarks, we now proceed to formally take the
+quasi-static limit of the dynamic functional for dIP. The structure of JdIP
+allows us to directly let
+s̃(r, t) → ϕ̃(r) ,
+
+ϕ(r) = λ
+
+Z ∞
+0
+
+dt s(r, t) .
+
+(112)
+
+This procedure leads us from the action (24b) directly to the quasi-static
+Hamiltonian with source k
+HIP =
+
+Z
+
+ 
+
+
+
+
+
+
+g
+d x ϕ̃ τ − ∇ + ϕ − ϕ̃ ϕ − k ϕ̃ .
+2
+d
+
+2
+
+33
+
+(113)
+
+By just considering the involved time integrations from ‘left’ (i.e., the largest
+time involved) to ‘right’ (the smallest time) in any graph, it is easy to see that
+Q
+Q
+HIP in fact generates all diagrams contributing to h i S(ri , ∞) j s̃(r̃j , 0)i =
+Q
+Q
+h i ϕ(ri ) j ϕ̃(r̃j )i. By itself, however, the Hamiltonian (113) is insufficient to
+describe the static properties of isotropic percolation (IP). As a remnant of
+its dynamical origin, HIP must be supplemented with the causality rule that
+forbids closed propagator loops.
+The propagator of the quasi-static theory immediately follows from the Hamiltonian,
+hϕ(r)ϕ̃(r′ )i0 =
+
+Z
+
+
+
+exp iq · (r − r′ )
+
+q
+
+τ + q2
+
+
+
+.
+
+(114)
+
+The vertices contained in Eq. (113) are actually identical to those of the DP
+field theory, whence the elements of the perturbation expansion coincide with
+those depicted in FIG. 4 (with the changed propagator (114) and λ = 1).
+Correspondingly, determining the renormalization constants of the quasi-static
+theory proceeds as familiar from DP, and is based on the same diagrams, see
+˚ = Z̃ 1/2 ϕ̃
+FIGS. 6, 7, and 8. Noticing that our conventions (37) imply that ϕ̃
+1/2
+and ϕ̊ = Z̃ ϕ, we explicitly find to two-loop order
+!
+
+37 u2
+11
+u
++
+−
++ O(u3) ,
+Z̃ = 1 +
+6ε
+ε2
+12ε 36
+!
+47 u2
+9
+u
++ O(u3) ,
+Zτ = 1 + + 2 −
+ε
+ε
+12ε 4
+!
+59
+11
+4u
+u2 + O(u3) .
++
+−
+Zu = 1 +
+2
+ε
+ε
+12ε
+
+(115a)
+(115b)
+(115c)
+
+These Z factors coincide with those calculated in Ref. [53] for the Potts model
+in the single-state limit. The renormalization constants are known to threeloop order [54]. The RG functions appearing in the RGE read to two-loop
+order [53,16]
+1
+37 2
+γ̃(u) = − u +
+u + O(u3 ) ,
+6
+216
+5
+193 2
+κ(u) = u −
+u + O(u3) ,
+6
+108
+
+
+7
+671 2
+β(u) = − ε + u −
+u + O(u3) u .
+2
+72
+
+(116a)
+(116b)
+(116c)
+
+The IR-stable fixed point, determined as zero of β(u), is
+
+
+
+
+671
+2ε
+1+
+ε + O(ε2) .
+u∗ =
+7
+882
+34
+
+(117)
+
+Thus we recover the well-known critical exponents for isotropic percolation:
+
+
+
+
+ε
+206
+ηp = η̃ = γ̃(u∗ ) = −
+1+
+ε + O(ε2) ,
+21
+441
+
+
+h
+i−1
+1 5ε
+589
+2
+ν = 2 − κ(u∗ )
+= +
+1+
+ε + O(ε ) ,
+2 84
+2205
+
+d − 2 + ηp
+61
+ε
+2
+β=ν
+=1− 1+
+ε + O(ε ) .
+2
+6
+1764
+
+(118a)
+(118b)
+(118c)
+
+4.1.2 Static observables
+Let P(S)dS be the measure for the probability that the cluster mass of the
+debris generated by a seed at the origin is between S and S + dS. We obtain
+ Z
+
+P(S) = δ
+
+
+
+
+
+dd r ϕ(r) − S exp[ϕ̃(0)] .
+
+(119)
+
+For the probability density P(S) of large clusters with S ≫ 1 we may use the
+expansion of the exponential to first order (higher orders asymptotically only
+lead to subleading corrections) and find
+ Z
+
+Pas (S) = δ
+
+
+
+
+
+dd r ϕ(r) − S ϕ̃(0) .
+
+(120)
+
+The percolation probability P∞ is defined as the probability for the existence
+of an infinite cluster generated from a single seed. Hence
+P∞ = 1 − lim+
+c→0
+
+Z ∞
+0
+
+dS e−cS P (S)
+
+
+= 1 − lim+ exp ϕ̃(0) − c
+c→0
+
+Z
+
+d
+
+d r ϕ(r)
+
+
+
+.
+
+(121)
+
+Via expanding exp[ϕ̃(0)] we arrive at the asymptotic form [46]
+D
+
+E
+
+P∞ ≃ − lim+ ϕ̃(0) e−cM ,
+c→0
+
+R
+
+(122)
+
+where M = dd r ϕ(r). The virtue of this formula is that it relates the percolation probability in an unambiguous manner to an expression accessible by field
+theory. For actual calculations the term exp(−cM) needs to be incorporated
+into the quasi-static Hamiltonian; i.e., we must replace the original HIP with
+HIP,c = HIP +
+
+Z
+
+dd r c(r)ϕ(r) .
+
+(123)
+
+Here, c(x) = c plays the role of a source conjugate to the field ϕ. Whereas in
+general hϕ̃i = 0 by causality if c = 0, the limit c → 0+ leads to a non-vanishing
+order parameter P∞ in the active phase with spontaneously broken symmetry.
+35
+
+In terms of averages h· · · ic with respect to the new Hamiltonian (123), we may
+now write
+P∞ = − lim+ hϕ̃(0)ic = −G0,1 (0; τ, c → 0+ , u, µ) .
+
+(124)
+
+c→0
+
+With the aid of Eq. (124) and the scaling form (47) we readily obtain that
+P∞ ∼ θ(−τ )|τ |β .
+
+(125)
+
+In order to examine the scaling behavior of P(S), we consider its moments
+k
+
+hS i =
+
+Z ∞
+0
+
+dS S k P(S) .
+
+(126)
+
+Using Eq. (120), our general scaling result (47) implies
+k
+
+hS i ≃
+
+Z
+
+(dd r)k Gk,1({r}, 0, τ ) ∼ |τ |β−k(dν−β) ,
+
+(127)
+
+which tells us that
+Pas (S, τ ) = S nS (τ ) = S 1−τp f (τ S σp ) ,
+
+(128)
+
+where nS is the number of clusters of size S per lattice site. These cluster
+numbers nS play an important role in percolation theory, which conventionally
+employs the scaling exponents τp and σp as defined in Eq. (128). In terms of
+our earlier critical exponents, these are
+σp =
+
+1
+,
+dν − β
+
+τp = 2 +
+
+β
+.
+dν − β
+
+(129)
+
+It follows from Eq. (127) that the mean cluster mass hSi (taken as average of
+the finite clusters) scales as
+hSi = M(τ ) = M0 |τ |−γ ,
+
+γ = dν − 2β .
+
+(130)
+
+Next we consider correlation functions restricted to clusters of given mass S.
+In terms of the conventional unrestricted averages with respect to HIP , these
+restricted correlation functions can be expressed for large S as
+(S)
+
+
+
+CN ({r}, τ ) = ϕ(r1 ) . . . ϕ(rN ) δ
+
+Z
+
+
+
+dd r ϕ(r) − S ϕ̃(0)
+
+(conn)
+
+.
+
+(131)
+
+Their scaling from can again be read off from Eq. (47),
+
+
+(S)
+
+
+
+CN ({r}, τ ) = |τ |N β+dν FN {|τ |ν r}, |τ |dν−β S .
+36
+
+(132)
+
+By means of these restricted Green functions we can write the radius of gyration (i.e., the mean-square cluster radius) of clusters of size S as
+RS2 =
+whence with Eq. (132)
+
+R
+
+(S)
+
+dd r r2 C1 (r, τ )
+R
+
+(S)
+
+2d dd r C1 (r, τ )
+
+,
+
+(133)
+
+RS2 = S 2/Df fR (τ S σp ) ,
+
+(134)
+
+Df = d − β/ν .
+
+(135)
+
+with the fractal dimension
+
+We conclude this section by considering the scaling behavior of the debris
+statistics if the initial state is prepared with a homogeneous seed density ρ0 =
+h. As discussed above, at the level of the quasistatic Hamiltonian
+HIP such
+R d
+an initial state translates to a further additive contribution −h d r ϕ̃(r). Our
+general scaling form (47) implies that the correlation functions of the densities
+ϕ(r) for the case of a homogeneous initial condition behave as
+GN,Ñ ({r}, τ, h) =
+
+Z
+∞
+X
+hk
+
+k=0 k!
+
+(dd re)k GN,Ne+k ({r}, {re}, τ )
+
+
+
+
+(136)
+
+
+
+(137)
+
+= |τ |β(N +Ñ ) FN± {|τ |ν r}, |τ |β−dν h .
+
+It is obvious that the initial seed density h plays the role of an ordering field.
+It corresponds to the ghost field of conventional percolation theory [1]. Hence,
+the Green functions do not display critical singularities as long as h > 0. For
+a homogeneous initial condition the appropriate order parameter is given by
+the debris density
+
+
+M = hϕ(r)ih = G1,0 (0, τ, h) = |τ |β fρ± |τ |β−dν h .
+
+In the non-percolating phase (τ > 0), the order parameter M is linear in h for
+small seed density, with a susceptibility coefficient that diverges as τ → 0,
+M(τ > 0, h) ∼ τ −γ h ,
+
+(138)
+
+with the susceptibility exponent γ given in Eq. (130). At criticality (τ = 0)
+the order parameter M tends to zero for h → 0 as
+M(τ = 0, h) ∼ h1/δ ,
+
+(139)
+
+dν − β
+γ
+=1+ .
+β
+β
+
+(140)
+
+with the exponent
+δ=
+
+37
+
+Finally, in the percolating phase (τ < 0) the order parameter becomes independent of the initial seed density in the limit h → 0 and tends to zero with
+τ according to
+M(τ < 0) ∼ |τ |β ,
+
+(141)
+
+which of course is just Eq. (130). Eqs. (125) and (141) establish explicitly
+that the two distinct order parameters, namely the debris density M and the
+percolation probability P∞ , both scale with the identical exponent β near
+criticality.
+
+4.1.3 Crossovers
+At this stage we are in a position to discuss crossovers between the two fundamental percolation transitions [55,56]. We have established earlier that the
+introduction of the memory term ∝ ñmn in the response functional (11)
+changes scaling behavior from DP to dIP. Hence, memory is clearly a relevant perturbation (in the RG sense) in DP and the process described by JDP
+asymptotically crosses over to the process described by JdIP , both in d spatial
+and the single temporal dimension. We have also argued above that the static
+asymptotic behavior of isotropic percolation in d dimensions is described by
+the quasi-static Hamiltonian HIP . If we now imagine a forest fire as a special realization of isotropic percolation and introduce a strong wind blowing
+in a preferred direction e, such a directional disturbance may be described
+by an additional term ∝ ϕ̃(e · ∇)ϕ in Eq. (113). Upon comparing with the
+longitudinal part ϕ̃(e · ∇)2 ϕ of the Laplacian contribution, we see that this
+additional directional term is more relevant for the IR behavior. That is, if we
+scale the transverse part of the Laplacian as ∇2⊥ = ∇2 − (e · ∇)2 ∼ µ2 , the IRscaling dimensions become (e · ∇) ∼ µ2 and (e · ∇)2 ∼ µ4 . As a consequence,
+the contribution ϕ̃(e · ∇)2 ϕ is asymptotically irrelevant, and the quasistatic
+Hamiltonian becomes
+′
+HIP
+=
+
+Z
+
+d
+
+d r
+
+ 
+
+g
+ϕ̃ c (e · ∇) + τ − ∇2⊥ +
+
+2
+
+
+
+
+
+
+
+ϕ − ϕ̃ ϕ − k ϕ̃ ,
+
+(142)
+
+where c is a new parameter that describes the directionality of the percolation
+in d dimension. It is now straightforward to show by means of simple rescaling that by identifying the longitudinal spatial direction with ‘time’ and the
+′
+(d − 1) transverse subspace directions with a new space, HIP
+transforms into
+the response functional for DP, namely JDP , in (d − 1) spatial and 1 temporal dimension. Thus, we have established the following schematic crossover
+scenarios:
+38
+
+DP
+JDP
+
+dIP
+memory
+−−−−−→
+
+d+1
+
+IP
+quasistatic
+
+JdIP
+
+limit
+−−−−−−−→
+
+d+1
+
+HIP
+
+DP
+directionality
+−−−−−−−−−→
+
+JDP
+(d − 1) + 1
+
+d
+
+We note that one has to apply some care when trying to capture these crossover
+scenarios by means of the dynamic RG, since both the transitions from DP
+to dIP as well as from IP to DP involve different upper critical dimensions.
+Therefore a mere ε expansion about the dc of either theory cannot possibly
+access the opposite scaling limit. One can, however, work out the RG flow
+functions that incorporate the entire crossover regimes at fixed dimension d,
+provided one employs the correlation length ξ as independent variable rather
+than τ in order to eliminate IR singularities. For more details on this method to
+describe the crossover from isotropic to directed percolation, see Refs. [55,56].
+
+4.2 Dynamic Observables
+In order to investigate scaling properties of genuinely dynamical observables
+of dIP, one must resort to the full response functional (24b). For the determination of the last independent renormalization factor Z to two-loop order,
+one needs to evaluate self-energy diagrams such as FIG. 6(a) and FIG. 7,
+but now with one temporally delocalized leg of the vertex corresponding to
+the coupling ∝ s̃Ss in JdIP . We thus obtain from the renormalization of the
+derivative ∂Γ1,1 /∂ω|q=ω=0 [16]
+(Z Z̃)
+
+1/2
+
+
+
+
+
+3u
+102 227
+u2
+=1+
++
+−
++ 5 ln 4 − 9 ln 3
++ O(u3) .
+4ε
+ε
+6
+64ε
+
+(143)
+
+In combination with Eqs. (115a) and (37), Eq. (41) then yields the additional
+RG function
+
+
+
+
+7u
+1747
+u2
++ 9 ln 3 − 5 ln 4
++ O(u3) .
+ζ(u) = − +
+12
+54
+32
+
+(144)
+
+Inserting the fixed point value (117) into Eq. (46), we find for the dynamic
+exponent
+z =2−
+
+
+
+
+
+ε
+9
+937
+ε2
+−
++ (5 ln 4 − 9 ln 3)
++ O(ε3 ) .
+6
+588 98
+36
+
+(145)
+
+The scaling form of the survival probability is equal to the expression (66), with
+the spreading exponent δs = β/νk and the longitudinal correlation exponent
+39
+
+νk = νz that follow from the fundamental exponents listed in Eqs. (118) and
+(145). Likewise, the radius of gyration is given by Eq. (71) with the spreading
+exponent
+
+
+
+
+2
+ε
+9
+1231
+ε2
+zs = = 1 +
++
++ (5 ln 4 − 9 ln 3)
++ O(ε3 ) .
+z
+12
+294
+49
+144
+
+(146)
+
+Remarkably, this two-loop approximation for zs differs only by 1-2% from
+simulation results obtained in the physical dimensions d = 2 and d = 3 [1,17].
+The number of active particles generated by a seed becomes
+N(t, τ ) = tθs −1 fN (τ t1/νk ) ,
+
+θs = (dν − 2β)/νk .
+
+(147)
+
+The active density ρ(t, τ, ρ0 ) at time t, initialized by a finite homogeneous
+density ρ0 , is
+ρ(t, τ, h) = t−δs −1 fρ (τ t1/νk , h tθi +δs +1 )
+(148)
+with an initial scaling exponent
+θi = (2 − z − ηp )/z .
+
+5
+
+(149)
+
+Conclusions and Outlook: Other Classes of Percolation Processes
+
+In this overview, we have studied the field theory approach to percolating
+systems. Based on the fundamental and universal features of the simple and
+general epidemic processes, we have constructed a mesoscopic description in
+terms of stochastic equations of motion, which we subsequently represented
+through a path integral with the dynamic response functional serving as the
+appropriate effective action. We have also commented on a more microscopic
+representation that starts from the classical master equation of a specific realization of such processes. In the bulk of this paper, we have provided a detailed
+description of the analysis of the ensuing stochastic field theories, from basic scaling properties to the perturbation expansion and UV renormalization,
+and explained why and how one may therefrom infer the correct asymptotic
+IR scaling behavior. We have derived a number of scaling relations for the
+critical exponents of directed (DP) and dynamic isotropic percolation (dIP),
+and explicitly demonstrated how these are linked to the large-scale, long-time
+properties of numerous static and dynamic observables. For the case of dIP,
+we have also derived the effective quasistatic field theory, which yields the
+scaling exponents of isotropic percolation. We remark that non-perturbative
+RG methods have recently been applied to the DP field theory as well [57].
+Naturally, there are various possible extensions of the above models, some of
+40
+
+which lead to novel critical properties. We end this review with a brief discussion of some interesting modifications of the standard percolation processes.
+
+5.1 Long-Range Percolation
+
+In the standard version of the percolation processes in the language of an
+infectious disease, the susceptible individuals can become contaminated by
+already sick neighboring individuals. At the same time sick individuals are
+subject to spontaneous healing or immunization. In more realistic situations,
+however, the infection could be also long-ranged. As an example, envision the
+spreading of a disease in an orchard where flying parasites contaminate the
+trees practically instantaneous in a widespread manner, provided the time
+scale of the parasites’ flights is much shorter than the mesoscopic time scale
+of the epidemic process itself. Thus following a suggestion by Mollison [19],
+Grassberger [58] introduced a variation of the epidemic processes with infection probability distributions P (R) ∝ 1/Rd+σ which decay with the distance
+R according to a power law. We will refer to such long-range distributions as
+Lévy flights, although a true Lévy flight is defined by the Fourier transform,
+P̃ (q) ∝ exp(−b|q|σ ) [59], and only Lévy exponents in the interval 0 < σ ≤ 2
+give rise to positive distributions [60].
+The spreading probability in this situation is rendered non-local,
+∂n(r, t)
+=
+∂t
+spread
+
+Z
+
+dd r ′ P (|r − r′ |) n(r′ , t) .
+
+(150)
+
+After Fourier transformation of this equation, and after applying a small momentum expansion, we arrive at
+i
+h
+
+∂n(q, t)
+= p0 − p2 q 2 + pσ q σ + O q 2 , q σ n(q, t) ,
+∂t
+spread
+
+(151)
+
+where the analytical terms stem from the short-range part of P (R), whereas
+the non-analytical contributions arise from the power-law decay. The constant
+p0 is included in the reaction rate as a negative (“birth”) contribution to τ ,
+while p2 q 2 represents a diffusional term. In order to decide which of the terms
+in Eq. (151) are relevant, one has to compare with the scaling behavior of
+the Fourier-transformed susceptibility χ(q, ω) ∝ q 2−η̄ , where η̄ denotes the
+anomalous field dimension within the short-range spreading theories defined
+by the response functionals (24), i.e., η̄ is given by Eqs. (60a) and Eq. (118a),
+respectively. If σ < 2 − η̄, the parameter pσ constitutes a relevant perturbation
+and must be included in a renormalization group procedure. Upon taking the
+leading non-analytical term in Eq. (151) into account, the harmonic part of
+41
+
+the response functionals (24) changes to
+J0 [s̃, s] =
+
+Z
+
+d
+
+ 
+
+
+
+2
+
+
+
+d r dt s̃ ∂t + λ τ − ∇ + f −∇
+
+
+2 σ/2
+
+ 
+
+s .
+
+(152a)
+
+The mathematical treatment of this field theory with both gradient terms is
+somewhat delicate. Therefore, DP and dIP with long-range spreading were
+originally studied via Wilson’s momentum shell RG method, since this approach can handle relevant and irrelevant contributions on equal footing [61].
+Within a one-loop calculation, it was shown that the spreading is dominated
+by the Lévy flights for σ < 2 − η̄, and the scaling exponents change continuously to their short-range counterparts at σ = 2 − η̄. The application of
+renormalized field theory has to distinguish between two separate cases. If
+2 − σ = O(ε), one must apply a double expansion in ε and α = 2 − σ, following the work by Honkonen and Nalimov [62]. Thereby the renormalizations
+were obtained to two-loop order [63], and the one-loop results indeed corroborate the findings within the momentum shell approach with respect to the
+crossover to short-range percolation.
+In the case 2 − σ = O(1), the diffusional term becomes IR-irrelevant, and
+must be removed in order to obtain a UV-renormalizable field theory in the
+infinite-cutoff limit. Then, by rescaling of time, f can be set to 1. The usual
+scaling r ∼ µ−1 yields g 2 ∼ µε , and (λt)−1 ∼ τ ∼ µσ , where s̃ ∼ s ∼ µd/2 with
+ε = 2σ − d for DP and s̃ ∼ µ(d−σ)/2 , s ∼ µ(d+σ)/2 with ε = 3σ − d for dIP. Thus
+we infer dc = 2σ and dc = 3σ, respectively, to be the upper critical dimensions.
+The propagator is now G(q, t) = θ(t) exp[−λ(τ + q σ )t]. The vertex functions
+are analytical functions of the external momenta and frequencies as long as
+τ > 0. Thus, the non-analytic Lévy flight term in Eq. (152a) proportional to
+(−∇2 )σ/2 does not require renormalization, whence besides Z̃ = Z as usual
+we find for DP that Zλ = 1 exactly, while for long-range dIP Z̃ = Zλ = 1.
+It turns out that counterterms are only needed for vertex functions with zero
+external momenta. The following identity
+Z
+
+2 (d−d′ )/2 Γ(d/σ) Z d′
+d q f (q ) = π
+d k f (k 2 ) ,
+σ
+Γ(d/2)
+d
+
+σ
+
+(153)
+
+where d′ = 2d/σ, is useful for the explicit computation of the Z factors, from
+which subsequently the RG functions (41) are found. To one-loop order for
+long-range DP, the result is
+
+
+
+
+7u
+β(u) = −ε +
++ O(u2) u ,
+4
+u
+u
+κ(u) = + O(u2) , γ̃(u) = γ(u) = ζ(u) = − + O(u2) ,
+2
+4
+42
+
+(154a)
+(154b)
+
+whereas for long-range dIP
+h
+
+i
+
+β(u) = −ε + 4u + O(u2) u ,
+κ(u) = u + O(u2) ,
+
+γ̃(u) = 0 ,
+
+(155a)
+γ(u) = 2ζ(u) = −
+
+3u
++ O(u2) .
+2
+
+(155b)
+
+At the long-range DP and dIP fixed points u∗ = 4ε/7 + O(ε2 ) and u∗ =
+ε/4 + O(ε2 ), respectively, we then get the critical exponents
+ε
+long-range DP: η̃ = η = z − σ = − + O(ε2) ,
+7
+
+1
+2ε
+=σ−
++ O(ε2) ,
+ν
+7
+(156a)
+
+d+η
+2ε
+=1−
++ O(ε2) ,
+(156b)
+2
+7σ
+ε
+1
+3ε
+= σ − + O(ε2) ,
+long-range dIP: η = 2(z − σ) = − + O(ε2 ) ,
+8
+ν
+4
+(156c)
+ε
+d−σ
+=1−
++ O(ε2) , η̃ = 0 .
+(156d)
+β=ν
+2
+4σ
+β=ν
+
+5.2 Percolation Boundary Critical Behavior
+
+Within the field theory formulation, one can also investigate the influence
+of a spatial boundary on critical behavior [64,65]. Generally, for percolation
+processes four possible scenarios can be envisioned: The boundary remains
+inactive, whereas the bulk is critical (ordinary transition), the boundary is
+active, the bulk is critical (extraordinary transition), the boundary is critical,
+but the bulk inactive (surface transition), or both boundary and bulk are critical, which represents a multicritical point (the special transition) [66,67,68].
+Let us consider a semi-infinite geometry, with a boundary plane at z = 0; in
+this situation we need to supplement the dynamic response functionals (24)
+with the surface action
+Jsurf =
+
+Z
+
+dd−1 r dt λ τs s̃(z = 0) s(z = 0) ,
+
+(157)
+
+and impose the boundary condition ∂z s|z=0 = τs s(z = 0). Naive power counting yields that the new parameter τs is relevant, whence its RG fixed points
+are either 0 or ±∞. The ordinary transition scenario corresponds to τs → +∞
+and the special transition to τs → 0. The presence of the boundary implies
+a different scaling behavior of the fields near the surface as compared to the
+bulk. For example, the surface order parameter acquires new critical exponents
+43
+
+DP :
+dIP :
+
+ε
+3 7ε
+(s)
+−
++ O(ε2 ) , β1 = 1 − + O(ε2) ,
+2 48
+4
+3 11ε
+3ε
+(o)
+(s)
+2
+β1 = −
++ O(ε ) , β1 = 1 −
++ O(ε2) .
+2
+84
+14
+(o)
+
+β1 =
+
+(158a)
+(158b)
+
+5.3 Multispecies Directed Percolation Processes
+
+One may readily generalize the previous mesoscopic description of the simple
+epidemic process to multiple activity carriers α = 1, 2, . . . in order to capture,
+say, a variety of population species near an extinction threshold. In the spirit
+of Sec. 2.1 one thus arrives at the coupled DP Langevin equations [44]
+∂t nα = λα ∇2 nα + Rα [{nα }] + ζα ,
+
+
+1X
+Rα [{nα }] = −λα τα +
+gαβ nβ + . . . ,
+2 β
+
+(159a)
+(159b)
+
+with the stochastic noise correlations
+ζα (t) ζβ (t′ ) = λα gα δαβ nα (t) δ(t − t′ ) .
+
+(160)
+
+Although this coupled multispecies systems appears to be very rich, it turns
+out that in fact all the ensuing renormalizations are given precisely by those
+of the single-species process, and hence the critical behavior at the extinction
+threshold is quite remarkably just that of DP again [44]. In addition, this
+generically universal model displays an instability that asymptotically leads
+to unidirectionality in the interspecies couplings. A special situation arises
+when several control parameters τα vanish simultaneously, which implies multicritical behavior of unidirectionally coupled DP processes [69]. In the active
+phase, one then finds a hierarchy of order parameter exponents βα with
+1
+− O(ε) .
+2k
+(161)
+In addition, one can show that the crossover exponent associated with the
+multicritical point is Φ ≡ 1 to all orders in perturbation theory [44]. There remains, however, an unresolved technical issue originating from the emergence
+of a relevant coupling that enters the perturbation expansion [69]. Quite analogous features also characterize multispecies generalizations of the general
+epidemic process or coupled dIP processes.
+β1 = βDP = 1 −
+
+ε
++ O(ε2) ,
+6
+
+β2 =
+
+1 13ε
+−
++ O(ε2) , . . . ,
+2
+96
+
+44
+
+βk =
+
+5.4 Directed Percolation with a Diffusive Conserved Field
+
+Several years ago Kree, Schaub, and Schmittmann [70] introduced a model
+that consists of the two-species reaction-diffusion system B → 2B, 2B → B,
+and B + C → C with unequal diffusion constants species B and C. The active
+particles B, whose density we set proportional to s(r, t), become poisoned by a
+diffusing conserved quantity C with density c(r, t). In a mesoscopic description,
+this KSS-model is described by the coupled Langevin equations
+
+
+
+
+g
+λ ∂t s = ∇ s − τ + s + f c s + ζs ,
+2
+γ −1 ∂t c = ∇2 c + ζc ,
+−1
+
+2
+
+(162a)
+(162b)
+
+with positive parameters λ, γ, and g. The stochastic forces ζi (r, t) must respect
+the absorbing state condition as well as the conservation property. Hence their
+Gaussian fluctuations are given by
+ζs (r, t) ζs (r′ , t′ ) = λ−1 g̃ s(r, t) δ(r − r′ ) δ(t − t′ ) ,
+ζc (r, t) ζc(r′ , t′ ) = γ̃
+
+−1
+
+ζs (r, t) ζc(r′ , t′ ) = 0 .
+
+2
+
+′
+
+′
+
+(−∇ ) δ(r − r ) δ(t − t ) ,
+
+(163a)
+(163b)
+(163c)
+
+More recently, van Wijland, Oerding, and Hilhorst studied the two-species
+reaction-diffusion system A + B → 2B and B → A with unequal diffusivities
+[71]. Here, the total number of A and B particles constitutes a conserved
+quantity C. Elimination of the A density in favor of the density of C then
+recovers the stochastic equations of motion (162), (163), yet now with a crossdiffusion term in Eq. (162b):
+γ −1 ∂t c = ∇2 (c − σs) + ζc ,
+
+(164)
+
+where σ is proportional to the difference of the diffusion constants of the B
+and A species.
+Both the KSS and the WOH model represent generalizations of DP via including the influence of a non-critical conserved quantity in the critical dynamics
+of the agent, akin to the generalization of the relaxational model A of nearequilibrium critical dynamics to model C [72]. Therefore we propose the label
+DP-C for this modification of the DP universality class. Following the same
+lines that resulted in the response functional (11), and omitting IR-irrelevant
+terms, we obtain the renormalizable response functional of the DP-C class
+45
+
+corresponding to the above Langevin equations,
+J =
+
+Z
+
+( 
+
+
+
+λ
+d r dt s̃ ∂t + λ(τ − ∇ + f c) + (gs − g̃s̃) s
+2
+d
+
+2
+
+
+
+
+
+2
+
++ c̃ ∂t c − γ∇ (c − σs) − γ̃ (∇c̃)
+
+2
+
+)
+
+.
+
+(165)
+
+Our first observation concerns the stability of DP-C. Consider the mean-field
+approximation for the stationary state. Eq. (164) implies that c(r) = σs(r)+c0 .
+Including the constant c0 in the variable τ , we arrive at
+
+
+
+
+geff
+∇ s− τ +
+s s = 0,
+2
+2
+
+geff = g + 2σf ,
+
+(166)
+
+which demonstrates that the stable homogeneous solution s = 0 for positive τ and geff becomes unstable for geff ≤ 0. Higher orders of s should then
+be included in the density expansion, and one would expect the transition
+to become dicontinuous or first-order. A continuous second-order transition
+therefore requires that the constraint g > −2σf be satisfied. An other qualitative view on this instability is illustrated by the following consideration.
+Assume f ≥ 0 in the following, i.e., the density c operates as an inhibitor. If
+now an enhancement of s is created by a fluctuation in some region of space
+the current contribution jcross = γσ∇s shows that the inhibitor flows into this
+region if σ > 0 and subsequently reduces the fluctuation. However, if σ < 0,
+the inhibitor is reduced by the flow out of this region, and the fluctuation of
+s becomes increasingly enhanced.
+Rescaling the fields c, c̃, and the parameter σ, we may set γ̃ = γ. The response
+functional (165) possesses the following symmetries under three transformations that involve constant continuous parameters αi :
+I: c̃ → c̃ + α1 ;
+II: c → c + α2 , τ → τ − f α2 ;
+III: s → α3 s , s̃ → α3−1 s̃ , σ → α3−1 σ ,
+
+g → α3−1 g ,
+
+(167a)
+(167b)
+g̃ → α3 g̃ . (167c)
+
+Moreover, J is invariant under the inversion
+IV: c̃ → −c̃ ,
+
+c → −c ,
+
+σ → −σ ,
+
+f → −f .
+
+(168)
+
+In the particular case σ = 0, the time reflection
+V:
+
+q
+
+q
+
+g/g̃ s(r, t) ↔ − g̃/g s̃(r, −t) ,
+
+c(r, t) → c(r, −t) ,
+
+c̃(r, t) → c(r, −t) − c̃(r, −t)
+
+(169)
+(170)
+
+yields an additional discrete symmetry transformation. The invariance with
+respect to the symmetry V distinguishes the special KSS model from the
+general DP-C class.
+46
+
+Symmetry I results from the conservation property of the field c. Symmetries
+III and IV show that dimensionless invariant coupling constants and parameters are defined by u = g̃g µ−ε , v = f 2 µ−ε , w = σg̃f µ−ε , and the ratio of
+the kinetic coefficients ρ = γ/λ with ε = 4 − d. Symmetry III implies that
+the response functional J again contains a redundant parameter which can
+be fixed in different ways. Dimensional analysis and the scaling symmetry III
+applied to the Green functions GN,Ñ ;M,M̃ = h[s]N [s̃]Ñ [c]M [c̃]M̃ i gives
+
+GN,Ñ ;M,M̃ = α3Ñ −N GN,Ñ ;M,M̃ ({r, t}, τ, α3−1σ, α3 g̃, α3−1 g, f, λ, γ, µ)
+=σ
+
+
+Ñ −N
+
+= g/g̃
+
+2
+
+−2
+
+FN,Ñ ;M,M̃ ({µr, γµ t}, µ τ, u, v, w, ρ)
+
+(Ñ −N )/2
+
+′
+FN,
+({µ r, γµ2t}, µ−2 τ, u, v, w, ρ) ,
+Ñ ;M,M̃
+
+(171a)
+(171b)
+(171c)
+
+wherein the UV singularities and critical properties reside in the functions
+′
+FN,Ñ ;M,M̃ and FN,
+, respectively. If σ = 0, only Eq. (171a) can be used,
+Ñ ;M,M̃
+and it is natural to apply a rescaling that leads to g = g̃, which is fixed also
+under renormalization by the time inversion symmetry V. However, this is not
+the case in the general situation σ 6= 0, whence it is more natural to absorb
+σ into the fields s and s̃. In other words, one may then hold σ = σ̊ constant
+under renormalization.
+It is easily seen that loop diagrams do not contribute to the vertex functions
+ΓÑ ,N ;M̃,M with M̃ ≥ 1, whence we infer ˚
+c̃ = c̃, c̊ = c, γ̊ = γ, and σ̊s̊ = σs. We
+define the remaining renormalizations via
+
+s̊ = Z 1/2 s , ˚
+s̃ = Z̃ 1/2 s̃ , λ̊ = Z −1/2 Z̃ −1/2 Zλ λ , τ̊ = Zλ−1 Zτ τ + τ̊c , (172a)
+
+
+Gε˚
+g̃g̊ = Z −1/2 Z̃ −1/2 Zλ−2 Zu u + Y w µε , Gε f˚2 = Zλ−2 Zv vµε ,
+(172b)
+Gε σ̊˚
+g̃ f˚ = Z −1/2 Z̃ −1/2 Zλ−2 Zw wµε ,
+
+Zw2 = Zu Zv ,
+
+(172c)
+
+where the last setting can be implemented through an appropriate choice for Y .
+For σ 6= 0, the non-renormalization of s (Z = 1) follows from σ = σ̊. If σ = 0,
+we have Z = Z̃. Symmetry II in connection with the trivial renormalization
+of c shows that f is renormalized with the same Z factor as τ : Zv = Zτ2 .
+The RGE (43) now contains four Gell-Mann–Low functions βi corresponding
+to the four dimensionless parameters u, v, w, and ρ. A one-loop calculation
+47
+
+gives
+
+
+
+
+3u 2(5 + 5ρ + 2ρ2 )v (7 + 8ρ + 3ρ2 )w
+−
++
++ O(2-loop) u
+2
+(1 + ρ)3
+(1 + ρ)3
+
+
+4v
+2w
+u
+−
++
++ O(2-loop) w ,
+(173a)
++
+1 + ρ ρ(1 + ρ) ρ(1 + ρ)
+βv = (−ε + 2κ)v
+
+
+3u
+4v
+(9 + 8ρ + 3ρ2 )w
+= −ε+
+−
++
++ O(2-loop) v ,
+(173b)
+4
+(1 + ρ)3
+2(1 + ρ)3
+
+
+2(3 + 2ρ + ρ2 )v (5 + 5ρ + 2ρ2 )w
++
++ O(2-loop) w ,
+βw = − ε + u −
+(1 + ρ)3
+(1 + ρ)3
+(173c)
+
+
+2
+u
+2v
+(7 + 4ρ + ρ )w
+βρ = −ζρ =
+−
++
++ O(2-loop) ρ .
+(173d)
+3
+8 (1 + ρ)
+4(1 + ρ)3
+βu = − ε +
+
+The RG flow functions leading to the anomalous dimensions of the fields s
+and s̃ are found to be
+γ=
+
+
+
+ γ̃
+
+0
+
+
+if σ = 0
+if σ 6= 0
+
+,
+
+(174a)
+
+
+u
+4v
+(3 + ρ)w
+γ + γ̃ = − +
++ O(2-loop) .
+−
+2 (1 + ρ)2
+(1 + ρ)2
+
+(174b)
+
+At a non-trivial IR-stable fixed point with all βi = 0 and v∗ and ρ∗ both
+different from 0 and ∞, one finds from Eqs. (173b) and (173d) the exact
+statements κ∗ = ε/2 and ζ∗ = 0, and Eq. (47) yields the asymptotic scaling
+properties of the Green’s functions,
+GN,Ñ ;M,M̃ ({r, t}, τ ) = lδG GN,Ñ;M,M̃ ({lr, l2 t}, τ /ld/2 ) .
+
+(175)
+
+Consequently, the DP-C universality is characterized by the exact critical exponents
+z = 2,
+ν = 2/d .
+(176)
+In Eq. (175) we have
+h
+
+i
+
+δG = (M + M̃ ) + (Nβ + Ñ β ′) d/2 ,
+
+
+ β′
+
+β=
+
+1
+
+if σ = 0
+if σ 6= 0
+
+β ′ = (d + η ′ )/d ,
+
+(177a)
+
+,
+
+(177b)
+
+η ′ = γ̃∗ .
+
+(177c)
+
+Thus, there is merely one unknown independent critical exponent η ′ in the
+DP-C universality class.
+48
+
+To order ε, one finds the following IR fixed points as zeros of the Gell-Mann–
+Low functions βi :
+σ=0:
+σ>0:
+
+σ<0:
+
+1
+27
+, u∗ = 2ε , v∗ =
+ε , w∗ = 0 ;
+2
+64
+
+√ 1/3
+√ 1/3 
++ 2− 3
+− 2,
+ρ∗ = 2 + 3
+1 + ρ∗
+1 − 5ρ∗
+4
+ε , v∗ =
+ε , w∗ =
+ε;
+u∗ =
+2 + ρ∗
+4
+ρ∗
+run-away flow.
+
+ρ∗ =
+
+(178a)
+(178b)
+(178c)
+(178d)
+
+The run-away solution in the case σ < 0 eventually violates the stability
+bound u > 2w in the course of the flow, which indicates the emergence of
+a first-order transition is this situation. In the other cases, we find for the
+remaining exponents to one-loop order:
+η ′ = −ε/8 ,
+ε
+η′ = −
+.
+3 + ρ∗
+
+σ=0:
+σ>0:
+
+(179a)
+(179b)
+
+All scaling laws now follow from the scaling of the Green’s functions (175).
+As important examples we note the initial slip exponent θi = −η ′ /2 and
+θi = −η ′ /4 for σ = 0 and σ > 0, respectively.
+5.5 Directed Percolation and Quenched Disorder
+According to the equation of motion (162a), the DP-C processes can be understood as models of systems where the critical control parameter τ itself
+becomes a dynamical variable τ + f c(r, t) subject to a diffusive process. For
+the case that a DP process evolves in a disordered medium, the field c represents a static but spatially inhomogeneous random quantity with short-range
+Gaussian correlations c(r) c(r′) ∝ δ(r − r′ ). It is easily seen that the influence
+of the disorder on the other parameters of the model and beyond-Gaussian
+correlations are IR-irrelevant. In contrast to equilibrium systems, where the
+normalization factor of the probability distribution, namely the partition function, is itself a functional of the disorder, the description of dynamics by means
+of an exponential weight exp(−Jc ) with a response functional Jc that depends
+on the disorder field c(r) does not require a normalization factor. Hence, averaging over c can be easily performed directly on the statistical weight directly,
+exp(−Jc ) =: exp(−J ), without invoking any additional procedures such as,
+e.g., replication. One thereby obtains the following effective action for the
+evaluation of path integrals averaged over the randomness [73]:
+J =
+
+Z
+
+d
+
+d r
+
+Z
+
+
+
+
+
+dt s̃ ∂t + λ τ − ∇
+
+2
+
+
+
+
+
+
+λ2
+λg 
+s − s̃ s −
+f
++
+2
+2
+
+49
+
+Z
+
+dt s̃s
+
+2 
+
+. (180)
+
+From here, the calculation of the renormalizations and the RG flow functions
+proceeds in the usual manner. To one-loop order, one finds the Gell-Mann–Low
+functions
+
+
+
+
+
+
+3u
+βu = −ε +
+− 10v u ,
+2
+
+
+
+3u
+βv = −ε +
+− 8v v ,
+4
+
+(181)
+
+where v is the renormalized dimensionless coupling corresponding to f . It is
+now easily seen that the flow equations (181) allow only for runaway solutions
+as l → 0 in the physical region u > 0, v > 0. The fixed point of the pure system
+u∗ = 2ε/3, v∗ = 0 is unstable, as is the non-physical fixed point u∗ = −4ε/9,
+v∗ = −1/6. There is a stable fixed point, namely u∗ = 0, v∗ = −1/8, but it
+is in the non-physical region as well. The runaway RG trajectories render the
+perturbation expansion useless and, perhaps, indicate a more complicated critical behavior than just simple power laws. Indeed, the simulations by Moreira
+and Dickman [74] show logarithmic critical spreading instead of power laws,
+and seem to display violation of simple scaling [75]. Apparently the continuum
+field-theoretic treatment is not capable of capturing the strong disorder limit
+of DP, which may be dominated by rare localized excitations. A promising
+alternative approach has recently been developed that employs a real-space
+RG framework specifically tailored to strongly disordered systems [76].
+
+Acknowledgements
+We have benefitted from fruitful collaborations and insightful discussions with
+numerous colleagues. Specifically, we would like to thank J. Cardy, O. Deloubrière, H.W. Diehl, V. Dohm, G. Foltin, E. Frey, Y. Goldschmidt, P. Grassberger, H. Hilhorst, H. Hinrichsen, M. Howard, R. Kree, Ü. Kutbay, S. Lübeck,
+K. Oerding, B. Schaub, B. Schmittmann, F. Schwabl, O. Stenull, B. VollmayrLee, F. van Wijland, and R. Zia for their valuable contributions. U.C.T. gratefully acknowledges support from the National Science Foundation under Grant
+No. DMR-0308548.
+
+References
+[1] For introductions to percolation in general, see, e.g., D. Stauffer and A. Aharony,
+Introduction to Percolation Theory, 2nd ed. (Taylor and Francis, London,
+1994); A. Bunde and S. Havlin, in Fractals and Disordered Systems, 2nd ed.,
+eds. A. Bunde, S. Havlin (Springer, Berlin, 1996).
+[2] W. Kinzel, in Percolation Structures and Processes, eds. G. Deutsch, R. Zallen,
+and J. Adler, (Hilger, Bristol, 1983).
+
+50
+
+[3] A comprehensive recent overview over directed percolation is given in
+H. Hinrichsen, Adv. Phys. 49, 815 (2001).
+[4] S.R. Broadbent and J.M. Hammersley, Proc. Camb. Philos. Soc. 53, 629 (1957).
+[5] V.N. Gribov, Zh. Eksp. Teor. Fiz. 53, 654 (1967) [Sov. Phys. JETP 26, 414
+(1968)].
+[6] V.N. Gribov and A.A. Migdal, Zh. Eksp. Teor. Fiz. 55, 1498 (1968)
+[Sov. Phys. JETP 28, 784 (1969)].
+[7] M. Moshe, Phys. Rep. C 37, 255 (1978).
+[8] P. Grassberger and K. Sundermeyer, Phys. Lett. B 77, 220 (1978).
+[9] P. Grassberger and A. De La Torre, Ann. Phys. (NY) 122, 373 (1979).
+[10] F. Schlögl, Z. Phys. 225, 147 (1972).
+[11] S.P. Obukhov, Physica A 101, 145 (1980).
+[12] J.L. Cardy and R.L. Sugar, J. Phys. A: Math. Gen. 13, L423 (1980).
+[13] H.K. Janssen, Z. Phys. B: Cond. Mat. 42, 151 (1981).
+[14] P. Grassberger, Z. Phys. B: Cond. Mat. 47, 365 (1982).
+[15] P. Grassberger, Math. Biosci. 63, 157 (1983).
+[16] H.K. Janssen, Z. Phys. B: Cond. Mat. 58, 311 (1985), and unpublished.
+[17] J.L. Cardy and P. Grassberger, J. Phys. A: Math. Gen. 18, L267 (1985).
+[18] J.D. Murray, Mathematical Biology (Springer, Berlin 1989).
+[19] D. Mollison, J. R. Stat. Soc. B 39, 283 (1977).
+[20] N.T.J. Bailey, The Mathematical Theory of Infectious Diseases (Griffin,
+London, 1975).
+[21] M. Doi, J. Phys. A: Math. Gen. 9, 1479 (1976).
+[22] P. Grassberger and P. Scheunert, Fortschr. Phys. 28, 547 (1980).
+[23] L. Peliti, J. Phys. (France) 46, 1469 (1984).
+[24] B.P. Lee, J. Phys. A: Math. Gen. 27, 2633 (1994).
+[25] A detailed introduction to this method is presented in M. Howard, U.C. Täuber,
+and B. Vollmayr-Lee, to be published in J. Phys. A: Math. Gen. (2004); e-print
+cond-mat/04... update.
+[26] G. Ódor, Rev. Mod. Phys. 76, 663 (2004).
+[27] H.K. Janssen, Z. Phys. B: Cond. Mat. 23, 377 (1976); R. Bausch, H.K. Janssen,
+and H. Wagner, Z. Phys. B: Cond. Mat. 24, 113 (1976); H.K. Janssen, in
+Dynamical Critical Phenomena and Related Topics (Lecture Notes in Physics,
+Vol. 104), ed. C.P. Enz, (Springer, Heidelberg, 1979).
+
+51
+
+[28] C. De Dominicis, J. Phys. (France) Colloq. 37, C247 (1976); C. De Dominicis
+and L. Peliti, Phys. Rev. B 18, 353 (1978).
+[29] H.K. Janssen, in From Phase Transitions to Chaos, eds. G. Györgyi, I. Kondor,
+L. Sasvári, and T. Tél (World Scientific, Singapore, 1992).
+[30] J. Cardy and U.C. Täuber, Phys. Rev. Lett. 77, 4783 (1996); J. Stat. Phys. 90,
+1 (1998).
+[31] H.K. Janssen, F. van Wijland, O. Deloubrière, and U.C. Täuber, submitted to
+Phys. Rev. E (2004); e-print cond-mat/0408064 update.
+[32] M. Henkel and H. Hinrichsen, J. Phys. A: Math. Gen. 37, R117 (2004).
+[33] J. Benzoni and J.L. Cardy, J. Phys. A: Math. Gen. 17, 179 (1984).
+[34] F.J. Wegner, J. Phys. C 7, 2098 (1974), in Phase Transitions and Critical
+Phenomena, Vol. 6, eds. C. Domb and M.S. Green (Academic, New York, 1976).
+[35] E. Domany and W. Kinzel, Phys. Rev. Lett. 53, 311 (1984); W. Kinzel,
+Z. Phys. B: Cond. Mat. 58, 229 (1985).
+[36] D.J. Amit, Field Theory, the Renormalization Group and Critical Phenomena
+(World Scientific, Singapore, 1984).
+[37] J. Zinn-Justin, Quantum Field Theory and Critical Phenomena, 3rd ed.
+(Clarendon Press, Oxford, 1996).
+[38] K. Symanzik, Lett. Nuovo Cimento 8, 771 (1973).
+[39] R. Schloms and V. Dohm, Nucl. Phys. B 328, 639 (1989); and refs. therein.
+[40] C. Bagnuls and C. Bervillier, Phys. Rev. B 41, 402 (1990); Phys. Lett. A 195,
+163 (1994); J. Phys. Stud. 1, 366 (1997) [e-print hep-th/9702149].
+[41] V. Dohm, Statistische Theorie kritischer Phänomene und die Idee der
+Renormierungsgruppe (Seminar, RWTH Aachen, 1994), unpublished.
+[42] L. Schäfer, Phys. Rev. E 50, 3517 (1994); Phys. Rep. 301, 205 (1998).
+[43] K.G. Wilson, Rev. Mod. Phys. 47, 773 (1975).
+[44] H.K. Janssen, J. Stat. Phys. 103, 801 (2001).
+[45] Note that the frequently cited original source for the two-loop results,
+J.B. Bronzan and J.W. Dash, Phys. Lett. B 51, 496 (1974), Phys. Rev. D 10,
+4208 (1974), is incomplete, contains a numerical mistake, and is thus erroneous;
+for a revision see J.B. Bronzan and J.W. Dash, Phys. Rev. D 12, 1850 (1975).
+[46] H.K. Janssen, to be published, e-print cond-mat/0304631v2.
+[47] H.K. Janssen, B. Schaub, and B. Schmittmann, Z. Phys. B: Cond. Mat. 73, 539
+(1989).
+[48] S. Lübeck and R.D. Willmann, J. Phys. A: Math. Gen. 35, 10205 (2002);
+J. Stat. Phys. 115, 1231 (2004).
+
+52
+
+[49] H.K. Janssen, Ü. Kutbay, and K. Oerding, J. Phys. A: Math. Gen. 32, 1809
+(1999).
+[50] H.K. Janssen and O. Stenull, Phys. Rev. E 69, 016125 (2004).
+[51] H.K. Janssen, B. Schaub, and B. Schmittmann, Z. Phys. B: Cond. Mat. 71, 377
+(1988).
+[52] S. Lübeck and H.K. Janssen, to be published.
+[53] D.J. Amit, J. Phys. A: Math. Gen. 9, 1441 (1976).
+[54] O.F. de Alcantara Bonfim, J.E. Kirkham, and A.J. McKane, J. Phys. A 13,
+L247 (1980); 14, 2391 (1981).
+[55] E. Frey, U.C. Täuber, and F. Schwabl, Europhys. Lett. 26, 413 (1994);
+Phys. Rev. E 49, 5058 (1994).
+[56] H.K. Janssen and O. Stenull, Phys. Rev. E 62, 3173 (2000).
+[57] L. Canet, B. Delamotte, O. Deloubrière, and N. Wschebor, Phys. Rev. Lett. 92,
+195703 (2004).
+[58] P. Grassberger, in Fractals in Physics, eds. L. Pietronero and E. Tosatti
+(Elsevier, 1986).
+[59] E.W. Montroll and B.J. West, Fluctuation Phenomena, eds. E.W. Montroll and
+J.L. Lebowitz (North-Holland, Amsterdam, 1979).
+[60] S. Bochner, Lectures on Fourier Integrals (Princeton University Press,
+Princeton, 1959).
+[61] H.K. Janssen, K. Oerding, F. van Wijland, and H.J. Hilhorst, Eur. Phys. J. B 7,
+137 (1999).
+[62] J. Honkonen and M.Y. Nalimov, J. Phys. A: Math. Gen. 22, 751 (1989).
+[63] H.K. Janssen (1998), unpublished.
+[64] H.W. Diehl, in: Phase Transitions and Critical Phenomena, Vol. 10,
+eds. C. Domb and J.L. Lebowitz (Academic Press. London, 1986).
+[65] H.W. Diehl, Int. J. Mod. Phys. B 11, 3593 (1997).
+[66] H.K. Janssen, B. Schaub, and B. Schmittmann, Z. Phys. B: Cond. Mat. 72, 111
+(1988).
+[67] H.K. Janssen, B. Schaub, and B. Schmittmann, Phys. Rev. A 38, 6377 (1988).
+[68] P. Fröjdh, M. Howard, and K.B. Lauritsen, Int. J. Mod. Phys. B 15, 1761
+(2001).
+[69] U.C. Täuber, M.J. Howard, and H. Hinrichsen, Phys. Rev. Lett. 80, 2165
+(1998); Y.Y. Goldschmidt, H. Hinrichsen, M.J. Howard, and U.C. Täuber,
+Phys. Rev. E 59, 6381 (1999).
+
+53
+
+[70] R. Kree, B. Schaub, and B. Schmittmann, Phys. Rev. A 39, 2214 (1989).
+[71] F. van Wijland, K. Oerding, and H. J. Hilhorst, Physica A 251, 179 (1998);
+K. Oerding, F. van Wijland, J. P. Leroy, and H. J. Hilhorst, J. Stat. Phys. 99,
+1365 (2000); H.K. Janssen (1989), unpublished.
+[72] P.C. Hohenberg and B.I. Halperin, Rev. Mod. Phys. 49, 435 (1977).
+[73] H.K. Janssen, Phys. Rev. E 55, 6253 (1997).
+[74] A.G. Moreira and R. Dickman, Phys. Rev. E 54, R3090 (1996).
+[75] A.G. Moreira and R. Dickman, Phys. Rev. E 57, 1263 (1998).
+[76] J. Hooyberghs, F. Iglói, and C. Vanderzande, Phys. Rev. Lett. 90, 100601
+(2003); Phys. Rev. E 69, 066140 (2004).
+
+54
+
+

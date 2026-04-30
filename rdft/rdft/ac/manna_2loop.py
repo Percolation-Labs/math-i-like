@@ -1,6 +1,8 @@
 """
 rdft.ac.manna_2loop
 ===================
+Tier: 2 (extension)
+
 Two-loop CFAC calculation for CDP/Manna with proper dimensionless
 couplings, fixed-point analysis, Pade resummation.
 

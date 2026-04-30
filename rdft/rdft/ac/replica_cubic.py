@@ -1,6 +1,8 @@
 """
 rdft.ac.replica_cubic
 =====================
+Tier: 3 (research)
+
 Cubic-in-n analysis of the KPZ replica rate.
 
 For the replica CRN of Prop 3 of paper/cfac/enumerative_boundary.tex,

@@ -1,6 +1,8 @@
 """
 rdft.ac.lerw_exact
 ==================
+Tier: 3 (research)
+
 Deterministic LERW mean length from the Kirchhoff ratio (Prop 1).
 
 This module is the honest answer to the question:

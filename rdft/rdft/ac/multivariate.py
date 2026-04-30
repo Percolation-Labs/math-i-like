@@ -1,6 +1,8 @@
 """
 rdft.ac.multivariate
 =====================
+Tier: 2 (extension)
+
 Multivariate ACSV for coupled-DSE systems: the Pemantle-Wilson
 framework applied to CFAC.  Addresses TODO-3 from docs/problems.md.
 

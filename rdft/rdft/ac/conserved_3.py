@@ -1,6 +1,8 @@
 """
 rdft.ac.conserved_3
 ===================
+Tier: 2 (extension)
+
 Non-local conservation projector — the missing piece for rigorous C_3
 demonstration in the CDP/Manna activity DSE.
 

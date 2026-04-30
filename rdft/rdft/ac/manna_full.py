@@ -1,6 +1,8 @@
 """
 rdft.ac.manna_full
 ==================
+Tier: 2 (extension)
+
 Manna / CDP exponents from the FULL CFAC pipeline (counting × bridge ×
 algebra), mirroring one_loop_KS for chemotaxis and one_loop_On for O(N)
 phi^4.

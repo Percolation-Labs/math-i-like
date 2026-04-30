@@ -17,21 +17,73 @@ vertex structure.  The package provides tools to:
 5. Compute one-loop bridge functions for $d$-dimensional dressing of
    the mean-field skeleton.
 
-## Module map
+## Module map (tier-structured)
+
+Modules are grouped by **tier** — see each module's docstring for the
+`Tier: 1 | 2 | 3` header.  Tier-1 symbols are re-exported at the
+`rdft.ac` package level; Tier-2 and Tier-3 modules are importable via
+`from rdft.ac.<module> import ...`.
+
+### Tier 1 — core DSE pipeline (6 modules)
+
+These are the fundamental modules every CFAC workflow touches.
 
 | Module | Purpose | Key API |
 |---|---|---|
-| `algebraic.py` | Newton polygon, Puiseux singularities of algebraic curves | `AlgebraicSingularity` |
-| `lagrange.py` | Lagrange equations $G = z\,\phi(G)$, examples | `LagrangeEquation`, `pair_annihilation_dse` |
+| `dse.py` | DSE construction from a Liouvillian / vertex dict | `combinatorial_dse_kernel`, `coupled_dse`, `ac_full_derivation`, `dse_from_liouvillian` |
+| `lagrange.py` | Lagrange equations $G = z\,\phi(G)$, canonical examples | `LagrangeEquation`, `pair_annihilation_dse`, `sir_epidemic` |
 | `transfer.py` | Flajolet-Sedgewick transfer theorem | `Singularity`, `from_lagrange` |
-| `dse.py` | DSE construction from a Liouvillian / vertex dict | `combinatorial_dse_kernel`, `coupled_dse`, `ac_full_derivation` |
-| **`stratification.py`** | Puiseux strata $\mathcal{C}_k$ in coefficient space | `puiseux_order`, `canonical_family`, `phi_from_reactions`, `is_dyadic` |
-| **`tilted.py`** | Current-tilted DSEs, SCGF, dynamical phase transitions | `scgf`, `tilted_phi`, `gallavotti_cohen_residual` |
+| `algebraic.py` | Newton polygon, Puiseux singularities of algebraic curves | `NewtonPolygon`, `AlgebraicSingularity` |
+| `stratification.py` | Puiseux strata $\mathcal{C}_k$ in coefficient space | `puiseux_order`, `canonical_family`, `phi_from_reactions`, `is_dyadic` |
 | `bridge.py` | One-loop bridge functions, anomalous dimensions | `bridge_scalar`, `bridge_rank_k`, `gamma_k_anomalous`, `tau_dressed`, `one_loop_KS`, `one_loop_On` |
-| `correspondence.py` | CRN-to-field-theory correspondence tables | `Correspondence` |
-| `network_percolation.py` | Random-graph percolation generating functions | `erdos_renyi_kernel`, `cluster_size_exponent_theory` |
 
-Bold modules are the new additions for the stratification programme.
+### Tier 2 — documented extensions (15 modules)
+
+Extensions with proofs, tests, and associated papers.  Imported explicitly.
+
+| Module | Purpose | Key API |
+|---|---|---|
+| `admissible.py` | Stratification for transcendental (non-polynomial) kernels | `admissible_asymptotics`, `find_critical_point` |
+| `multivariate.py` | Multivariate ACSV (Pemantle-Wilson) for coupled DSEs | `classify_singular_point`, `find_critical_point_multivariate` |
+| `log_corrections.py` | Algebraic-logarithmic asymptotics | `transfer_theorem_log_corrected`, `detect_marginal_tuning` |
+| `tilted.py` | Tilted Doi-Peliti DSEs, SCGF, dynamical phase transitions | `scgf`, `tilted_phi`, `gallavotti_cohen_residual` |
+| `hopf_flow.py` | Connes-Kreimer Hopf algebra for RG flow | (forest algebra + antipode) |
+| `ope.py` | Composite-operator anomalous dimensions via pointed GFs | (OPE coefficients) |
+| `eft_matching.py` | Integrate out heavy modes, produce effective light-sector DSE | (EFT Wilson coefficients) |
+| `multipoint.py` | Multi-point correlations via n-variable CFAC | (n-point generators) |
+| `signed_projector.py` | Microscopic $\mathcal{C}_3$ derivation from conservation Ward identity | (signed projector) |
+| `manna_full.py` | Manna/CDP exponents: full CFAC pipeline (counting × bridge × algebra) | (CDP one-loop) |
+| `manna_2loop.py` | Two-loop CFAC for CDP/Manna with dimensionless couplings, Padé | (2-loop FRG-analog) |
+| `manna_depinning.py` | Le Doussal-Wiese mapping to qEW depinning | (qEW mapping) |
+| `conserved.py` (v1) | NESS projection for CDP 2-field DSE (scoping) | `coupled_dse_conserved`, `cdp_one_loop_dressing` |
+| `conserved_2.py` (v2) | Soft-mode-induced quartic for CDP activity DSE | `cdp_dse_with_softmode`, `gamma_3_from_softmode` |
+| `conserved_3.py` (v3) | Non-local Ward-identity treatment; C_3 demonstration | `find_C3_multicritical_line`, `manna_C3_complete` |
+
+### Tier 3 — research / speculative / failure-mode (18 modules)
+
+Exploratory modules.  Not re-exported.  Some document explicit failure modes
+(kept as audit trail for papers).
+
+| Module | Purpose |
+|---|---|
+| `correspondence.py` | AC ↔ QFT correspondence table generator |
+| `lerw.py` | LERW as Kirchhoff enumeration (Prop 1) |
+| `lerw_dirichlet.py` | LERW on Z^d boxes with Dirichlet boundary |
+| `lerw_exact.py` | Deterministic LERW mean length from Kirchhoff ratio |
+| `lerw_extrap.py` | Algebraic extrapolation schemes for d_f from finite-size data |
+| `lerw_hierarchical.py` | LERW on Migdal-Kadanoff hierarchical lattices |
+| `lerw_scaling.py` | Finite-size scaling of LERW on Z^d tori |
+| `lerw_tube.py` | LERW on Z^3 tubes (failure mode: quasi-1D collapse) |
+| `replica.py` | Replicated directed polymer as n-species CRN (Prop 3) |
+| `replica_closed.py` | Closed-form 2-body binding for KPZ replica on Z |
+| `replica_cubic.py` | Cubic-in-n analysis of the KPZ replica rate |
+| `replica_transfer.py` | Transfer-matrix evaluation of KPZ n-walker replica CRN |
+| `tap_complexity.py` | Planar (genus-0) TAP complexity from semicircle resolvent |
+| `matrix_model.py` | Ribbon-graph enumeration for TAP complexity (Prop 2) |
+| `network_percolation.py` | AC for percolation on configuration-model networks |
+| `sandpile_group.py` | Sandpile-group animal for LERW exponent (failure mode) |
+| `topology_sketch.py` | Speculative: CFAC for Gromov-Witten / Donaldson-Thomas |
+| `manna_dp_anchor_DEPRECATED.py` | Documented wrong-path for Manna; regression-tested |
 
 ## Conventions
 

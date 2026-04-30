@@ -1,6 +1,8 @@
 """
 rdft.ac.conserved_2
 ===================
+Tier: 2 (extension)
+
 Soft-mode-aware conservation projector for CDP/Manna-class DSEs.
 
 This module is the v2 attempt at extending conserved.py from its current

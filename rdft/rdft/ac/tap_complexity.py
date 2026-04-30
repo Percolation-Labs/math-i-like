@@ -1,6 +1,8 @@
 """
 rdft.ac.tap_complexity
 ======================
+Tier: 3 (research)
+
 Planar (genus-0) TAP complexity from the semicircle resolvent.
 
 For the spherical pure p-spin model the expected log-complexity per

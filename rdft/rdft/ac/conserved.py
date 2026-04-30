@@ -1,6 +1,8 @@
 """
 rdft.ac.conserved
 =================
+Tier: 2 (extension)
+
 Conservation-law-aware coupled DSEs for the CDP / depinning universality.
 
 The conserved directed percolation (CDP) class — to which Manna sandpile,

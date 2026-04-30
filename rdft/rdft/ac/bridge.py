@@ -1,6 +1,8 @@
 """
 rdft.ac.bridge
 ==============
+Tier: 1 (core)
+
 Bridge functions for AC+: the non-counting content of loop integrals.
 
 At 1-loop, the full RG calculation decomposes as:

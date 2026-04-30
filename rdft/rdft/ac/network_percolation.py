@@ -1,6 +1,8 @@
 """
 rdft.ac.network_percolation
 ============================
+Tier: 3 (research)
+
 Analytic combinatorics of percolation on random networks.
 
 The component size generating function on a configuration model

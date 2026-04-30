@@ -1,6 +1,8 @@
 """
 rdft.ac.ope
 =============
+Tier: 2 (extension)
+
 Composite-operator anomalous dimensions via pointed-graph generating
 functions.  A concrete application of CFAC to the OPE side of field
 theory.

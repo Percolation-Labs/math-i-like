@@ -1,6 +1,8 @@
 """
 rdft.ac.eft_matching
 =====================
+Tier: 2 (extension)
+
 Effective-field-theory matching: integrate out heavy modes in a
 coupled CRN-in-field and produce the effective light-sector DSE
 with explicit Wilson coefficients.

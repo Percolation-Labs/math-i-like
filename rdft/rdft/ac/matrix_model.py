@@ -1,6 +1,8 @@
 """
 rdft.ac.matrix_model
 ====================
+Tier: 3 (research)
+
 Ribbon-graph enumeration for TAP complexity.
 
 Implements Proposition 2 of paper/cfac/enumerative_boundary.tex.

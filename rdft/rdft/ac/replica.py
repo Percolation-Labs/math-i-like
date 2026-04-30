@@ -1,6 +1,8 @@
 """
 rdft.ac.replica
 ===============
+Tier: 3 (research)
+
 Replicated directed polymer as an n-species CRN.
 
 Implements Proposition 3 of paper/cfac/enumerative_boundary.tex.

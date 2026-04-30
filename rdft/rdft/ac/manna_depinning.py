@@ -1,6 +1,8 @@
 """
 rdft.ac.manna_depinning
 =======================
+Tier: 2 (extension)
+
 CDP / Manna exponents via the Le Doussal-Wiese mapping to quenched
 Edwards-Wilkinson (qEW) depinning.
 

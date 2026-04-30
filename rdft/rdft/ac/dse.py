@@ -1,6 +1,8 @@
 """
 rdft.ac.dse
 ===========
+Tier: 1 (core)
+
 Automatic Dyson-Schwinger equation construction from Liouvillian vertices.
 
 Given a reaction network's Liouvillian, this module constructs the

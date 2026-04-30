@@ -1,6 +1,8 @@
 """
 rdft.ac.tilted
 ==============
+Tier: 2 (extension)
+
 Tilted Doi-Peliti DSEs and the SCGF of currents.
 
 For a CRN with reactions {(k_i, l_i, lambda_i)}, tilting the rate of one

@@ -1,6 +1,8 @@
 """
 rdft.ac.lerw_dirichlet
 ======================
+Tier: 3 (research)
+
 LERW on Z^d boxes with killing (Dirichlet) boundary.
 
 This is the natural setting for Kenyon's theorem (2000):

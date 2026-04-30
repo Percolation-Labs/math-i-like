@@ -1,6 +1,8 @@
 """
 rdft.ac.correspondence
 ======================
+Tier: 3 (research)
+
 AC <-> QFT correspondence table generator.
 
 For any reaction-diffusion process, produces the dictionary mapping

@@ -1,6 +1,8 @@
 """
 rdft.ac.topology_sketch
 ========================
+Tier: 3 (research)
+
 Speculative scoping note: what would CFAC look like if applied to
 moduli-space counting (Gromov-Witten, Donaldson-Thomas)?
 

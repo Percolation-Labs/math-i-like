@@ -1,6 +1,8 @@
 """
 rdft.ac.sandpile_group
 ======================
+Tier: 3 (research)
+
 Sandpile-group animal for the LERW exponent: another failure mode.
 
 Motivation. The Majumdar-Dhar bijection maps recurrent

@@ -1,6 +1,8 @@
 """
 rdft.ac.stratification
 ======================
+Tier: 1 (core)
+
 The Puiseux stratification of polynomial DSE kernels.
 
 Given a polynomial kernel phi(G) = 1 + a_1 G + ... + a_d G^d defining a

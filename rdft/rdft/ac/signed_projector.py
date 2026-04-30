@@ -1,6 +1,8 @@
 """
 rdft.ac.signed_projector
 =========================
+Tier: 2 (extension)
+
 First cut at the microscopic derivation of the $\\mathcal{C}_3$
 stratum from the conservation Ward identity in the CDP/Manna
 action.  Addresses open problem #29 from docs/problems.md and the

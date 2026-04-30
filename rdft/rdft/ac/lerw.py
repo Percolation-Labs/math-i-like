@@ -1,6 +1,8 @@
 """
 rdft.ac.lerw
 ============
+Tier: 3 (research)
+
 LERW as Kirchhoff enumeration.
 
 Implements Proposition 1 of paper/cfac/enumerative_boundary.tex:

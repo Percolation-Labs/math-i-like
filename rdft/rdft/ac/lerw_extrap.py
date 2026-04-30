@@ -1,6 +1,8 @@
 """
 rdft.ac.lerw_extrap
 ===================
+Tier: 3 (research)
+
 Algebraic extrapolation schemes for d_f from finite-size LERW data.
 
 After the tube-transfer-matrix animal failed (rdft/ac/lerw_tube.py:
