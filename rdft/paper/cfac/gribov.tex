@@ -209,11 +209,12 @@ state explicitly what mathematical operation the code carries out,
 so the underlying derivation is transparent.
 
 \textbf{Reproducibility.}  All code is in \texttt{rdft/ac/gribov/};
-\texttt{run\_all\_tests.py} executes 9 end-to-end tests covering
+\texttt{run\_all\_tests.py} executes 10 end-to-end tests covering
 counting, the double-pole identity, BPHZ, the 12 IBP coefficients,
 the full RG pipeline, the from-scratch Laporta reducer, master
-identification, and the causal$\to$Euclidean reduction --- \textbf{all
-9 pass} on the development machine.
+identification, the causal$\to$Euclidean reduction, and a
+contraction-view honesty check --- \textbf{all 10 pass} on the
+development machine.
 No proprietary software is required for any part of the pipeline.
 \end{abstract}
 
@@ -1141,7 +1142,10 @@ after IBP.  The full assembly is
 \end{equation}
 The IBP coefficients $q^X_\bullet$ are pure rationals from
 graph-polynomial calculus on $F_\Gamma$ (no further integration).
-Computing them explicitly is mechanical but not done in this draft.
+Below we determine all 12 by closure with JT05 Eq.~(57) plus 5
+structural CFAC constraints; the parallel a-priori derivation via
+\texttt{OmegaIntegration}~$+$~\texttt{ibp\_solver} has its components
+independently verified (tests \#6--9) and is open as glue work.
 
 \end{cfacbox}
 
@@ -1612,7 +1616,7 @@ two of those three masters; combinatorics fixes everything else.
 \section{Reproducibility: the Code Stack}\label{sec:codestack}
 % ══════════════════════════════════════════════════════════════════════
 
-\begin{codebox}[End-to-end test suite: 8/8 passing]
+\begin{codebox}[End-to-end test suite: 10/10 passing]
 \emph{Each test is an analytical/combinatorial check that a reader
 could verify by hand.}  Test 1 expands $(1+G^2)^n$ and reads off
 binomial coefficients.  Tests 2--3 substitute four rationals into
@@ -1620,8 +1624,11 @@ quadratic-in-$a$ formulas.  Test 4 inserts the 12 $q$-rationals into
 a 4-row linear assembly over $\mathbb{Q}[L]$.  Test 5 expands a
 power series in $\varepsilon$.  Tests 6--8 generate IBP identities
 from Lagrange-style derivative rules and solve a $\mathbb{Q}(d)$
-linear system by Laporta priority sort.  Nothing numerical, nothing
-opaque.
+linear system by Laporta priority sort.  Tests 9--10 verify the
+causal$\to$Euclidean reduction (graph-polynomial substitutions on
+Schwinger parameters) and explicitly demonstrate that the output is
+the parametric integrand of the code, not the abstract contracted
+graph.  Nothing numerical, nothing opaque.
 
 The directory \texttt{rdft/ac/gribov/} contains the complete working
 code stack for this paper.  An end-to-end test harness
@@ -1640,8 +1647,9 @@ code stack for this paper.  An end-to-end test harness
 7 & Targeted reductions: $(d-5)$ and $(d-4)$ Laporta coefficients     & \checkmark\\
 8 & Full Laporta triangulation: $I[1,1,1]$ identified as master       & \checkmark\\
 9 & Causal $\to$ Euclidean reduction (thesis \S 2.5.3.2) on bubble + sunset & \checkmark\\
+10 & Contraction-view honesty check: code output vs.\ literal tadpole & \checkmark\\
 \midrule
-\multicolumn{2}{r}{\bfseries Summary} & \textbf{9/9 pass} \\
+\multicolumn{2}{r}{\bfseries Summary} & \textbf{10/10 pass} \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -1713,15 +1721,15 @@ group's setup (Mathematica licence and/or Fermat).
 % ══════════════════════════════════════════════════════════════════════
 
 \begin{enumerate}[leftmargin=2em]
-  \item \textbf{(D2) IBP reduction tables.}  Work out the explicit
-    rational-coefficient linear combinations expressing each of
-    $V_2^{\textsf{ice}}$, $V_2^{\textsf{box}}$, $V_2^{\textsf{lad}}$,
-    $\Sigma_2^{\textsf{nest}}$ in the master basis $\{B_2^2,
-    B_V, B_3^{\textsf{sun}}\}$.  Finite-rank linear algebra; can be
-    automated with FIRE / KIRA / LiteRed.  This closes the gap between
-    \Cref{sec:assembly}'s schematic $q^X_\bullet$ table and an
-    explicit derivation of JT05 Eq.~(57).
-  \item \textbf{(D3) Algebra factors $a_\Gamma$.}  Enumerate the
+  \item \textbf{(D1) End-to-end IBP wiring for Reggeon DP.}  Both
+    modules already verified independently (test \#9: causal
+    reduction on bubble + sunset; tests \#6--8: Laporta solver on
+    standard massless sunset).  The remaining glue: pipe the output
+    of \texttt{OmegaIntegration} on each Reggeon 2-loop topology into
+    \texttt{ibp\_solver} as input, run Laporta triangulation, read
+    off the $q^X_\bullet$ rationals.  No theoretical content; pure
+    plumbing.
+  \item \textbf{(D2) Algebra factors $a_\Gamma$.}  Enumerate the
     rational $a_\Gamma$ for each of the seven 1- and 2-loop
     topologies from the Reggeon vertex pair $(-u/2, +u/2)$ together
     with the $Z$-factor extraction conventions
@@ -2367,8 +2375,11 @@ ran it on the bubble and the sunset.
 The reduced $(\Psi, \Phi)$ is precisely the Euclidean parametric form
 (spatial momenta only, standard Symanzik polynomial structure) that a
 relativistic IBP solver consumes.  The reduction is fully working and
-is now a labelled test in the harness (test \#9 of
-\texttt{run\_all\_tests.py}, 9/9 passing).
+is labelled test \#9 of \texttt{run\_all\_tests.py} (10/10 passing).
+Test \#10 cross-checks honestly that this output is \emph{not} the
+Symanzik of an abstract contracted graph (the topological
+``$G//P$'' picture is heuristic, not literal --- see
+\Cref{app:where-ibp-enters} for the side-by-side comparison).
 \end{codebox}
 
 \begin{cfacbox}[The full a-priori IBP path for Reggeon DP]
@@ -2713,7 +2724,7 @@ Causal $\to$ Euclidean reduction (thesis \S 2.5.3.2): edge-basis
   matrix $E_f$, $\delta$-substitutions on Schwinger parameters
   & \texttt{rdft/integrals/parametric.OmegaIntegration};\newline
     test \#9: \texttt{rdft/ac/gribov/test\_causal\_reduction.py}\\
-End-to-end (8 tests)
+End-to-end (10 tests)
   & \texttt{rdft/ac/gribov/run\_all\_tests.py}\\
 \bottomrule
 \end{tabular}
@@ -2794,8 +2805,8 @@ Sunset second Symanzik $F_{\Sigma_2^{\textsf{sun}}}$
   & not written down
   & Required for an a-priori IBP derivation; quoted from JT05 implicitly via the $q^\psi_\bullet$ values \\
 $Z_\psi$-row IBP coefficients $q^\psi_{\textsf{sun}}, q^\psi_{B_2^2}$
-  & JT05-closure (a-priori IBP route exists, not yet executed)
-  & See \Cref{app:where-ibp-enters}: causal $\to$ Euclidean reduction (\texttt{OmegaIntegration}, thesis \S 2.5.3.2 \cite{amarteifio2019}) followed by Laporta on \texttt{ibp\_solver}; both modules in place, wiring open \\
+  & JT05-closure (each step of a-priori route independently verified, end-to-end wiring open)
+  & \texttt{OmegaIntegration} verified on bubble + sunset (test \#9); \texttt{ibp\_solver} verified on standard massless sunset (tests \#6--8); the chain of the two for Reggeon-DP topologies is the open glue step.  See \Cref{app:where-ibp-enters} \\
 Sunset master $\tilde B_3^{\textsf{sun}}$ at JT05 sym.\ point
   & quoted standard
   & JT05 / Tauber 2014; the $\ln(4/3)$ comes from the parametric integral of $U_{\textsf{sun}}^{-d/2}$ on the symmetric simplex \\
