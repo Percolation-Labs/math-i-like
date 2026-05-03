@@ -7,6 +7,23 @@ graph polynomials, and critical exponents. Two routes: the **AC route**
 (direct, from the singularity of the generating function) and the **RG route**
 (scenic, via loop integrals and renormalisation). Both agree.
 
+## The clean API: `rdft.crn`
+
+For the auditable CRN -> RG pipeline (vertex dictionary -> phi-tree counts ->
+phi-tree |Aut| -> Hopf antipode -> IBP -> exponents), use [`rdft.crn`](rdft/crn/README.md):
+
+```python
+from rdft.crn import CRN, RGProgram
+rg = RGProgram(CRN.reggeon_dp(), loop_order=2).run()
+print(rg.audit())                # full per-step provenance ledger
+rg.exponents.compare_to_jt05()   # zero residual on eta, z, nu, beta_DP
+```
+
+See [`rdft/crn/README.md`](rdft/crn/README.md) for the full module map and
+the `Diagram` / `Provenance` API. The legacy scripts in `rdft/ac/gribov/`
+still pass `run_all_tests.py`; `rdft.crn` is the maintained surface going
+forward.
+
 ## Install
 
 ```bash
