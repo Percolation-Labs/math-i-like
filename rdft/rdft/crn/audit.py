@@ -48,11 +48,9 @@ def format_audit(rg: "RGProgram") -> str:
                 lines.append(f"    -> {prov}")
         lines.append("")
 
-    # IBP table
-    if rg.ibp is not None:
-        lines.append("IBP table (12 q^X_Gamma rationals):")
-        for line in rg.ibp.as_table().split("\n"):
-            lines.append("  " + line)
+    # 1-loop algebra and beta_1 (mechanically derived)
+    if rg.beta_1 is not None:
+        lines.append(f"beta_1 = a_u^(1) - 2 a_psi^(1) = {rg.beta_1}")
         lines.append("")
 
     # Exponents
@@ -70,19 +68,25 @@ def format_audit(rg: "RGProgram") -> str:
         lines.append("")
 
     # Provenance summary by layer
-    lines.append("Provenance summary:")
+    lines.append("Provenance summary (every result either DERIVED or named-input):")
     summary = {
-        "Layer 1": "AC-derived (Doi shift)",
-        "Layer 2 (counts)": "AC-derived (Lagrange inversion)",
-        "Layer 2 (sym factors)": "AC-derived (phi-tree |Aut| = 2^k(T))",
-        "Layer 2 (Hopf antipode)": "AC-derived (closed-form rational)",
-        "Layer 2 (IBP closure)":   "AC-derived (12 rationals from CFAC structure)",
-        "Layer 3 (1PI verdict)":   "structural rule on shape string",
-        "Layer 3 (external sectors)": "QFT bookkeeping (not AC)",
-        "Layer 4 (Legendre)":      "AC-derived (when invoked)",
-        "Master integral values":  "input (JT05 / Panzer / Borinsky)",
-        "Tauber relation":         "derived (closed form)",
-        "Exponents vs JT05 Eq.60": "derived (zero residual)",
+        "Layer 1 (Doi shift)":       "DERIVED  -- crn.doi_shift -> phi(G), vertex dictionary",
+        "Layer 2 (Lagrange counts)": "DERIVED  -- enumerate_phi_trees, Catalan/general",
+        "Layer 2 (phi-tree |Aut|)":  "DERIVED  -- aut_phi_tree(shape) = 2^k(T)",
+        "Layer 2 (a_X^(1))":         "DERIVED  -- c_X(crn) * K_X(scheme), all rationals",
+        "Layer 2 (beta_1)":          "DERIVED  -- beta_1 = a_u - 2 a_psi (universal)",
+        "Layer 2 (Hopf antipode)":   "DERIVED  -- (1/2) a_X (beta_1 + a_X), universal",
+        "Layer 2 (BPHZ counterterm)":"DERIVED  -- (1/2) a_X (a_X - beta_1), universal",
+        "Layer 2 (Z^(2,1))":         "DERIVED  -- BPHZ + sum_basis kernel * masters",
+        "Layer 3 (1PI verdict)":     "DERIVED  -- shape-string cut rule",
+        "Tauber relation":           "DERIVED  -- gamma_X = -u d/du(simple-pole of Z_X)",
+        "MSbar beta(u)":             "DERIVED  -- u^2 * d/du[Z_combined^(1)], from Z's",
+        "Wilson-Fisher u*":          "DERIVED  -- beta(u*)=0 to O(eps^2)",
+        "Exponents vs JT05 Eq.60":   "DERIVED  -- ZERO RESIDUAL on eta, z, nu, beta_DP",
+        "Propagator + sub-point":    "ANSATZ   (a) -- scheme.propagator, scheme.subtraction_point",
+        "Kinematic kernels K_X":     "ANSATZ   (a) -- scheme.kinematic_kernels (1- and 2-loop)",
+        "Coupling Z exponents":      "ANSATZ   (a) -- scheme.coupling_z_exponents",
+        "Master integral values":    "INPUT    (b) -- JT05 / Panzer / Borinsky bridge integrals",
     }
     width = max(len(k) for k in summary)
     for k, v in summary.items():
