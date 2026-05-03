@@ -4,6 +4,28 @@ A clean, auditable API for going from a chemical reaction network (CRN) to its
 full RG programme. This package replaces the scattered `rdft/ac/gribov/*.py`
 and `letters/.../poc_*.py` scripts with one unified surface.
 
+> **Status: WIP. Read [`critique.md`](critique.md) before trusting it for
+> publication.** The Reggeon-DP / Gribov pipeline runs end-to-end and matches
+> JT05 Eq. (60) with zero residual. Other CRNs run through the combinatorial
+> layer (Doi shift, Lagrange, φ-tree |Aut|, diagram enumeration) cleanly, but
+> the kinematic-kernel derivation from a fresh propagator is being closed
+> incrementally — at 1-loop today, 2-loop is a follow-up.
+
+The line we draw:
+
+* **Combinatorial / topological (ours, mechanical):** Doi shift, Lagrange
+  counts, φ-tree symmetry factors, Wick + cumulant algebra, ω-contour graph
+  contraction, Feynman shift, the closed-form spatial loop integral,
+  ε-expansion + simple-pole extraction, Z-extraction derivatives at the
+  sub-point, IBP to master basis, Hopf antipode, BPHZ, Täuber, Wilson–Fisher.
+* **Physical ansatz (yours, gap (a)):** propagator, subtraction-point values,
+  Z-factor extraction operators, coupling Z-exponents.
+* **Bridge integrals (yours, gap (b)):** *values* of the master integrals at
+  the sub-point.
+
+If a result requires you to do something that's not in (a) or (b), that's a
+bug in our factorisation; please file it.
+
 ## Quick start
 
 ```python

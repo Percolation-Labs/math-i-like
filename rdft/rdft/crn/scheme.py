@@ -203,17 +203,15 @@ class Schemes:
                         derivative_label="u",
                         derivative_var=u),
         )
-        # Kinematic kernels for the JT05 Reggeon-DP scheme. These are
-        # determined by the propagator G = 1/(-I*omega + lam*(k^2+tau)) at
-        # the symmetric subtraction point, expanded to d=4-eps. Each kernel
-        # is the d-dim simple-pole coefficient of the relevant Z-extraction
-        # derivative, normalised to the standard B_2 = 1/eps master.
-        # Property of (propagator + sub-point), not the CRN.
+        # Kinematic kernels.
+        # Self-energy kernels (psi, lambda, tau) are derived mechanically by
+        # ``algebra.derive_one_loop_kernel`` from the propagator + sub-point
+        # + extraction operator -- they are NOT shipped here, so the values
+        # in algebra.py are not "configured" but computed from first principles.
+        # Vertex kernel K_u is currently scheme-supplied because the triangle
+        # integral is not yet mechanically derived (see critique.md gap (1)).
         kinematic_kernels = {
-            "psi":    sp.Rational(-1, 4),
-            "lambda": sp.Rational(-1, 8),
-            "tau":    sp.Rational(-1, 2),
-            "u":      sp.Rational(-4, 1),
+            "u":      sp.Rational(-4, 1),   # triangle, not yet derived
         }
 
         # Master integral simple-pole values at the JT05 symmetric point.

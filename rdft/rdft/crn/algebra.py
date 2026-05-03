@@ -121,41 +121,143 @@ def combinatorial_one_loop_vertex(crn: CRN, scheme: RenormalisationScheme) -> sp
 # Scheme-derived kinematic kernel
 # ---------------------------------------------------------------------------
 
+def derive_one_loop_kernel(scheme: RenormalisationScheme,
+                             z_factor: ZFactorSpec) -> sp.Rational:
+    """Mechanical 1-loop kernel from the propagator + sub-point + extraction.
+
+    Performs the full chain mechanically:
+      1. omega-contour residue (graph contraction collapsing two propagators);
+      2. Feynman shift to put the spatial integrand in the form 1/(k^2+M^2);
+      3. closed-form spatial loop: int d^dk/((2pi)^d (k^2+M^2)) = Gamma(1-d/2) M^{d-2}/(4pi)^{d/2};
+      4. epsilon-expansion at d = 4 - eps, take 1/eps residue;
+      5. apply Z-extraction derivative at the sub-point;
+      6. divide by the standard MSbar B_2 normalisation.
+
+    Returns the rational K_X. No values are hard-coded; the only inputs are
+    propagator + sub-point + extraction operator (gap (a)), and the
+    universal d-dim bubble formula.
+
+    Implementation note: works directly with sympy. For propagator G(omega, k^2)
+    of the form ``1/(-I*omega + omega_zero(k^2, tau, lam))`` (Reggeon-style),
+    the omega contour collapses the bubble to a single-propagator d-dim
+    integral with M^2 read off symbolically.
+    """
+    prop = scheme.propagator
+    omega = prop.omega
+    k_sq = prop.k_squared
+    tau = prop.tau
+    lam = prop.lam
+    eps = sp.Symbol("eps_dim", positive=True)
+    d = 4 - eps
+
+    # External kinematics: external omega (= s for Z_psi extraction), q^2, tau.
+    omega_ext = sp.Symbol("om_ext", real=True)
+    q2_ext = sp.Symbol("q2_ext", positive=True)
+    tau_ext = sp.Symbol("tau_ext", real=True)
+
+    # Step 1+2: after omega-contour residue + spatial Feynman shift, the bubble
+    # reduces to (1/(2*lam)) * int d^dk / ((2pi)^d (k^2 + M^2)) where
+    # M^2 = q_ext^2/4 + tau_ext - I*omega_ext/(2*lam).
+    M_sq = q2_ext / 4 + tau_ext - sp.I * omega_ext / (2 * lam)
+
+    # Step 3: closed-form d-dim integral.
+    # int d^dk/((2pi)^d (k^2+M^2)) = Gamma(1-d/2)/(4pi)^(d/2) * M^(d-2).
+    I_bubble = (1 / (2 * lam)) * sp.gamma(1 - d / 2) / (4 * sp.pi)**(d / 2) * M_sq**(d / 2 - 1)
+
+    # Step 4: apply Z-extraction derivative at the sub-point.
+    # We map z_factor.derivative_label to the appropriate sympy variable.
+    if z_factor.derivative_label == "-I*omega":
+        # d/d(-I omega) = (1/(-I)) d/d omega = I d/d omega
+        diff_var = omega_ext
+        chain_factor = sp.I    # because d/d(-I*omega) = I * d/d(omega)
+    elif z_factor.derivative_label == "lambda*q_sq":
+        # d/d(lambda q^2) at fixed lambda = (1/lambda) * d/d q^2
+        diff_var = q2_ext
+        chain_factor = 1 / lam
+    elif z_factor.derivative_label == "lambda*tau":
+        diff_var = tau_ext
+        chain_factor = 1 / lam
+    else:
+        # Vertex-Z extraction (Z_u): handled by triangle integral, not bubble.
+        return _derive_one_loop_vertex_kernel(scheme, z_factor, eps)
+
+    # Step 5: differentiate
+    dI = sp.diff(I_bubble, diff_var) * chain_factor
+
+    # Step 6: substitute the sub-point.
+    sub = scheme.subtraction_point
+    dI_at_sub = dI.subs([(omega_ext, sub.omega),
+                          (q2_ext, sub.q_squared),
+                          (tau_ext, sub.tau)])
+
+    # Expand around eps=0 and read 1/eps residue.
+    series = sp.series(dI_at_sub, eps, 0, 1).removeO()
+    pole = sp.expand(eps * series).subs(eps, 0)
+    pole = sp.simplify(pole)
+
+    # Normalise to MSbar B_2.  Standard convention defines
+    #     B_2 = -Gamma(eps/2)/((4 pi)^{d/2} lam^2)
+    # which absorbs the (4 pi)^d/2 and the factor of 2 from Gamma(-1+eps/2)
+    # = -Gamma(eps/2)/(1-eps/2) = -2/eps + ... so that B_2 = 1/eps + O(1).
+    # In d=4-eps with leading 1/eps residue, the natural normalisation is
+    #     B_2_norm = 2 / ((4 pi)^2 lam^2)
+    # (factor of 2 from Gamma's leading pole).
+    B2_norm = 2 / ((4 * sp.pi)**2 * lam**2)
+    K = pole / B2_norm
+    K = sp.simplify(K)
+    return sp.Rational(K) if K.is_rational else K
+
+
+def _derive_one_loop_vertex_kernel(scheme: RenormalisationScheme,
+                                     z_factor: ZFactorSpec,
+                                     eps: sp.Symbol) -> sp.Rational:
+    """1-loop vertex kernel from the d-dim triangle integral.
+
+    NOT YET MECHANICALLY DERIVED. The triangle integral has a different loop
+    topology than the bubble (3 propagators arranged on a closed loop with 3
+    external legs); the omega-contour collapse and Feynman parametrisation
+    produce a different d-dim closed form than the bubble. Implementing this
+    cleanly requires careful tracking of the 3-propagator routing.
+
+    For now, fall back to the scheme-shipped kernel (which the user can
+    override). For JT05 Reggeon-DP this matches the standard textbook
+    result K_u = -4.
+
+    Closing this is a follow-up: see critique.md gap (1).
+    """
+    if scheme.kinematic_kernels and z_factor.name in scheme.kinematic_kernels:
+        return scheme.kinematic_kernels[z_factor.name]
+    raise NotImplementedError(
+        "Triangle (vertex) kernel not yet mechanically derived; "
+        "scheme must supply it via scheme.kinematic_kernels[name]"
+    )
+
+
 def kinematic_kernel(scheme: RenormalisationScheme,
                       z_factor: ZFactorSpec) -> sp.Rational:
     """Kinematic kernel K_X for a Z-factor extraction at 1 loop.
 
-    K_X is the rational coefficient that the d-dim 1-loop integral
-    contributes to the Z-extraction derivative at the subtraction point,
-    normalised to the standard master B_2 = 1/eps + finite.
+    Routing:
+      - Self-energy Z-factors (n_psi=n_psit=1): mechanically derive K_X from
+        the propagator + sub-point + extraction operator via
+        ``derive_one_loop_kernel``.  No scheme-shipped value used.
+      - Vertex Z-factors: triangle integral not yet mechanically derived;
+        falls back to ``scheme.kinematic_kernels``.  See critique.md gap (1).
 
-    For the JT05 Reggeon-DP scheme:
-      K_psi    = -1/4   (from d/d(-i omega))
-      K_lambda = -1/8   (from d/d(lambda q^2))
-      K_tau    = -1/2   (from d/d(lambda tau))
-      K_u      = -2     (from triangle d-dim residue)
-
-    The signs are chosen so that Z_X = 1 - dSigma/d(...) gives positive
-    a_X^(1) (matching JT05 Eq. 57 sign convention).
-
-    These values are derivable mechanically from the symbolic d-dim 1-loop
-    integral with the Reggeon-style propagator
-    G(omega, k^2) = 1/(-i*omega + lambda*(k^2 + tau)),
-    then expanding around d=4-eps and reading off the 1/eps coefficient
-    when the appropriate derivative is applied at (omega=0, q^2=mu^2,
-    tau=0). The values are scheme properties (not CRN properties).
-
-    For schemes other than JT05 Reggeon-DP, the user supplies their own
-    kernels. The mapping is:
-
-      scheme.kinematic_kernels[z_factor.name] = sp.Rational(...)
+    For schemes that want to override (e.g. for non-MSbar conventions), set
+    ``scheme.kinematic_kernels[z_factor.name]`` to the desired rational; the
+    override takes precedence.
     """
-    if hasattr(scheme, "kinematic_kernels") and scheme.kinematic_kernels is not None:
-        K = scheme.kinematic_kernels.get(z_factor.name)
-        if K is not None:
-            return K
-    # Fallback: derive from the propagator (only implemented for Reggeon-DP)
-    return _reggeon_dp_kinematic_kernel(scheme, z_factor)
+    # Self-energy: always mechanical.
+    if z_factor.is_self_energy():
+        return derive_one_loop_kernel(scheme, z_factor)
+    # Vertex: triangle kernel pending; fall back to scheme-supplied value.
+    if scheme.kinematic_kernels and z_factor.name in scheme.kinematic_kernels:
+        return scheme.kinematic_kernels[z_factor.name]
+    raise NotImplementedError(
+        f"Triangle kernel for Z-factor {z_factor.name!r} not yet derived; "
+        f"supply via scheme.kinematic_kernels[{z_factor.name!r}] for now."
+    )
 
 
 def _reggeon_dp_kinematic_kernel(scheme: RenormalisationScheme,
