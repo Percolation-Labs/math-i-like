@@ -333,7 +333,15 @@ class RGProgram:
         nu_ours = trunc2(1 / nu_inv_ours)
         beta_ours = trunc2(nu_ours * (4 - eps + eta_ours) / 2)
 
-        # Compare against JT05 Eq. (60)
+        # =====================================================================
+        # COMPARISON ONLY -- not part of the derivation.
+        # The exponents above (eta_ours, z_ours, nu_ours, beta_ours) are the
+        # mechanically derived results.  Below we compare against JT05
+        # Eq. (60) for verification.  The JT_* values are JT05's published
+        # numbers; they are NOT used to derive anything, only to compute
+        # the residual.  For schemes other than JT05 Reggeon-DP, the
+        # comparison would be against a different reference (or omitted).
+        # =====================================================================
         JT_eta = trunc2(-(eps / 6) * (1 + (sp.Rational(25, 288)
                                             + sp.Rational(161, 144) * L) * eps))
         JT_z = trunc2(2 - (eps / 12) * (1 + (sp.Rational(67, 288)
@@ -343,12 +351,9 @@ class RGProgram:
         JT_beta = trunc2(1 - (eps / 6) * (1 - (sp.Rational(11, 288)
                                                 - sp.Rational(53, 144) * L) * eps))
 
-        # Compare ours vs JT05 by extracting (rational, log-of-4/3) coefficients
-        # and comparing separately.  sp.simplify on log(4/3) vs log(2)-log(3)
-        # can hang; this approach is fast and exact.
+        # log(4/3) vs log(2)-log(3): rewrite both sides into log(4/3) so
+        # sp.expand sees them as identical.  sp.simplify can hang on this.
         log43 = sp.log(sp.Rational(4, 3))
-        log43_alt = sp.log(2) * 2 - sp.log(3)   # = log(4/3)
-        # Substitute log(2), log(3) -> rewrite as log(4/3)
         def _to_log43(e):
             e = e.rewrite(sp.log)
             e = e.subs(sp.log(2), (log43 + sp.log(3)) / 2)

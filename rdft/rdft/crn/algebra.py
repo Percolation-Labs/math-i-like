@@ -67,54 +67,59 @@ def find_cubic_pair(crn: CRN) -> Tuple[Vertex, Vertex]:
     return V_plus, V_minus
 
 
+def _vertex_coupling_factor(scheme: RenormalisationScheme, V: int) -> sp.Rational:
+    """Return ``(scheme.vertex_coupling_in_u)^V`` for V cubic vertices, or 1
+    if the scheme didn't specify (treat as a check; raises if missing)."""
+    if scheme.vertex_coupling_in_u is None:
+        raise ValueError(
+            "scheme.vertex_coupling_in_u is required for combinatorial "
+            "factors; supply the coefficient of u in each cubic vertex of "
+            "the action (e.g. 1/2 for the JT05 action S_int = (u/2)(...))"
+        )
+    return scheme.vertex_coupling_in_u ** V
+
+
 def combinatorial_one_loop_self_energy(crn: CRN, scheme: RenormalisationScheme) -> sp.Rational:
     """Combinatorial factor c^(1) for the 1-loop self-energy bubble.
 
     Mechanically:
-      c^(1) = (cumulant prefactor) x (Wick weight) x (vertex sign product).
+      c^(1) = (cumulant prefactor) x (Wick weight) x (vertex sign product) x
+              (vertex_coupling_in_u)^V.
 
-    For the bubble V_+ + V_- with n_psi(V_+) = 2, n_psit(V_-) = 2:
-      cumulant prefactor = 1/2! x C(2,1) = 1
-      Wick weight        = n_out(V_+) x n_in(V_-) = 2 x 2 = 4
-      vertex couplings   = (V_+ sign) x (V_- sign) at coefficient u^2/4 in
-                           JT05 normalisation [vertex coupling u/2 each]
-      sign product       = (-)(+) = -1
+    For the bubble V_+ + V_- (V=2 cubic vertices):
+      cumulant prefactor = 1/2! x C(2,1) = 1   (read from V=2 cumulant)
+      Wick weight        = n_out(V_+) x n_in(V_-)   (read from CRN vertex legs)
+      sign product       = V_+.sign x V_-.sign       (read from CRN)
+      coupling-in-u^V    = scheme.vertex_coupling_in_u^V  (scheme ansatz)
 
-    Net: c^(1) = 1 x 4 x (-1) x (1/4) = -1.
-
-    Returned as a sympy Rational, parameterised in the JT05 coupling u.
+    No values hard-coded.  For JT05 with V_+.sign=-1, V_-.sign=+1, n_out=2,
+    n_in=2, vertex_coupling_in_u=1/2, V=2:
+      c^(1) = 1 x 4 x (-1) x (1/2)^2 = -1.
     """
     V_plus, V_minus = find_cubic_pair(crn)
-    cumul = sp.Rational(1, 1)
+    cumul = sp.Rational(1, 1)        # 1/2! x C(2,1) for V=2 cumulant
     wick = sp.Integer(V_plus.n_out * V_minus.n_in)
-    # Sign of vertex coupling product: V_+.sign * V_-.sign
     sign_product = sp.Integer(V_plus.sign * V_minus.sign)
-    # Coupling product (u/2)(u/2) = u^2/4 with sign already in sign_product
-    coupling_factor = sp.Rational(1, 4)   # the u/2 x u/2 = u^2/4 in JT05 norm
-    return cumul * wick * sign_product * coupling_factor
+    coupling = _vertex_coupling_factor(scheme, V=2)
+    return cumul * wick * sign_product * coupling
 
 
 def combinatorial_one_loop_vertex(crn: CRN, scheme: RenormalisationScheme) -> sp.Rational:
-    """Combinatorial factor for the 1-loop vertex correction (triangle).
+    """Combinatorial factor for the 1-loop vertex correction (triangle, V=3).
 
-    Three cubic vertices in a triangle. For Z_u extraction at the
-    Phi^2 Phit sector: 1 V_+ and 2 V_- (or rapidity-conjugate variant).
-
-      cumulant prefactor = 1/3! x multinomial(3; 1,2) = 1/6 x 3 = 1/2
-      Wick weight        = (n_out V_+ choices) x (V_- pairings)
-                         = 2 x 2 x 2 = 8 (legs at V_+ pair with V_-'s
-                         psitildes, V_-'s extra psitildes pair with V_-'s
-                         psi cross-contraction).
-      vertex couplings   = u^3/8 in JT05 norm
+    Mechanically:
+      cumulant prefactor = 1/3! x multinomial(3; 1,2) = 1/2
+      Wick weight        = 2 x 2 x 2 = 8     (V_+ leg pairings with two V_-'s)
       sign product       = (-)(+)(+) = -1
+      coupling-in-u^V    = scheme.vertex_coupling_in_u^3
 
-    Net: c^(1)_u = (1/2) x 8 x (-1) x (1/8) = -1/2.
+    Net for JT05: (1/2) x 8 x (-1) x (1/2)^3 = -1/2.
     """
     cumul = sp.Rational(1, 2)
     wick = sp.Integer(8)
     sign_product = sp.Integer(-1)
-    coupling_factor = sp.Rational(1, 8)
-    return cumul * wick * sign_product * coupling_factor
+    coupling = _vertex_coupling_factor(scheme, V=3)
+    return cumul * wick * sign_product * coupling
 
 
 # ---------------------------------------------------------------------------
@@ -260,68 +265,6 @@ def kinematic_kernel(scheme: RenormalisationScheme,
     )
 
 
-def _reggeon_dp_kinematic_kernel(scheme: RenormalisationScheme,
-                                   z_factor: ZFactorSpec) -> sp.Rational:
-    """Kinematic kernel for the JT05 Reggeon-DP scheme, from the symbolic
-    d-dim 1-loop integral.
-
-    With propagator G(omega, k^2) = 1/(-i*omega + lambda*(k^2 + tau)) and the
-    JT05 symmetric subtraction point (omega=0, q^2=mu^2, tau=0), the bubble
-    integral
-
-        I(omega, q^2, tau) = (1/(2*lambda)) * (1/(4*pi)^(d/2))
-                              * Gamma(1 - d/2) * M^(d-2)
-        with M^2 = q^2/4 + tau - i*omega/(2*lambda),
-
-    has simple pole I_pole(omega, q^2, tau) = -M^2 / (lambda * (4 pi)^2)
-    times 1/eps. Differentiating at the sub-point gives:
-
-        dI/d(-i*omega)  -> -1/(2 lambda^2 (4 pi)^2 eps)
-        dI/d(lambda q^2) -> -1/(4 lambda^2 (4 pi)^2 eps)
-        dI/d(lambda tau) -> -1/(lambda^2 (4 pi)^2 eps)
-
-    Normalising to B_2 = 1/(2 lambda^2 (4 pi)^2 eps) (the JT05 master normalisation),
-    these reduce to:
-
-        K_psi    = -1/2 * 2  = -1   (calibration)
-        K_lambda = -1/4 * 2  = -1/2
-        K_tau    = -1   * 2  = -2
-
-    With the additional sign from Z_X = 1 - dSigma / d(...), the rationals
-    used downstream are positive. Net effect (combining sign from Z = 1 - dS,
-    sign from Sigma = -u^2 I, and the kernel sign): a_X = positive rational.
-
-    We split this consistently below.
-    """
-    # The kernel encodes the propagator's derivative pattern at the sub-point.
-    # By the symbolic analysis above:
-    # Reggeon-style propagator G(omega, k^2) = 1/(-I*omega + lambda*(k^2+tau))
-    # at the JT05 symmetric subtraction point (omega=0, q^2=mu^2, tau=0):
-    #
-    # The 1-loop bubble in MS-bar with the standard B_2 = 1/(2*lambda^2*(4*pi)^2*eps)
-    # master normalisation gives the following kinematic kernels for the
-    # Z-factor extraction derivatives:
-    if z_factor.derivative_label == "-I*omega":
-        # d/d(-i*omega) of M^2 = 1/(2*lambda); divided by B_2 normalisation
-        # gives kernel = -1/4 (in JT05 conventions where a_psi^(1) = 1/4).
-        return sp.Rational(-1, 4)
-    elif z_factor.derivative_label == "lambda*q_sq":
-        # d/d(lambda q^2) gives 1/(4*lambda) -- half of d/d(-i omega) due to
-        # the q^2/4 vs -i*omega/(2*lambda) coefficient difference in M^2.
-        return sp.Rational(-1, 8)
-    elif z_factor.derivative_label == "lambda*tau":
-        # d/d(lambda tau) gives 1/lambda -- 2 x d/d(-i omega) coefficient.
-        return sp.Rational(-1, 2)
-    elif z_factor.derivative_label == "u":
-        # Triangle vs bubble: triangle integral has 3 propagators and the
-        # vertex extraction picks up a different coefficient. The
-        # triangle/bubble residue ratio at the JT05 symmetric vertex point
-        # is 4, with the same overall MS-bar normalisation, giving K_u = -4.
-        return sp.Rational(-4, 1)
-    else:
-        raise ValueError(f"Unknown derivative_label: {z_factor.derivative_label}")
-
-
 # ---------------------------------------------------------------------------
 # 1-loop algebra factor: a_X^(1) = c_X x K_X
 # ---------------------------------------------------------------------------
@@ -361,31 +304,6 @@ def all_one_loop_algebra_factors(crn: CRN,
 # a fixed master basis {B_2^2, B_3^sun, B_V} with rational q-coefficients
 # determined by the propagator's IBP relations. These are properties of the
 # scheme.
-
-REGGEON_DP_TWO_LOOP_TOPOLOGIES = {
-    # name -> (combinatorial multiplicity, IBP decomposition)
-    'Sigma_2_sun':   {'mult': sp.Rational(1, 1),
-                      'q':    {'B_22': sp.Rational(0, 1),
-                               'B_3sun': sp.Rational(1, 1),
-                               'B_V': sp.Rational(0, 1)}},
-    'Sigma_2_nest':  {'mult': sp.Rational(1, 1),
-                      'q':    {'B_22': sp.Rational(1, 1),
-                               'B_3sun': sp.Rational(0, 1),
-                               'B_V': sp.Rational(0, 1)}},
-    'V_2_ice':       {'mult': sp.Rational(2, 1),
-                      'q':    {'B_22': sp.Rational(0, 1),
-                               'B_3sun': sp.Rational(0, 1),
-                               'B_V': sp.Rational(1, 1)}},
-    'V_2_box':       {'mult': sp.Rational(1, 1),
-                      'q':    {'B_22': sp.Rational(1, 1),
-                               'B_3sun': sp.Rational(0, 1),
-                               'B_V': sp.Rational(0, 1)}},
-    'V_2_lad':       {'mult': sp.Rational(2, 1),
-                      'q':    {'B_22': sp.Rational(0, 1),
-                               'B_3sun': sp.Rational(0, 1),
-                               'B_V': sp.Rational(1, 1)}},
-}
-
 
 def hopf_antipode_double_pole(a_X: sp.Rational, beta_1: sp.Rational) -> sp.Rational:
     """Connes-Kreimer Hopf-antipode formula for the 2-loop double pole:

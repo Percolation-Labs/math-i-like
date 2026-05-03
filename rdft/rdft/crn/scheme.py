@@ -154,6 +154,11 @@ class RenormalisationScheme:
     # dimensionless coupling u_R via u_bare = mu^eps * u_R * Z_combined.
     # Determined by the scheme (the coupling's dimensionless definition).
     coupling_z_exponents: Optional[Dict[str, sp.Rational]] = None
+    # The coefficient relating each cubic vertex's coupling to the
+    # renormalised u.  For an action with cubic terms (u/2)*psit*psi^2,
+    # this is 1/2.  Determines the (vertex_coupling_in_u)^V factor that
+    # the combinatorial layer applies for V cubic vertices.
+    vertex_coupling_in_u: Optional[sp.Rational] = None
 
     def get_zfactor(self, name: str) -> ZFactorSpec:
         for z in self.z_factors:
@@ -269,6 +274,11 @@ class Schemes:
             "tau":    sp.Rational(0),
         }
 
+        # JT05 action is S_int = (u/2)(psit*psi^2 - psit^2*psi).  Each cubic
+        # vertex carries coefficient u/2.  Combinatorial layer multiplies by
+        # (1/2)^V for V cubic vertices.
+        vertex_coupling_in_u = sp.Rational(1, 2)
+
         return RenormalisationScheme(
             propagator=prop, z_factors=z_factors,
             subtraction_point=sub, coupling=u,
@@ -278,4 +288,5 @@ class Schemes:
             master_values=master_values,
             master_normalisation=master_normalisation,
             coupling_z_exponents=coupling_z_exponents,
+            vertex_coupling_in_u=vertex_coupling_in_u,
         )
