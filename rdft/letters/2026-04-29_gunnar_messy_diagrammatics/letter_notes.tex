@@ -1,0 +1,195 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,calc}
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage{booktabs}
+
+\geometry{margin=2.4cm}
+
+\hypersetup{colorlinks=true,linkcolor=blue!60!black,urlcolor=blue!60!black}
+
+\newcommand{\Hvert}[4]{%
+\begin{tikzpicture}[baseline=-0.5ex,scale=0.65]
+  \draw[thick] (-0.3,0.45) node[above]{\scriptsize $#1$} -- (0,0.25);
+  \draw[thick] (0.3,0.45) node[above]{\scriptsize $#2$} -- (0,0.25);
+  \draw[thick] (0,0.25)--(0,-0.25);
+  \draw[thick] (-0.3,-0.45) node[below]{\scriptsize $#3$} -- (0,-0.25);
+  \draw[thick] (0.3,-0.45) node[below]{\scriptsize $#4$} -- (0,-0.25);
+\end{tikzpicture}}
+
+\title{\large Letter notes: CRN $\to$ generator, and how the numbers come out\\[2pt]
+\normalsize Short reply to your 29 Apr 2026 note}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-2em}
+
+\section*{1. The main claim, in one sentence}
+
+\emph{Given a chemical reaction network (CRN) / Doi--Peliti action, we write down a single \textbf{generator} --- a polynomial Dyson--Schwinger equation $G(z) = z\,\phi(G(z))$ --- and read every diagrammatic number off it.} The rest of the framework is two tracks built on that one generator:
+
+\begin{itemize}[leftmargin=2em,itemsep=2pt]
+  \item \textbf{Track A (analytic combinatorics).} Counts, signs, symmetry factors, $Z$-factor pole rationals --- by Lagrange inversion + bivariate marking + Hopf-antipode (Connes--Kreimer).
+  \item \textbf{Track B (Connes--Kreimer / IBP).} The residual integrals after counting is factored out are reduced to a small \emph{master basis}; their values are quoted from prior work or computed by HyperInt / tropical Monte Carlo.
+\end{itemize}
+
+The factorisation that ties the two tracks together is, for any 1PI amplitude,
+\[
+  \mathcal{A}_\Gamma \;=\; \underbrace{c_\Gamma}_{\text{count}}
+  \;\cdot\; \underbrace{B_\Gamma}_{\text{bridge integral}}
+  \;\cdot\; \underbrace{a_\Gamma}_{\text{algebra}},
+\]
+with $c_\Gamma$ and $a_\Gamma$ rational outputs of Track A, and $B_\Gamma$ the analytic residue handled by Track B.
+
+\section*{2. Two closed forms: from CRN to diagrams, and from diagrams to numbers}
+
+There are \emph{two} algorithmic generators in the framework, with different roles. Both are written down directly from the CRN.
+
+\subsection*{2a. Liouvillian generator $\to$ amputated diagrams (enumeration)}
+
+This is the construction in Amarteifio (2019, PhD thesis) (Heisenberg--Weyl / Doi--Peliti). For a reaction network with stoichiometries $\sum_i k_{ri}A_i \to \sum_i l_{ri}A_i$ at rate $k_r$, the Doi shift produces, per reaction, the vertex generator
+\[
+\boxed{\;
+  Q_r \;=\; k_r\,\Bigl[\,\prod_i (1+\tilde\psi_i)^{l_{ri}} \;-\; \prod_i (1+\tilde\psi_i)^{k_{ri}}\,\Bigr]\;\prod_i \psi_i^{k_{ri}}.
+\;}
+\]
+\textbf{What it does on expansion.} Expanding the binomials gives a finite \emph{vertex dictionary}: each monomial $g_{\{m_i\},\{n_i\}}\prod_i \tilde\psi_i^{m_i}\psi_i^{n_i}$ is a vertex with $m_i$ outgoing and $n_i$ incoming legs of species $A_i$, with the rational coefficient $g$ read off from the Doi binomials. The Feynman rules then mechanically connect $\psi$-legs to $\tilde\psi$-legs through propagators, producing all amputated 1PI diagrams. \textbf{This is the part that algorithmically (or by hand) enumerates the diagrams} --- it is the standard Doi--Peliti expansion, written in a form that is mechanical rather than handcrafted per system.
+
+For Reggeon DP, $A \to 2A$ at rate $\lambda g$ and $2A \to A$ at rate $\lambda g$ give, after the Doi shift,
+\[
+Q \;=\; -\,\lambda g\,\tilde\psi(1+\tilde\psi)\psi \;+\; \lambda g\,\tilde\psi(1+\tilde\psi)\psi^2 \;=\; \lambda g\bigl(\tilde\psi\psi^2 - \tilde\psi^2\psi\bigr) \;+\;(\text{free part}),
+\]
+recovering the JT05 cubic vertices $\tfrac{\lambda g}{2}(\tilde\psi\psi^2 - \tilde\psi^2\psi)$ with their relative sign.
+
+\textbf{What this generator does \emph{not} fix automatically.} The amputated graphs are enumerated, but the per-graph \emph{symmetry factors} come from explicit graph-automorphism counting (or from Wick contractions): the generator gives you the diagrams; you still have to figure out $|\mathrm{Aut}(\Gamma)|^{-1}$. That is the residual hand-step in this layer.
+
+\subsection*{2b. Lagrange / DSE generator $\to$ counts and symmetry factors (CFAC)}
+
+The CFAC closure adds a second generator that handles \emph{both} the count \emph{and} the symmetry factors in one move. For Reggeon DP the Liouvillian above gives the polynomial DSE
+\[
+  \boxed{\;G(z) \;=\; z\,\phi(G(z)), \qquad \phi(G) \;=\; 1 + G^2.\;}
+\]
+
+\paragraph{Reading the diagram counts off the generator (and the symmetry factors).} Lagrange inversion (Flajolet--Sedgewick A.6),
+\[
+  [z^n]\,G(z) \;=\; \tfrac{1}{n}\,[G^{n-1}]\,\phi(G)^n,
+\]
+gives, for $\phi(G)=1+G^2$:
+\[
+  [z^3]G = \tfrac{1}{3}\binom{3}{1} = 1,\qquad
+  [z^5]G = \tfrac{1}{5}\binom{5}{2} = 2,\qquad
+  [z^7]G = \tfrac{1}{7}\binom{7}{3} = 5.
+\]
+That is the \emph{entire} 1- and 2-loop diagram inventory: $1+2+5 = 8$ topologies, no graphs drawn, \textbf{symmetry factors automatic} (they appear as the Lagrange-inversion overcount, $1/2!$ on bubble, $1/3!$ on sunset, etc.). \emph{This is the gain over (2a)}: the Liouvillian gets you to amputated diagrams; the Lagrange closure removes the automorphism bookkeeping as well.
+
+\paragraph{Reading the rapidity signs off the generator.} Bivariate marking
+$G(z,\alpha) = z(1+\alpha G^2)$ at $\alpha=-1$ gives the signed Reggeon count; $[z^n\alpha^k]G$ counts trees with $k$ opposite-sign vertex pairs.
+
+\paragraph{Reading the double poles off the generator (Hopf antipode).} The Connes--Kreimer antipode evaluation closes \emph{every} 2-loop double pole in closed form:
+\[
+  Z_X^{(2,2)} \;=\; \tfrac12\,a_X^{(1)}\bigl(\beta_1 + a_X^{(1)}\bigr),
+  \qquad \beta_1 = a_u^{(1)} - 2\,a_\psi^{(1)} = \tfrac32,
+\]
+with $a^{(1)} = \{1/4, 1/8, 1/2, 2\}$ from the 1-loop algebra. Result: $\{Z_\psi, Z_\lambda, Z_\tau, Z_u\}^{(2,2)} = \{7/32,\,13/128,\,1/2,\,7/2\}$, matching JT05 Eq.~(57) exactly.
+
+\paragraph{Reading the exponents off the generator.} Pipe through the T\"auber relation, $\gamma_X(u) = -u\,\partial_u(\text{simple-pole residue of }\ln Z_X)$:
+\begin{itemize}[leftmargin=2em,itemsep=1pt]
+  \item $\gamma(u), \zeta(u), \kappa(u)$ at 2 loops --- match JT05 Eq.~(58a/b/c) with \emph{zero residual} (\texttt{eq58\_from\_z.py}).
+  \item $\beta(u)$ at 1-loop is $3u^2/2$ from $\beta_1$ above; the 2-loop coefficient is bookkeeping (Vasil'ev MSbar pole-cancellation), not yet written symbolically.
+  \item Fixed point $u^*$ and exponents $\{\eta, z, \nu, \beta_{\textsf{DP}}\}$ at JT05 Eq.~(60) --- \emph{zero residual} (\texttt{rdft/ac/gribov/two\_loop.py}).
+\end{itemize}
+The only analytic input that is \emph{not} derived from $\phi$ is the value of three master integrals $\{B_2, B_3^{\textsf{sun}}, B_V\}$. CFAC reduces $\sim 10$ distinct loop integrals to those three; computing their numerical values is grunt work where Track B (HyperInt / tropical MC / hand) takes over.
+
+\section*{3. Where QFT enters: relevance filters}
+
+QFT supplies the filtering rules:
+\begin{itemize}[leftmargin=2em,itemsep=1pt]
+  \item which external-leg sector is being renormalised (2-point for $Z_\psi$, 3-point for $Z_u$),
+  \item which loop order,
+  \item the 1PI restriction (no reducible trees),
+  \item power-counting for UV relevance ($\omega = dL - 2I + n_\partial \ge 0$).
+\end{itemize}
+In our current pipeline these are \emph{hand-mapped} on top of the Lagrange counts (e.g.\ $[z^7]=5 = 3$ 1PI vertex topologies $+\,2$ reducible trees, in \texttt{gribov.tex} \S 3.3).
+
+\paragraph{Hypothetically we can fold QFT into the generator itself.} The proposal --- and we are testing it on a separate track, not yet adopted --- is to enrich the generator with marker variables:
+\[
+  \mathcal{G}(z;\,\xi_\psi,\xi_{\tilde\psi};\,\alpha) \;=\; \sum c_{n,e_\psi,e_{\tilde\psi},s}\;
+  z^n\,\xi_\psi^{e_\psi}\,\xi_{\tilde\psi}^{e_{\tilde\psi}}\,\alpha^s,
+\]
+take its Legendre transform $\mathcal{W} = \ln \mathcal{Z} \to \Gamma$ to project onto 1PI, and apply a power-counting inequality on monomial degrees as a filter. Each $Z$-factor would then be a specific bidegree projection of $\Gamma_{\text{1PI}}$, with no human-mapped topology table.
+
+\paragraph{POC, and the honest verdict.} The Legendre track is implemented for 0-d Reggeon DP in \texttt{poc\_legendre.py} (this letter directory; see also the Legendre tutorial in \texttt{docs/}). It runs end-to-end and reproduces the 3+2 split (3 1PI vertex graphs $+$ 2 reducibles) at $g^5$ that gribov.tex hand-mapped. \textbf{But}: for a 2-loop calculation with $\sim 5$ topologies, hand-mapping is faster than building the autonomous selector. The autonomous filter pays off at higher loop orders or for theories without a curated topology table (your $H$-vertex model, Manna, BARW). \emph{So: yes the filter can be combinatorial; no, it doesn't always save time at low orders.}
+
+\section*{4. Q1: your $2^n$ ladder, in our framework}
+
+You wrote (paraphrasing): the four-term coupling
+\begin{align*}
+\Big[\Hvert{m_1}{n_1}{m_2}{n_2}\Big]
+\;=\;& \delta_{m_2,n_2}\delta_{m_1{-}1,n_1{+}1}
++ \delta_{m_2,n_2}\,n_1\,\delta_{m_1{-}1,n_1{-}1}\\
+&{} - \delta_{m_2,n_2{+}1}\delta_{m_1{-}1,n_1{+}1}
+- \delta_{m_2,n_2{-}1}\,n_2\,\delta_{m_1{-}1,n_1}
+\end{align*}
+gives an $n$-loop chain
+\begin{align*}
+\sum_{\ell_1,\dots,\ell_{2n}}
+\Hvert{1}{\ell_1}{0}{\ell_2}\cdot&
+\bigg(\Hvert{\ell_1}{\ell_3}{\ell_2}{\ell_4}+\Hvert{\ell_2}{\ell_4}{\ell_1}{\ell_3}\bigg)\cdots\\
+\cdots\bigg(\Hvert{\ell_{2n-1}}{1}{\ell_{2n}}{0}&{}+\Hvert{\ell_{2n}}{0}{\ell_{2n-1}}{1}\bigg)
+\;=\; 2^n,
+\end{align*}
+verified by Mathematica through several orders, with the question: \emph{can analytic combinatorics see this $2^n$ structurally? What is $T(z)$, and how is it calculated? When I try this I get an infinite matrix or a generating function in four variables, so it's a mess.}
+
+\paragraph{Answer in one box.} Encode each leg occupation by a marker --- $z_i$ for input rail $i$, $w_j$ for output rail $j$ --- and let $\widehat V(z_1,z_2;w_1,w_2) = \sum V(m_1,m_2;n_1,n_2) z_1^{m_1}z_2^{m_2}w_1^{n_1}w_2^{n_2}$. The four-variable polynomial \emph{is} unbounded as you said, but the boundary $|(1,0)\rangle$ projects onto bidegree $(1,1)$, on which only T2 and T4 survive:
+\[
+\widehat V\big|_{(1,1)}(z,w) \;=\; z_1 w_1 - z_1 w_2.
+\]
+Add the rail-flip $\widetilde V$ ($z_1\!\leftrightarrow\!z_2,\ w_1\!\leftrightarrow\!w_2$):
+\[
+\boxed{\;
+\widehat T(z,w) \;=\; \bigl(\widehat V + \widetilde V\bigr)\big|_{(1,1)}
+\;=\; z_1w_1 - z_1w_2 - z_2w_1 + z_2w_2
+\;=\; (z_1-z_2)(w_1-w_2).
+\;}
+\]
+
+\paragraph{Read off the eigenvalue.} The factorisation is rank-$1$ \emph{by inspection}: input mode $z_1-z_2$ couples to output mode $w_1-w_2$ and to nothing else. Substituting the antisymmetric input $z_1=1,z_2=-1$ gives $\widehat T = 2(w_1-w_2)$ --- \textbf{eigenvalue $\lambda=2$ on the antisymmetric mode.} Symmetric input $z_1=z_2=1$ gives $0$ (kernel). So
+\[
+\big\langle \text{boundary}_L \big| \widehat T^{\,n} \big| \text{boundary}_R \big\rangle
+\;=\; \lambda^n \;=\; \boxed{\;2^n.\;}
+\]
+
+\paragraph{Three structural inputs predict $\{0,2\}$ before any matrix is written.}
+\begin{enumerate}[leftmargin=2em,itemsep=1pt]
+  \item \emph{Boundary $\Rightarrow$ sector dim $=2$.} The boundary fixes total particle number $N=1$; $\#\{(m_1,m_2)\in\mathbb Z_{\ge 0}^2: m_1+m_2=1\}=2$.
+  \item \emph{T2 is the rail-1 number operator $\Rightarrow \mathrm{Tr}(T)=2$.} Term 2 is the only diagonal-preserving term, with weight $n_1=m_1$. Together with rail-flip $\widetilde V$'s diagonal weight $m_2$: $T_{\text{diag}}(m_1,m_2) = m_1+m_2 = N$. So $\mathrm{Tr}(T) = N\cdot \dim = 1\cdot 2 = 2$.
+  \item \emph{Rank-$1$ image $\Rightarrow \det(T)=0$.} On the single-particle sector, T2/T4 require $m_1\ge 1$, so $V$ annihilates $|(0,1)\rangle$.
+\end{enumerate}
+A $2{\times}2$ matrix with $\mathrm{Tr}=2$ and $\det=0$ has eigenvalues $\{0,2\}$. Both numbers came from structure, not arithmetic.
+
+\paragraph{Direct answers to your three sub-questions.}
+\begin{itemize}[leftmargin=2em,itemsep=2pt]
+  \item \emph{Why $2{\times}2$, not infinite?} The boundary $|(1,0)\rangle$ at both ends restricts to the bidegree-$(1,1)$ subspace; that has dimension $2{\times}2=4$, which the rail-flip $\mathbb Z_2$ symmetry collapses to a rank-$1$ bilinear form.
+  \item \emph{What is $T(z)$?} It is the bidegree-$(1,1)$ projection of $\widehat V + \widetilde V$, with no $z$-dependence beyond $\{z_1,z_2,w_1,w_2\}$ used as basis labels. Concretely, $\widehat T(z,w) = (z_1-z_2)(w_1-w_2)$.
+  \item \emph{How is it calculated?} Walk the four Kronecker conditions of $V$ at bidegree $(1,1)$ (a paragraph), add the rail-flip, factor. Half a page, no Mathematica.
+\end{itemize}
+
+\paragraph{Verification.} The script \texttt{verify\_2x2.py} (this directory) runs both the polynomial collapse symbolically (sympy: $\widehat T = (z_1-z_2)(w_1-w_2)$, eigenvalue $2$) and the brute-force occupation sum: $2,4,8,16,32$ for $n=1,\dots,5$, matching your Mathematica.
+
+\section*{5. The connection to your $\varphi^4$ point}
+
+The $4\cdot 3$ and $\binom{4}{2}^2\cdot 2\cdot 4!/2$ Wick weights are the bidegree-$(2,2)$ and $(4,4)$ coefficient extractions of the source-coupled $\mathcal Z(g,r;J)$. The $2^n$ ladder is the bidegree-$(1,1)$ eigenvalue iteration of your $\widehat V$. The Gribov tree counts $\{1,2,5\}$ are $[z^n]G$ of $G=z(1+G^2)$. \emph{Two observables, three theories, one machine}: vertex polynomial $\to$ boundary-projected sector $\to$ closed-form residue / eigenvalue. Counting on one end, exponents on the other, with the bridge integrals as the only analytic residue in between.
+
+\medskip
+\noindent\emph{Companion notes Q1 and Q2 in this directory go through the $2^n$ derivation (Q1) and the JT05 Eq.~(57)--(60) reproduction (Q2) in fuller detail.}
+
+\end{document}

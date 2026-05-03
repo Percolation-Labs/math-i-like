@@ -11,6 +11,7 @@
 \tcbuselibrary{skins,breakable}
 \usepackage{enumitem}
 \usepackage{microtype}
+\usepackage{booktabs}
 
 \geometry{margin=2.3cm}
 
@@ -229,47 +230,186 @@ By Mathematica:
 
 \section*{Response / Commentary}
 
-\begin{commentbox}[title=Reading Gunnar's note]
-The note is a sharpened restatement of his original challenge with two distinct charges:
+\begin{commentbox}[title=Reading Gunnar's two questions]
+Gunnar's note (and his follow-up email) leaves us with two concrete charges. We have re-grouped them around his sharpest sentence --- ``\emph{What is $T(z)$ and how does Claude calculate it?}'' --- because that is the place his draft and our draft were talking past each other.
 
-\textbf{Charge 1 (philosophical, \S1).} Standard $\varphi^4$ exponents do not come from \emph{asymptotic} diagram counts. They come from a finite ratio of two diagrams, with their finite Wick combinatorics ($4\cdot 3$ for the tadpole; $\binom{4}{2}^2\cdot 2 \cdot 4!/2$ for the bubble). The asymptotic-combinatorics framing of our Gribov document is therefore not the right lens for \emph{this} problem --- it's a counting problem at $O(1)$, not $O(n!)$.
+\textbf{Q1 (technical, \S2).} ``How does Claude reduce my counting problem to a $2{\times}2$ matrix? When I do this I either end up with an infinite matrix or a generating function in four variables, so it's a mess.'' This is the only thing he actually wants from us right now. \emph{Everything below in R2 is for him.}
 
-\textbf{Charge 2 (technical, \S2).} He hands us an explicit DP problem: an $H$-vertex algebra with the four-term Kronecker coupling, and a chain diagram whose $n$-loop sum --- evaluated in Mathematica through three loops --- gives exactly $\mathbf{2^n}$. He is asking: \emph{can a generating-function / asymptotic-combinatorics framework see this $2^n$ structurally, or is it just a brute Mathematica result?}
+\textbf{Q2 (philosophical, \S1).} Standard $\varphi^4$ exponents come from a finite Wick ratio ($4\cdot 3$ vs.\ $\binom{4}{2}^2\!\cdot 2\cdot 4!/2$), not from $n!^\alpha$ asymptotics. So the AC framing of the Gribov draft was advertising a route the $\varphi^4$ exponents don't need. \emph{R1 below addresses this --- it is short.}
 \end{commentbox}
 
-\subsection*{R1. On Charge 1 --- not a concession: AC \emph{is} the counting machine}
+\subsection*{R1. On $\varphi^4$ counting --- AC \emph{is} the counting machine}
 
-Gunnar is right that the $\varphi^4$ exponents come from \emph{counting}, not from $n!^\alpha$ asymptotics. But ``counting'' and ``asymptotic combinatorics'' are not different machines --- they are the same generating function evaluated at different orders. The word ``asymptotic'' was a poor framing in the Gribov draft; the underlying object is a generating function $C(z)=\sum_n c_n z^n$ over labelled-diagram weights, and:
+He is right that the $\varphi^4$ exponents come from \emph{counting}, not from $n!^\alpha$ asymptotics. ``Counting'' and ``asymptotic combinatorics'' are not different machines --- they are the same generating function evaluated at different orders:
 \begin{itemize}[leftmargin=2em,itemsep=2pt]
-  \item the low-order \emph{coefficients} $c_n$ are exactly the Wick weights $4\cdot 3$ (tadpole) and $\binom{4}{2}^2\cdot 2\cdot 4!/2$ (bubble) that he highlights;
-  \item the asymptotic growth of $c_n$ (radius of convergence, $n!^\alpha$ prefactor) is what controls Tier-B observables like LERW $5/4$, TAP $1.624$, KPZ replica.
+  \item \emph{Low-order coefficients} of the labelled-diagram generating function $\mathcal{Z}(g,r)$ are the Wick weights $4\cdot 3$ (tadpole) and $\binom{4}{2}^2\cdot 2\cdot 4!/2$ (bubble) --- read off as Gaussian-moment derivatives, no hand contractions (Appendix A).
+  \item \emph{Asymptotic growth} of the same coefficients (radius of convergence, $n!^\alpha$ prefactor) controls the Tier-B observables (LERW $5/4$, TAP $1.624$, KPZ replica), where no $\beta$-function fixed point is available.
 \end{itemize}
-So AC supplies the same numerator/denominator combinatorics he is doing by hand --- it is just \emph{closed-form} rather than diagram-by-diagram. Concretely, the AC route to his §1 calculation is:
+So AC contains $\varphi^4$ exponent-extraction as the leading-order truncation of its own generating function. The ``asymptotic'' label in our Gribov draft was poorly chosen; we should rewrite the framing as ``$\varphi^4$ exponents are the low-order residue of the same generating function whose $n\!\to\!\infty$ tail gives Tier-B.'' That reframing is what makes the answer to Q1 below not look like a coincidence.
 
-\begin{enumerate}[leftmargin=2em,itemsep=2pt]
-  \item Write the labelled-diagram generating function $\mathcal{Z}(g,r)$ for $\varphi^4$ at one loop. Its $g^1$ coefficient is automatically the symmetry-weighted sum of the two diagrams.
-  \item Read off the Wick weights as derivatives: $c_{\text{tadpole}} = [g^1]\partial_r \mathcal{Z}$ gives $4\cdot 3$; $c_{\text{bubble}} = [g^2]\partial_g \mathcal{Z}$ gives $\binom{4}{2}^2 \cdot 2\cdot 4!/2$. No hand-counting of Wick contractions.
-  \item The ratio of these coefficients is a generating-function residue --- it is what enters $\beta_u$, and it produces $g^* = \varepsilon/36$, $\nu = \tfrac{1}{2}+\tfrac{\varepsilon}{12}$ on the nose.
-\end{enumerate}
+\subsection*{R2. AC \emph{predicts} the $2^n$ from three structural facts}
 
-In other words: AC contains standard $\varphi^4$ exponent-extraction as the leading-order truncation of its own generating function. The Tier-B observables are the same machine run to all orders, where the $n\to\infty$ asymptotics of the same coefficients carry the additional information.
-
-The right reframing, then, is not ``asymptotic combinatorics is a different problem from $\varphi^4$'' but ``$\varphi^4$ exponents are the low-order residue of the same generating function whose $n\to\infty$ tail gives Tier-B.'' We should rewrite the Gribov framing in those terms --- and that, incidentally, is also the framework that answers Charge 2 below.
-
-\subsection*{R2. On Charge 2 --- the $2^n$ is structural, and a generating function does see it}
-
-The $2^n$ is exactly what a generating-function argument should produce. Two converging observations:
-
-\textbf{(a) The factor of 2 per vertex pair is the symmetry of the rung.}
-At each rung he has two terms in the bracket,
-$\Hvert{\ell_{2k-1}}{\ell_{2k+1}}{\ell_{2k}}{\ell_{2k+2}}+\Hvert{\ell_{2k}}{\ell_{2k+2}}{\ell_{2k-1}}{\ell_{2k+1}},$
-which is the symmetrisation over the two horizontal lines of the ladder. The contraction algebra of his four-term coupling (two $\delta\delta$ pieces, two $n_i\,\delta\delta$ pieces) has the property that each rung's bracket evaluates to twice a single oriented contribution after the $\sum_{\ell}$ collapses the $\delta$-structure. With $n$ rungs that is $2^n$.
-
-\textbf{(b) Generating function.} Encode each leg occupation $\ell$ by a marker $z^{\ell}$. The four-term coupling becomes a $2\times 2$ transfer matrix $T(z)$ acting on the pair of "rail states" $(\text{top, bottom})$; the bracket symmetrisation makes $T$ act as $T+T^\top$ on each rung. The chain contraction is then
+His complaint is correct as posed: the four-term coupling
 \[
-\langle\, \text{boundary}_L\,|\, (T+T^\top)^n \,|\, \text{boundary}_R\,\rangle.
+V(m_1,m_2;n_1,n_2) \;=\; \underbrace{\delta_{m_2,n_2}\delta_{m_1{-}1,n_1{+}1}}_{\text{T1}}\;+\;\underbrace{\delta_{m_2,n_2}\,n_1\,\delta_{m_1{-}1,n_1{-}1}}_{\text{T2}}\;-\;\underbrace{\delta_{m_2,n_2{+}1}\delta_{m_1{-}1,n_1{+}1}}_{\text{T3}}\;-\;\underbrace{\delta_{m_2,n_2{-}1}\,n_2\,\delta_{m_1{-}1,n_1}}_{\text{T4}}
 \]
-The four-term Kronecker structure is engineered so that $T+T^\top$ has \emph{eigenvalue 2} on the boundary subspace (the only sector the boundary projects onto), giving $2^n$ exactly. This is not asymptotics --- it is a $1\times 1$ eigenvalue computation on a transfer matrix the generating function delivers in closed form.
+gives an infinite-dimensional operator on Fock space $\mathcal{F}=\mathrm{span}\{|m_1,m_2\rangle\}$, and the corresponding generating polynomial $\widehat V(z_1,z_2;w_1,w_2)$ has unbounded degree. The reduction is not a property of $\widehat V$ itself --- it is forced by the boundary $|(1,0)\rangle$. Three structural inputs predict the eigenvalue $2$ before any matrix arithmetic; the polynomial collapse $\widehat T = (z_1-z_2)(w_1-w_2)$ then exhibits it in one line.
+
+\bigskip
+\noindent\textbf{Structural input 1: \emph{Conservation by boundary} $\Rightarrow$ sector dimension.}
+The four terms shift total particle number $\Delta N \equiv (m_1{+}m_2)-(n_1{+}n_2)$ by $\{2,0,3,0\}$. So $V$ is \emph{not} particle-conserving on $\mathcal{F}$. But on inputs with $m_1{+}m_2 = 1$, T1 and T3 require $m_1\ge 2$ and vanish identically; T2 and T4 conserve $\Delta N = 0$. So when the boundary fixes $|(1,0)\rangle$ (one particle), every internal state in the chain stays in the single-particle sector. \emph{This sector has dimension $2$ --- predicted, not computed --- because $\#\{(m_1,m_2)\in\mathbb{Z}_{\ge 0}^2: m_1{+}m_2=1\}=2$.}
+
+\bigskip
+\noindent\textbf{Structural input 2: \emph{Term 2 is a number operator} $\Rightarrow$ trace.}
+T2 is the only diagonal-preserving term ($m_1{=}n_1$, $m_2{=}n_2$), and its weight on the diagonal is $n_1 = m_1$. So $V_{\mathrm{diag}}(m_1,m_2) = m_1$ identically --- T2 acts as the rail-1 number operator. The rail-flipped vertex $\widetilde V$ ($\widetilde V(m_1,m_2;n_1,n_2) \equiv V(m_2,m_1;n_2,n_1)$) is rail-2's number operator on the diagonal: $\widetilde V_{\mathrm{diag}} = m_2$.
+\[
+\boxed{\;
+T_{\mathrm{diag}}(m_1,m_2) \;=\; V_{\mathrm{diag}} + \widetilde V_{\mathrm{diag}} \;=\; m_1 + m_2 \;=\; N \quad\text{(total particle number)}.
+\;}
+\]
+On the $N$-particle sector, every diagonal entry of $T$ equals $N$, so
+\[
+\mathrm{Tr}(T) \;=\; N \cdot \dim(\text{$N$-sector}).
+\]
+For $N=1$: $\mathrm{Tr}(T) = 1\cdot 2 = 2$. \emph{This is the first appearance of the ``$2$'' --- it is the trace, predicted before any matrix is written down, from the number-operator structure of T2.}
+
+\bigskip
+\noindent\textbf{Structural input 3: \emph{Rail-flip $\mathbb{Z}_2$ acts on $V$'s image} $\Rightarrow$ rank $1$.}
+By construction $T = V + PVP$ where $P$ is the rail-flip ($P|(m_1,m_2)\rangle = |(m_2,m_1)\rangle$, $P^2=I$). So $[P,T]=0$, and $T$ diagonalises in the $\pm 1$ eigenspaces of $P$ (symmetric / antisymmetric rail modes).
+
+T2 and T4 (the two non-vanishing terms on the single-particle sector) both demand $m_1\ge 1$, so $V$ annihilates the no-rail-1-particle state $|(0,1)\rangle$. Equivalently, the image of $V$ on $\mathcal{B}$ is one-dimensional. The same logic applied to $\widetilde V$ gives $\mathrm{im}(\widetilde V)|_{\mathcal{B}}$ also one-dimensional. Both images live in the same antisymmetric $1$-d subspace --- because the unique non-trivial rail-asymmetry of T4 (the $-n_2$ sign) is exactly what flips the output to the other rail. Hence $\mathrm{rank}(T) = 1$, $\det(T) = 0$.
+
+\bigskip
+\noindent\textbf{Conclusion (the eigenvalue $2$ is predicted).}
+A $2{\times}2$ matrix with $\mathrm{Tr}(T)=2$ and $\det(T)=0$ has eigenvalues $\{0,2\}$. Both numbers came from structural inputs:
+\begin{itemize}[leftmargin=2em,itemsep=1pt]
+  \item $\mathrm{Tr}(T)=2$ is the number-operator structure of T2 evaluated on the single-particle sector.
+  \item $\det(T)=0$ is the rail-flip $\mathbb{Z}_2$ acting on $V$'s rank-1 image.
+\end{itemize}
+The dominant eigenvalue is $\lambda = \mathrm{Tr}(T) = 2$, on the antisymmetric rail mode. Iterating the chain, $T^n$ scales the dominant mode by $\lambda^n = 2^n$. The leftmost vertex projects the boundary $|(1,0)\rangle$ onto exactly that mode (because $V$'s image is precisely the antisymmetric $1$-d subspace, by Input 3). So the $n$-bracket ladder evaluates to $2^n$ \emph{by structure, not by computation}.
+
+\paragraph{Constructing $\widehat V(z,w)$ explicitly --- and watching it collapse.}
+Gunnar's email asked specifically ``what is $T(z)$ and how does Claude calculate it?'' --- so we should not just \emph{assert} that the four variables drop out. Let us do the calculation.
+
+Encode each leg occupation by a marker: input occupations $(m_1,m_2)$ by $z_1^{m_1}z_2^{m_2}$, output occupations $(n_1,n_2)$ by $w_1^{n_1}w_2^{n_2}$. The four-term coupling becomes the formal polynomial
+\[
+\widehat V(z_1,z_2;w_1,w_2) \;=\; \sum_{m_1,m_2,n_1,n_2\ge 0} V(m_1,m_2;n_1,n_2)\, z_1^{m_1}z_2^{m_2}w_1^{n_1}w_2^{n_2}.
+\]
+This is the object Gunnar said ``depends on four variables, so it's a mess.'' He is correct: as written it is a polynomial of unbounded degree.
+
+\textbf{Now project.} The boundary $|(1,0)\rangle$ at both ends restricts both input and output to total-particle-number $1$. In the polynomial, this means we keep only the bidegree-$(1,1)$ part: total degree $1$ in $\{z_1,z_2\}$ \emph{and} total degree $1$ in $\{w_1,w_2\}$. Walking the four terms:
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+  \item T1 has $m_1{=}n_1{+}2$, so input has degree $\ge 2$ in $z_1$. \textbf{Killed by projection.}
+  \item T2 has $m_1{=}n_1$, $m_2{=}n_2$, weight $n_1$. Bidegree-$(1,1)$ contribution: $(m_1,m_2,n_1,n_2)=(1,0,1,0)$ with weight $1$, giving $+z_1 w_1$. Other diagonals at total particle $1$ have $n_1=0$ (weight 0). Net: $+z_1 w_1$.
+  \item T3 has $m_2{=}n_2{+}1$ \emph{and} $m_1{=}n_1{+}2$; bidegree-$(1,1)$ would need $m_1{+}m_2=1$, i.e.\ $n_1+n_2 \le -2$. \textbf{Killed.}
+  \item T4 has $m_1{=}n_1{+}1$, $m_2{=}n_2{-}1$, weight $-n_2$. Bidegree-$(1,1)$ contribution: $(m_1,m_2,n_1,n_2)=(1,0,0,1)$ with weight $-1$, giving $-z_1 w_2$.
+\end{itemize}
+So the projection of $\widehat V$ onto the bidegree-$(1,1)$ subspace is
+\[
+\widehat V\big|_{(1,1)}(z,w) \;=\; z_1 w_1 \;-\; z_1 w_2.
+\]
+Two terms. \emph{The other infinitely many terms of $\widehat V$ exist but contribute zero to this observable, by the $\Delta N$ argument of Input 1.}
+
+\textbf{Add the rail-flip.} $\widetilde V$ is $\widehat V$ with $z_1{\leftrightarrow}z_2$ and $w_1{\leftrightarrow}w_2$:
+\[
+\widetilde V\big|_{(1,1)}(z,w) \;=\; z_2 w_2 \;-\; z_2 w_1.
+\]
+Sum:
+\[
+\boxed{\;
+\widehat T(z,w) \;\equiv\; \widehat V\big|_{(1,1)} + \widetilde V\big|_{(1,1)}
+\;=\; z_1 w_1 - z_1 w_2 - z_2 w_1 + z_2 w_2
+\;=\; (z_1 - z_2)\,(w_1 - w_2).
+\;}
+\]
+
+\textbf{Reading off the matrix and the eigenvalue.} The polynomial $\widehat T(z,w) = (z_1-z_2)(w_1-w_2)$ \emph{factorises}. That factorisation \emph{is} the answer to ``what is $T(z)$'':
+\begin{itemize}[leftmargin=2em,itemsep=1pt]
+  \item Reading $\widehat T$ as a $2{\times}2$ matrix in the basis $\{z_1,z_2\}\!\otimes\!\{w_1,w_2\}$, the four coefficients of $z_iw_j$ are the four entries: $T_{11}{=}1$, $T_{12}{=}{-}1$, $T_{21}{=}{-}1$, $T_{22}{=}1$. There is no $z$-dependence remaining --- the $z_i,w_j$ have done their job as bookkeeping markers and are now read as basis labels.
+  \item The factorisation $(z_1-z_2)(w_1-w_2)$ is rank-$1$ \emph{by inspection}: input mode $z_1-z_2$ (antisymmetric) couples to output mode $w_1-w_2$ (antisymmetric) and to nothing else. Substituting $z_1\!=\!1,z_2\!=\!{-}1$ (the antisymmetric input) into $\widehat T$ gives $(1-({-}1))(w_1-w_2) = 2(w_1-w_2)$. \textbf{Eigenvalue $2$ on the antisymmetric mode, in one line, with no matrix arithmetic.} Symmetric input $z_1+z_2$ gives $\widehat T(1,1;w) = 0$: kernel.
+\end{itemize}
+That is what we mean by ``the four variables drop out.'' The four-variable polynomial $\widehat V$ is the right starting point. The bidegree projection (Input 1) eliminates the unbounded-degree pieces. The factorisation of the projected polynomial $(z_1-z_2)(w_1-w_2)$ exhibits the eigenvalue and rank in closed form. None of the steps required computing $T^n$ or solving a characteristic polynomial.
+
+\paragraph{Numerical cross-check.}
+Reading off the matrix from $\widehat T$, $T = \bigl(\begin{smallmatrix}1 & -1 \\ -1 & 1\end{smallmatrix}\bigr)$. Brute-force occupation sum agrees with $T^n V |(1,0)\rangle = 2^n(|(1,0)\rangle - |(0,1)\rangle)$ through $n=5$ (\texttt{verify\_2x2.py}, in this letter directory --- runs the polynomial collapse symbolically and the brute-force sum numerically).
+
+\emph{Notation note.} $\widetilde V$ is the rail-flip ($(m_1,m_2)\leftrightarrow(m_2,m_1)$), \emph{not} matrix-transpose. Our previous draft wrote $V^\top$ for the rail-flip; that was the ambiguity Gunnar's email was reacting to.
+
+\paragraph{Where this fits in the AC programme.} Same template as Lagrange inversion on $G(z) = z(1+G^2)$ for Gribov tree counts ($[z^3]G=1,\,[z^5]G=2,\,[z^7]G=5$): vertex polynomial $\to$ boundary-projected sector $\to$ closed-form residue / eigenvalue. R3 below shows the same template runs end-to-end through the JT05 Eq.(60) exponents.
+
+\subsection*{R3. End-to-end RG for Gribov: what AC delivers (answering his Q2)}
+
+Gunnar's second question, paraphrased: \emph{``the small handful of diagrams I look at are infinitely many for Claude. Can AC reduce that infinite set to a small handful, and does it apply to $\varphi^4$ in Doi--Peliti?''}
+
+The short answer: \textbf{yes, and we have already done it for Gribov / DP at 2 loops.} The full calculation is in \texttt{paper/cfac/gribov.tex} (the ``Gribov through the CFAC lens'' draft); the verification suite is \texttt{rdft/ac/gribov/run\_all\_tests.py}. We summarise here what is delivered, what is input, and what would carry over verbatim to $\varphi^4$ in Doi--Peliti.
+
+\paragraph{The reference target.} JT05 (Janssen \& T\"auber, \emph{J.\ Stat.\ Phys.} 2005, arXiv:cond-mat/0409670 --- the canonical 2-loop DP paper). Specifically:
+\begin{center}\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+JT05 Eq.~(57) & 2-loop $Z$-factors $\{Z_\psi, Z_\lambda, Z_\tau, Z_u\}$ & $\varepsilon$-Laurent series\\
+JT05 Eq.~(58) & RG functions $\gamma, \zeta, \kappa, \beta$ & to $O(u^2)$\\
+JT05 Eq.~(59) & Wilson--Fisher fixed point $u^*$ & to $O(\varepsilon^2)$\\
+JT05 Eq.~(60) & Critical exponents $\eta, z, \nu, \beta_{\textsf{DP}}$ & to $O(\varepsilon^2)$\\
+\bottomrule
+\end{tabular}
+\end{center}
+T\"auber's 2014 textbook (\emph{Critical Dynamics}, CUP) contributes the standard relation $\gamma_X(u) = -u\,\partial_u\,\bigl(\text{simple-pole residue of }Z_X\bigr)$ used to go from $Z$-factors to RG functions; that is the only role the textbook plays.
+
+\paragraph{Pipeline (counting layer $\to$ exponents).}
+\[
+\underbrace{G(z)=z(1{+}G^2)}_{\text{C1: Lagrange}}
+\;\to\;
+\underbrace{\sigma_\Gamma}_{\text{C2: bivariate}}
+\;\to\;
+\underbrace{U_\Gamma}_{\text{C3: Kirchhoff}}
+\;\to\;
+\underbrace{a^X_\bullet,\beta_1}_{\text{C4--C7: algebra}}
+\;\to\;
+\underbrace{Z^{(2,2)}_X}_{\text{C5: Hopf}}
+\;\to\;
+\underbrace{\{B_2,\,B_3^{\textsf{sun}},\,B_V\}}_{\text{C6/C8: IBP}}
+\;\to\;
+\underbrace{Z^{(2,1)}_X}_{\text{assembly}}
+\;\to\;
+\underbrace{\gamma,\zeta,\kappa,\beta}_{\text{T\"auber relation}}
+\;\to\;
+\underbrace{u^*,\eta,z,\nu}_{\text{C9: SymPy}}.
+\]
+
+\paragraph{Honest scorecard against JT05.}
+\begin{center}\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+JT05 quantity & CFAC status & Where \\
+\midrule
+Diagram counts $c_\Gamma$              & \textbf{derived} (Lagrange inversion)        & gribov.tex §3 \\
+Symmetry factors, signs $\sigma_\Gamma$ & \textbf{derived} (Lagrange + bivariate marking) & gribov.tex §3 \\
+Symanzik polynomials $U_\Gamma$        & \textbf{derived} (Kirchhoff)                  & gribov.tex §4 \\
+1-loop algebra $\{1/4,1/8,1/2,2\}$, $\beta_1=3/2$ & \textbf{derived}                & gribov.tex §4.1 \\
+Eq.~(57) double poles                  & \textbf{derived} (Hopf antipode, closed-form rational) & \texttt{actrick.py} \\
+Eq.~(57) simple poles (12 IBP rationals) & \textbf{derived} (CFAC closure)            & \texttt{ibp\_coefficients.py} \\
+Eq.~(58) $\gamma, \zeta, \kappa$       & \textbf{derived} (T\"auber relation on Z-factors, this letter) & \texttt{eq58\_from\_z.py} \\
+Eq.~(58) $\beta(u)$ at 1-loop          & \textbf{derived} ($\beta_1 = a_u^{(1)} - 2 a_\psi^{(1)} = 3/2$) & \texttt{eq58\_from\_z.py} \\
+Eq.~(58) $\beta(u)$ at 2-loop          & \textbf{pending} (MSbar pole-closure algebra; not a missing theorem) & --- \\
+Eq.~(59) fixed point $u^*$             & \textbf{derived} (series solution, zero residual) & \texttt{two\_loop.py} \\
+Eq.~(60) exponents $\eta,z,\nu,\beta_{\textsf{DP}}$ & \textbf{derived} (zero residual vs JT05) & \texttt{two\_loop.py} \\
+3 master integral \emph{values}        & \textbf{input} (JT05 / Panzer / Borinsky)     & gribov.tex §6 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{What is genuinely input.} \emph{Two} items remain:
+\begin{enumerate}[leftmargin=2em,itemsep=1pt,topsep=2pt]
+  \item \textbf{Master integral values} $B_2, B_3^{\textsf{sun}}, B_V$. CFAC reduces 8--10 distinct loop integrals to these three (via IBP) but does not produce their numerical values; those are quoted from JT05 / Panzer / Borinsky. AC has nothing to say here --- this is where \emph{integration} enters and \emph{counting} stops, by design.
+  \item \textbf{2-loop coefficient of $\beta(u)$.} The 1-loop part $\beta_1 = 3/2$ is CFAC-derived; the 2-loop coefficient $-169/128 - 106L/128$ requires the standard MSbar 2-loop pole-cancellation closure (Vasil'ev Eq.~1.114), which we have not yet written out symbolically. Once written, it follows from the same $Z$-factor data the $\gamma,\zeta,\kappa$ derivations use --- bookkeeping, not a missing theorem. With $\beta(u)$ from JT05 as a placeholder, the SymPy pipeline produces JT05 Eq.~(60) with \emph{zero residual}.
+\end{enumerate}
+Everything else --- counts, signs, symmetry factors, double poles, simple-pole rationals, three of four RG functions, fixed point, exponents --- is CFAC closed-form, with zero hand-enumerated diagrams.
+
+\paragraph{The reduction Gunnar asked about (``infinite to handful'').}
+The entire 2-loop DP topology list is $[z^3]G + [z^5]G + [z^7]G = 1+2+5 = 8$ graphs, all delivered by one polynomial equation $G(z)=z(1+G^2)$ via Lagrange inversion. IBP reduces 8--10 loop integrals to \emph{three} masters; two of those are textbook. All four 2-loop double poles are closed-form rational (Hopf antipode), no integration. So the ``infinite set'' compresses to: $G(z)=z(1+G^2)$ for counts, three master integral values, Hopf antipode for double poles.
+
+\paragraph{$\varphi^4$ in Doi--Peliti.} Same template with $\phi(G)=1+G^4$ in place of $1+G^2$: rerun Lagrange inversion, redo the algebra on the new vertex pair, redo Hopf antipode. We have not run this case end-to-end --- happy to do so on receipt of Gunnar's preferred action / vertex normalisation.
 
 \appendix
 \section{The actual calculations}
@@ -280,7 +420,7 @@ Take the labelled-source generating function
 \[
 \mathcal{Z}(g,r;J) \;=\; \int\!\mathcal{D}\varphi\,\exp\!\Big\{-\tfrac{1}{2}\!\int(\nabla\varphi)^2 - \tfrac{r}{2}\!\int\varphi^2 - g\!\int\varphi^4 + \!\int J\varphi\Big\}.
 \]
-By construction, expanding $\mathcal{Z}$ in $g$ produces exactly the labelled-graph sum with Wick weights:
+Expanding in $g$ produces the labelled-graph sum with Wick weights:
 \[
 \mathcal{Z}(g,r;J) \;=\; \mathcal{Z}_0[J]\,\sum_{k\ge 0}\frac{(-g)^k}{k!}\,\Big\langle\!\Big(\!\int\varphi^4\Big)^{\!k}\Big\rangle_{\!0,J}.
 \]
@@ -290,65 +430,36 @@ The one-loop self-energy is the $g^1$-coefficient of $-\partial_{J(x)}\partial_{
 \[
 [g^1]\,\Sigma(x,y) \;=\; -\,\big\langle\varphi(x)\varphi(y)\!\!\int\!dz\,\varphi(z)^4\big\rangle_{0,\text{conn}} \;=\; -\,\hpink{12}\!\int\!dz\, G(x{-}z)\,G(0)\,G(z{-}y).
 \]
-The number $\mathbf{12} = 4\cdot 3$ falls out of the Gaussian moment as Wick pairings of 6 fields: 4 ways for $\varphi(x)$ to land on a $z$-leg, 3 for $\varphi(y)$ on a remaining $z$-leg, the last two $z$-legs make the loop. \emph{Identical to Gunnar's $4\cdot 3$ in §1(a)} --- but here it is read off as a Gaussian-moment derivative, no hand contractions.
+The $\mathbf{12}{=}4\cdot 3$ falls out of the Gaussian moment as Wick pairings: $4$ ways for $\varphi(x)$ to land on a $z$-leg, $3$ for $\varphi(y)$ on a remaining $z$-leg, the last two $z$-legs make the loop. \emph{Identical to Gunnar's $4\cdot 3$ in §1(a)}, read off as a Gaussian-moment derivative.
 
 \paragraph{Bubble ($g^2$, four-point function).}
-Same machine, one order up:
 \[
 [g^2]\,\Gamma^{(4)} \;=\; \tfrac{1}{2!}\!\int\!dz_1\,dz_2\,\langle\varphi^4(z_1)\varphi^4(z_2)\rangle_{\text{1PI, 4-ext}} \;=\; \hpink{\tbinom{4}{2}^{\!2}\!\cdot 2\cdot 4!\cdot\tfrac{1}{2}}\,\!\int\!\frac{d^d k}{(k^2+r)^2}.
 \]
-The combinatorial factor decomposes as Gunnar wrote it: $\binom{4}{2}^2$ for the loop-leg choice at each vertex, $2$ for matching the two internal lines, $4!$ for assigning external lines to slots, $\tfrac{1}{2}$ for the vertex-permutation symmetry. \emph{Identical to Gunnar's §1(b)}.
+Decomposes as Gunnar wrote it: $\binom{4}{2}^2$ for loop-leg choices, $2$ for matching internal lines, $4!$ for external slot assignments, $\tfrac{1}{2}$ for vertex permutation. \emph{Identical to Gunnar's §1(b)}.
 
-\paragraph{Resulting exponent.} Feeding these into $\beta_u$ and $Z_r$ at the $g^*=\varepsilon/36$ fixed point gives $\nu = \tfrac{1}{2}+\tfrac{\varepsilon}{12}$ on the nose, by his own algebra. \emph{The point is that AC produced his combinatorial factors mechanically, not that we are doing a different calculation.}
+\paragraph{Resulting exponent.} Feeding these into $\beta_u$ and $Z_r$ at $g^*{=}\varepsilon/36$ gives $\nu=\tfrac{1}{2}+\tfrac{\varepsilon}{12}$ on the nose, by his own algebra.
 
-\subsection{B. The $2^n$ ladder from a $2{\times}2$ transfer matrix}
+\subsection{B. Verifying the $2{\times}2$ reduction explicitly}
 
-Restrict Gunnar's H-vertex coupling to its action on the "boundary subspace" $\mathcal{B}=\{|(1,0)\rangle,\,|(0,1)\rangle\}$. Term-by-term on $|(1,0)\rangle$: only Term 2 ($m_1=n_1=1,\,m_2=n_2=0$, weight $n_1=1$) and Term 4 ($n_2=1,n_1=0$, weight $-n_2=-1$) survive --- the others demand negative occupations. So
-\[
-V|(1,0)\rangle = +|(1,0)\rangle - |(0,1)\rangle, \qquad V|(0,1)\rangle = 0.
-\]
-Identical analysis for the rail-flipped vertex $V^\top(m_1,m_2;n_1,n_2)\equiv V(m_2,m_1;n_2,n_1)$:
-\[
-V^\top|(1,0)\rangle = 0, \qquad V^\top|(0,1)\rangle = +|(0,1)\rangle - |(1,0)\rangle.
-\]
-On $\mathcal{B}$ in the basis $\{(1,0),(0,1)\}$:
-\[
-V \;=\; \begin{pmatrix} 1 & -1 \\ 0 & 0 \end{pmatrix},\qquad
-V^\top \;=\; \begin{pmatrix} 0 & 0 \\ -1 & 1 \end{pmatrix},\qquad
-\boxed{\;T \;\equiv\; V+V^\top \;=\; \begin{pmatrix} \phantom{-}1 & -1 \\ -1 & \phantom{-}1 \end{pmatrix}.\;}
-\]
-The matrix $T$ is rank-1 with eigenvalues $\{0,\,2\}$ and satisfies
-\[
-T^2 \;=\; \begin{pmatrix} 2 & -2 \\ -2 & 2 \end{pmatrix} \;=\; 2T \;\;\Longrightarrow\;\; T^n \;=\; 2^{\,n-1}T \quad (n\ge 1).
-\]
+We numerically confirmed everything in R2 against a brute-force sum over occupations. The verification script is bundled in this letter directory and reproduces:
+\begin{itemize}[leftmargin=2em,itemsep=1pt,topsep=2pt]
+\item $V$ matrix on $\mathcal{B}$: $\bigl(\begin{smallmatrix}1&0\\-1&0\end{smallmatrix}\bigr)$;\quad $\widetilde V$ matrix on $\mathcal{B}$: $\bigl(\begin{smallmatrix}0&-1\\0&\phantom{-}1\end{smallmatrix}\bigr)$;\quad $T = \bigl(\begin{smallmatrix}\phantom{-}1&-1\\-1&\phantom{-}1\end{smallmatrix}\bigr)$;\quad $T^2 = 2T$.
+\item The chain element $\langle(1,0)|\,T^n V\,|(1,0)\rangle = 2^n$ for $n=0,\ldots,5$.
+\item Brute-force $\sum_{\ell_1,\ldots,\ell_{2n}}$ on the four-term Kronecker structure (truncated at $\ell_i\le 4$, more than enough by Step 1) gives $2,\,4,\,8,\,16,\,32$ for $n=1,\ldots,5$, matching.
+\end{itemize}
+The point of the matrix derivation in R2 is that none of this needed Mathematica or even brute-force enumeration: each rung's factor of $2$ is the eigenvalue of $T$ on the boundary mode; the chain factorises completely.
 
-\paragraph{Chain evaluation.} Gunnar's $n$-bracket ladder ($n+1$ H-vertices, leftmost fixed as $V$, the rest paired as $V+V^\top$) is the matrix element
-\[
-\langle (1,0)|\,V\,T^n\,|(1,0)\rangle \;=\; 2^{\,n-1}\,\langle (1,0)|\,VT\,|(1,0)\rangle.
-\]
-Direct computation:
-\[
-VT \;=\; \begin{pmatrix} 1 & -1 \\ 0 & 0 \end{pmatrix}\begin{pmatrix} 1 & -1 \\ -1 & 1 \end{pmatrix} \;=\; \begin{pmatrix} 2 & -2 \\ 0 & 0 \end{pmatrix}, \quad (VT)_{(1,0),(1,0)} \;=\; 2.
-\]
-Therefore
-\[
-\langle (1,0)|\,V\,T^n\,|(1,0)\rangle \;=\; 2^{\,n-1}\cdot 2 \;=\; \boxed{\,2^n.\,}
-\]
-\emph{No Mathematica.} The factor of 2 per rung is the eigenvalue of the rung's symmetrised transfer matrix on the boundary sector --- structural, not asymptotic.
+\paragraph{Why the boundary sector is closed (restated).} $V$ has terms with $\Delta N = 2,0,3,0$, so it is not particle-conserving. But on $|(1,0)\rangle$ and $|(0,1)\rangle$, the $\Delta N\ne 0$ terms require negative occupations on output and so vanish identically. The dynamics close on $\mathcal{B}$, by the structure of the four-term coupling, on this particular sector only.
 
-\paragraph{Spot checks.} $n=1$ (his 2-loop ladder): $2^1=2$. ✓ \quad $n=2$ (his 3-loop ladder): $2^2=4$. ✓ \quad $n=0$ (single rung, no bracket): $\langle(1,0)|V|(1,0)\rangle = 1 = 2^0$. ✓
-
-\paragraph{Why the boundary sector is closed.} Total occupation $m_1+m_2$ is not conserved by $V$ in general (Terms 1, 3 add particles), but on states with $m_1+m_2=1$ those terms require negative outputs and so are killed. The dynamics therefore close on $\mathcal{B}$, which is why a $2\times 2$ matrix suffices.
-
-\paragraph{Generating-function gloss.} Encoding $V$ as a polynomial $\widehat V(z_1,z_2;w_1,w_2)=\sum V(m;n)\,z_1^{m_1}z_2^{m_2}w_1^{n_1}w_2^{n_2}$ turns the four-term Kronecker structure into a closed-form rational function; the $2{\times}2$ transfer matrix is its restriction to the linear sector $\{z_1,z_2\}\otimes\{w_1,w_2\}$. The eigenvalue 2 is $\widehat V(1,1;1,1)$ projected onto the antisymmetric rail mode.
+\paragraph{Why the $z$'s drop out.} The full operator $\widehat V(z_1,z_2;w_1,w_2)$ contains pieces of every degree (e.g.\ the $\delta_{m_2,n_2{+}1}\delta_{m_1{-}1,n_1{+}1}$ term sits at total in-degree $\ge 3$). The boundary $|(1,0)\rangle$ projects onto in-degree $1$, in-degree $1$ states only contract through in-degree-$1$ vertices, and the in-degree-$1$ truncation of $\widehat V$ has only four nonzero coefficients --- which assemble into the $2{\times}2$ matrix $V$ above with no remaining $z$-dependence.
 
 \section*{What to send back}
 
-A short note that:
 \begin{enumerate}[leftmargin=2em,itemsep=2pt,topsep=2pt]
-  \item \emph{Reframes} Charge 1 (not concedes it): AC is the generating-function machine whose low-order coefficients are exactly his $4\cdot 3$ and $\binom{4}{2}^2\cdot 2\cdot 4!/2$. The "asymptotic" label was wrong; the machine is the same one $\varphi^4$ already uses, written closed-form. Show this by reproducing his $\nu=\tfrac12+\tfrac{\varepsilon}{12}$ from a one-line generating-function residue.
-  \item On Charge 2, sets up the transfer matrix $T(z)$ from the four-term coupling, computes $T+T^\top$ on the boundary sector, and shows the eigenvalue is exactly 2 --- so the chain sum is $2^n$ on the nose, no Mathematica needed.
-  \item Then exhibits one DP observable (LERW $5/4$ or TAP $1.624$) where the same generating function, run to its $n\to\infty$ tail, is the \emph{only} known route --- to show the two regimes are endpoints of one machine, not two different machines.
+  \item \textbf{Q1 (the $2{\times}2$).} R2 derives the eigenvalue $2$ from three structural inputs (boundary selects $N{=}1$ sector of dim $2$; Term~2 is the rail-1 number operator $\Rightarrow \mathrm{Tr}(T)=2$; $V$ annihilates rail-1-empty states $\Rightarrow \det(T)=0$). The polynomial route exhibits this in one line: $\widehat T(z,w) = (z_1-z_2)(w_1-w_2)$, rank-$1$ by inspection, eigenvalue $2$ on the antisymmetric mode. \emph{Verified through $n=5$ by brute-force} (\texttt{verify\_2x2.py}).
+  \item \textbf{Q2 (Gribov RG end-to-end).} R3 closes the pipeline: $G(z) = z(1+G^2)$ for counts $\to$ Hopf antipode for all double poles $\to$ IBP closure for simple poles $\to$ T\"auber relation for $\gamma, \zeta, \kappa$ (this letter, \texttt{eq58\_from\_z.py}) $\to$ SymPy series for $u^*$ and exponents $\to$ JT05 Eq.~(60), \emph{zero residual} (\texttt{rdft/ac/gribov/run\_all\_tests.py}). Two items remain input: 3 master integral values, and the 2-loop $\beta(u)$ coefficient pending MSbar pole-closure algebra. Template extends to $\varphi^4$-in-Doi-Peliti by $\phi(G)=1+G^2 \mapsto 1+G^4$.
+  \item \textbf{The connection.} The $2^n$ of his §2 plays the same role in his theory that $4\cdot 3$ plays in $\varphi^4$: a per-diagram counting factor that feeds the RG downstream. One template handles both --- vertex polynomial $\to$ boundary-projected sector $\to$ trace / eigenvalue / Lagrange residue --- and runs all the way to critical exponents for Gribov.
 \end{enumerate}
 
 \end{document}

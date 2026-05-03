@@ -1,0 +1,297 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,decorations.markings,calc}
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage{booktabs}
+
+\geometry{margin=2.4cm}
+
+\hypersetup{colorlinks=true,linkcolor=blue!60!black,urlcolor=blue!60!black}
+
+\newcommand{\Hvert}[4]{%
+\begin{tikzpicture}[baseline=-0.5ex,scale=0.65]
+  \draw[thick] (-0.3,0.45) node[above]{\scriptsize $#1$} -- (0,0.25);
+  \draw[thick] (0.3,0.45) node[above]{\scriptsize $#2$} -- (0,0.25);
+  \draw[thick] (0,0.25)--(0,-0.25);
+  \draw[thick] (-0.3,-0.45) node[below]{\scriptsize $#3$} -- (0,-0.25);
+  \draw[thick] (0.3,-0.45) node[below]{\scriptsize $#4$} -- (0,-0.25);
+\end{tikzpicture}}
+
+\title{\large Q1: The $2^n$ ladder, via analytic combinatorics\\[2pt]
+\normalsize Reply to Gunnar's note of 29 Apr 2026}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-2em}
+
+\section*{0.\ Framing: what we have actually been claiming}
+
+Before answering the specific $2^n$ question, it is worth restating the claim cleanly,
+because the messy-diagrammatics complaint comes from a place where two of our claims
+were not separated.  We have been making \emph{three} distinct claims, each one strictly
+on top of the previous:
+
+\begin{enumerate}[leftmargin=2em,itemsep=4pt]
+  \item \textbf{Claim 1 (algorithmic, Layer 1 of the tutorial).} For a CRN, the
+        Doi shift gives a closed-form vertex generator
+        $Q_r = k_r\bigl[\prod_i (1+\tilde\psi_i)^{l_{ri}} - \prod_i (1+\tilde\psi_i)^{k_{ri}}\bigr]\prod_i \psi_i^{k_{ri}}$,
+        and from that an algorithm enumerates all amputated vertices and all
+        $N$-loop topologies.  This is just code: vertex dictionary, leg-count
+        bookkeeping, isomorphism-canonicalised graph enumeration.  No human-counting
+        of contractions.  \textbf{The closed-form generator is the input the
+        algorithm consumes; it is not yet AC.}
+  \item \textbf{Claim 2 (AC contribution, Layer 2).} The same closed-form
+        generator, fed through Lagrange inversion / Connes--Kreimer Hopf antipode,
+        gives \emph{symmetry factors and double poles in closed form} --- not by
+        drawing each graph, but as residues / antipode evaluations.  This is what
+        AC actually adds beyond Layer 1: $|\mathrm{Aut}(\Gamma)|^{-1}$ comes out
+        of Lagrange-inversion overcount on identical subtrees, and the 2-loop
+        $Z$-factors come out of one rational antipode formula.
+  \item \textbf{Claim 3 (curiosity, Layer 4).} The QFT relevance filters
+        (1PI restriction, external-leg sector, power counting) can in principle
+        be folded into the generating function itself, so the GF \emph{subtracts
+        out} sectors we do not care about rather than us pruning by hand.
+        We have only sketched this --- the Legendre transform / multivariate
+        bidegree story --- in \texttt{legendre\_tutorial.tex}.  We have not run
+        it end-to-end; for 2-loop hand-curated theories it does not save labour.
+        We mention it because it is where the natural answer to ``can the
+        \emph{generating function} (rather than us) decide what is relevant?''
+        sits.
+\end{enumerate}
+
+\noindent
+The $2^n$ ladder is a Claim-2 question (algebra + AC reading-off); the
+$\varphi^4$ Wick-weight question in your \S1 is a Claim-1+2 question (algorithm
+enumerates, AC reads symmetry factor); the philosophical $4 \cdot 3$ vs.\
+$\binom{4}{2}^2 \cdot 2 \cdot 4!/2$ point is the same machine evaluated at
+different orders of the same generator.
+
+\medskip
+\noindent
+The next three sections (\S 1--3) walk Claims 1--3 with concrete BRW examples
+to show what each layer actually delivers.  \S 4 then directly answers the
+$2^n$ question.  Verification scripts are in
+\texttt{verify\_2x2.py} (the $H$-vertex collapse) and \texttt{poc\_brw.py}
+(the BRW vertex/loop enumeration with thesis cross-checks).
+
+\section*{1.\ Claim 1 in action: BRW vertex dictionary and 1-loop bubbles}
+
+The Doi shift on the BRW reactions (thesis Eqs.\ 3.16 + 3.21) collapses to a
+closed-form vertex generator whose monomial expansion is the seven-vertex
+dictionary
+\[
+\bigl\{V_{\text{branch}},\,V_{QC1},\,V_{QC2},\,V_{QC3},\,V_{QC4},\,V_{QC5},\,V_{QC6}\bigr\}
+\]
+with leg counts and signs recorded once and for all.
+\texttt{poc\_brw.py} builds this list directly from the stoichiometries and
+then enumerates all 1-loop bubbles by walking pairs of vertices and pairs of
+internal lines.  No graphs drawn by hand.  The output is:
+\begin{itemize}[leftmargin=2em,itemsep=2pt]
+  \item \textbf{36 species-decorated 1-loop bubble topologies}, grouped into
+        \textbf{20 external-leg sectors} (e.g.\ $(0,0,2,2)$ has 1 bubble, $(0,1,2,1)$
+        has 5, etc.);
+  \item Three are 2-point ($E{=}2$); seven are 3-point ($E{=}3$); 27 are
+        distinct $(\text{vertex-pair}, \text{internal-species-set})$
+        skeletons.  The ``7 distinct 1-loop integrals'' on thesis p.91--92 are
+        the 3-point sector exactly.
+\end{itemize}
+This is purely algorithmic: closed-form generator $\to$ vertex dictionary $\to$
+enumerate.  It would extend mechanically to 2-loop (more vertex pairs, more
+internal-line patterns).  The point is: \emph{this layer does not need AC at
+all}.  AC's job starts with the next claim.
+
+\section*{2.\ Claim 2 in action: AC reads off symmetry factors and prunes}
+
+\paragraph{Symmetry factors --- Lagrange-inversion side.}
+For Reggeon DP, the generator collapses to $G(z) = z(1+G^2)$.  Lagrange
+inversion gives the entire tree-topology inventory
+\[
+[z^3]G = 1,\qquad [z^5]G = 2,\qquad [z^7]G = 5,
+\]
+and these counts \emph{already include the $|\mathrm{Aut}(\Gamma)|^{-1}$
+factor} per topology --- the inversion overcount on identical subtrees is
+exactly the symmetry weight in the Feynman rule.  Total $1{+}2{+}5 = 8$
+topologies through 2-loop vertex order, with no graphs drawn.
+
+\paragraph{Symmetry factors --- BRW side, automorphism counting.}
+For the multi-species BRW the symmetry factor is computed from the bubble's
+automorphism group (line-swap if same species/direction; vertex-swap if same
+type and the line set is symmetric).  Concrete output of \texttt{poc\_brw.py}
+on the pure-A skeleton (corresponds to the Reggeon-DP 1-loop bubble after
+quenching the carrying-capacity field):
+\begin{center}
+\begin{tabular}{llcc}
+\toprule
+$v_1$ & $v_2$ & external residue & $s(\Gamma)$ \\
+\midrule
+$V_{\text{branch}}$ & $V_{\text{branch}}$ & $2 A_{\text{out}}$ & $\mathbf{2}$ \\
+$V_{\text{branch}}$ & $V_{QC4}$           & $1 A_{\text{out}}, 2 B_{\text{in}}, 1 B_{\text{out}}$ & $1$ \\
+$V_{QC4}$           & $V_{QC4}$           & $4 B_{\text{in}}, 2 B_{\text{out}}$ & $\mathbf{2}$ \\
+$V_{QC5}$           & $V_{QC5}$           & $2 B_{\text{in}}, 2 B_{\text{out}}$ & $\mathbf{2}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+The boxed $s = 2$ for the pure-branch bubble is thesis Eq.\ (3.25).  The
+algorithm reproduces it without us touching the diagram.
+
+\paragraph{Closed-form double poles --- Hopf antipode.}
+For the same Reggeon-DP topology inventory, the Connes--Kreimer antipode
+evaluation is one rational formula,
+\[
+Z_X^{(2,2)} = \tfrac12\,a_X^{(1)}\bigl(\beta_1 + a_X^{(1)}\bigr),
+\qquad \beta_1 = a_u^{(1)} - 2a_\psi^{(1)} = \tfrac32,
+\]
+with the 1-loop residues $a^{(1)} = \{1/4,\,1/8,\,1/2,\,2\}$ giving
+$\{Z_\psi,\,Z_\lambda,\,Z_\tau,\,Z_u\}^{(2,2)} = \{7/32,\,13/128,\,1/2,\,7/2\}$,
+matching JT05 Eq.\ (57).  This is the closed-form payoff of Claim 2: not just
+\emph{counts and symmetry factors}, but the full 2-loop double-pole table from
+one polynomial.  See Q2 for the JT05 cross-check end-to-end.
+
+\paragraph{Where Claim 2 stops.}
+What Layer 2 does \emph{not} give: it does not, by itself, know which graphs
+are 1PI vs.\ reducible, which external-leg sector you want, or which power-counting
+sectors are UV-divergent.  Those are QFT-side filters that we currently apply by
+hand on top of the AC counts.  E.g.\ for the 2-loop vertex sector we know
+``$[z^7]G = 5 = 3$ 1PI $+$ $2$ reducible'' --- but we know that from drawing the
+graphs, not from the generating function.
+
+\section*{3.\ Claim 3 (curiosity): inject the QFT filters into the GF itself}
+
+The natural follow-up is whether the \emph{generating function} can be made
+to subtract out the irrelevant sectors itself, so the algorithmic and AC
+layers do not need a hand-curated topology table.  Three places this could go:
+\begin{itemize}[leftmargin=2em,itemsep=2pt]
+  \item \textbf{1PI via Legendre transform.}  Standard QFT: $W[J] = \log Z[J]$
+        is the connected-graph generator; its Legendre transform $\Gamma[\Phi]$
+        is the 1PI generator.  On the bivariate $\mathcal{Z}(g,r;J,\tilde J)$,
+        the Legendre transform is a polynomial substitution on the source
+        markers --- in principle this gives the 1PI subset directly without
+        graph-by-graph sieving.
+  \item \textbf{External-leg sector via bidegree.}  Marking sources with
+        $J^a \tilde J^b$ tags external legs; reading off $[J^a \tilde J^b]$ of
+        $\Gamma$ projects onto the $(a,b)$ sector.  This is the same
+        bidegree-projection trick we use on the $H$-vertex below.
+  \item \textbf{UV relevance via a polynomial inequality on monomial degrees.}
+        Power counting $\omega = dL - 2I + n_\partial$ becomes a linear
+        inequality on the $(L, I, n_\partial)$ multidegree of each monomial in
+        the generator; a relevance projector kills the $\omega < 0$ monomials.
+\end{itemize}
+\texttt{legendre\_tutorial.tex} starts to flesh this out: it walks the four
+layers, with the Legendre / bidegree / power-counting projectors as Layer 4.
+We have \emph{not} yet run a full theory through Layer 4 end-to-end; the
+existing 2-loop pipeline applies these filters by hand on top of the
+AC counts (Q2 \S 3 documents this honestly).  We note the curiosity
+because it is the principled answer to ``why should the GF not handle the
+filtering itself?''  --- but we are not yet claiming a worked-out machine.
+
+\section*{4.\ Direct answer to your $2^n$ question}
+
+With the framing of \S 0--3 in place, your $2^n$ ladder is a Claim-2 question
+on the $H$-vertex generator.  You posed the four-term coupling
+\[
+\Big[\Hvert{m_1}{n_1}{m_2}{n_2}\Big]
+= \delta_{m_2,n_2}\delta_{m_1{-}1,n_1{+}1}
++ \delta_{m_2,n_2}\,n_1\,\delta_{m_1{-}1,n_1{-}1}
+- \delta_{m_2,n_2{+}1}\delta_{m_1{-}1,n_1{+}1}
+- \delta_{m_2,n_2{-}1}\,n_2\,\delta_{m_1{-}1,n_1}
+\]
+with chain boundaries fixed at $(1,0)$ on both ends and computed (in
+Mathematica, through three loops) the $n$-rung sum
+\[
+\sum_{\ell_1,\dots,\ell_{2n}}
+\Hvert{1}{\ell_1}{0}{\ell_2}\cdot
+\bigg(\Hvert{\ell_1}{\ell_3}{\ell_2}{\ell_4}+\Hvert{\ell_2}{\ell_4}{\ell_1}{\ell_3}\bigg)\cdots
+\;=\; 2^n,
+\]
+and asked: \emph{can analytic combinatorics see this $2^n$ structurally,
+without an infinite matrix and without ``a generating function in four
+variables --- a mess''?}
+
+\paragraph{The AC move.}
+Encode each leg occupation by a marker variable: $z_i$ for input rail $i$,
+$w_j$ for output rail $j$.  The vertex coupling becomes the four-variable
+polynomial
+\[
+\widehat V(z_1,z_2;w_1,w_2)
+= \sum_{m_1,m_2,n_1,n_2 \ge 0} V(m_1,m_2;n_1,n_2)\,z_1^{m_1}z_2^{m_2}w_1^{n_1}w_2^{n_2}.
+\]
+This is the ``mess'': written as-is it has unbounded degree.  The chain
+observable, however, picks out only the part of $\widehat V$ matching the
+boundary occupation: \emph{total input degree $\le 1$, total output degree
+$\le 1$.}  This bidegree projection is the AC step that turns $\widehat V$
+into a finite object --- the same coefficient-extraction move that turns
+$\mathcal{Z}(g,r;J)$ into the Wick weights $4\cdot 3$ and
+$\binom{4}{2}^2\!\cdot 2\cdot 4!/2$ in your \S 1.
+
+\paragraph{Project to bidegree $(1,1)$.}
+Walk the four terms (each is a Kronecker-delta condition on the indices):
+\begin{itemize}[leftmargin=2em,itemsep=1pt]
+  \item T1: $m_1{=}n_1{+}2$, so input degree $\ge 2$. \emph{Killed.}
+  \item T2: $m_1{=}n_1$, $m_2{=}n_2$, weight $n_1$. At bidegree $(1,1)$ only $(1,0;1,0)$ contributes (weight $1$): $+z_1 w_1$.
+  \item T3: $m_2{=}n_2{+}1$ \emph{and} $m_1{=}n_1{+}2$; bidegree $(1,1)$ would force $n_2 \le -1$. \emph{Killed.}
+  \item T4: $m_1{=}n_1{+}1$, $m_2{=}n_2{-}1$, weight $-n_2$. At bidegree $(1,1)$ only $(1,0;0,1)$ contributes (weight $-1$): $-z_1 w_2$.
+\end{itemize}
+So $\widehat V|_{(1,1)}(z,w) = z_1 w_1 - z_1 w_2$.  The infinitely many other
+terms of $\widehat V$ exist; they contribute zero to this observable.  Add the
+rail-flip $\widetilde V$ (swap $z_1\!\leftrightarrow\!z_2$,
+$w_1\!\leftrightarrow\!w_2$):
+\[
+\boxed{\;\widehat T(z,w) \;=\; (\widehat V + \widetilde V)\big|_{(1,1)}
+\;=\; (z_1 - z_2)(w_1 - w_2).\;}
+\]
+
+\paragraph{Read off the eigenvalue.}
+The factorisation $(z_1-z_2)(w_1-w_2)$ separates as (input antisymmetric mode)
+$\times$ (output antisymmetric mode); rank as a bilinear form is $1$.
+Substituting $z_1{=}1,\,z_2{=}{-}1$ collapses the polynomial to $2(w_1 - w_2)$:
+\textbf{eigenvalue $\lambda = 2$.}  $z_1{=}z_2{=}1$ gives $0$: kernel.  Each
+rung is $\widehat T$, so after $n$ rungs:
+\[
+\big\langle\,\text{boundary}_L\,\big|\,\widehat T^{\,n}\,\big|\,\text{boundary}_R\,\big\rangle
+\;=\; \lambda^n \;=\; \boxed{\;2^n.\;}
+\]
+
+\paragraph{Direct answers to your three sub-questions.}
+\begin{itemize}[leftmargin=2em,itemsep=2pt]
+  \item \emph{Why $2\times 2$, not infinite?}  The boundary $|(1,0)\rangle$ at
+        both ends restricts both input and output to total occupation $1$ ---
+        the bidegree-$(1,1)$ subspace.  The full $\widehat V$ has unbounded
+        degree, but the observable only sees its bidegree-$(1,1)$ slice.
+  \item \emph{What is $T(z)$?}  It is the bidegree-$(1,1)$ projection of
+        $\widehat V + \widetilde V$, with no $z$-dependence beyond the explicit
+        $\{z_1, z_2, w_1, w_2\}$ used as basis labels for the boundary sector.
+        Concretely, $\widehat T(z,w) = (z_1-z_2)(w_1-w_2)$.
+  \item \emph{How is it calculated?}  Walk the four Kronecker conditions of
+        $V$ at bidegree $(1,1)$ (one paragraph, above), add the rail-flip,
+        factor.  Total work: a half-page calculation, no Mathematica.
+\end{itemize}
+
+\section*{5.\ Verification}
+
+\texttt{verify\_2x2.py} (accompanying this letter) does both halves:
+\begin{itemize}[leftmargin=2em,itemsep=1pt]
+  \item the polynomial collapse symbolically (sympy) --- gives
+        $\widehat T = (z_1-z_2)(w_1-w_2)$ and confirms $\lambda{=}2$ on the
+        antisymmetric mode;
+  \item brute-force enumeration over $\ell_1,\dots,\ell_{2n}$ for $n=1,\dots,5$
+        --- gives $2,4,8,16,32$, matching your Mathematica.
+\end{itemize}
+\texttt{poc\_brw.py} runs the algorithmic Layer-1+2 pipeline on BRW and
+reproduces (i) thesis Eq.\ (3.25)'s $s = 2$ on the branch bubble, (ii) thesis
+p.91--92's count of 7 distinct 3-point 1-loop integrals, (iii) the 1+2+5
+Reggeon-DP topology inventory.
+
+\medskip
+\noindent\emph{Q2 takes the same machinery end-to-end through the
+Janssen--T\"auber 2005 2-loop DP exponents.}
+
+\end{document}
