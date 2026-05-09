@@ -1,0 +1,92 @@
+========================================================================
+(C) Residue check of every kernel Gunnar writes.
+========================================================================
+  n=2,m=2 stay/stay  -> 1/(V0 - I*omega + 2*r)  (target 1/(V0 - I*omega + 2*r))
+  n=2,m=2 flip/flip  -> 1/(V0 - I*omega + 2*r)  (target 1/(V0 - I*omega + 2*r))
+  n=3,m=3 stays(triangle) -> (V0 - I*omega + 2*r)**(-2)  (target (V0 - I*omega + 2*r)**(-2))
+  n=3,m=3 flips(triangle) -> -1/((I*omega - 2*r)*(V0 - I*omega + 2*r))
+     factored             -> 0 (should be 0 if integral = 1/[(-iw+2r)(-iw+V0+2r)])
+     vs Gunnar's stated   -> -V0/((I*omega - 2*r)*(V0 - I*omega + 2*r)**2) (should be 0 if integral = (-iw+V0+2r)^-2)
+     matches 1/[(-iw+2r)(-iw+V0+2r)] : True
+     matches Gunnar's (-iw+V0+2r)^-2 : False
+
+  *** DISCREPANCY: Gunnar's stated value (-iw+V0+2r)^-2 does NOT match
+      the integrand he writes. The integrand actually evaluates to
+      1/[(-iw+2r)(-iw+V0+2r)]. So either his integrand or his stated
+      result is wrong for the n=3,m=3 'flips' triangle. ***
+
+  (n=2,m=2 path-independence holds; n=3,m=3 path-independence does NOT
+   hold under Gunnar's two integrands as written.)
+
+========================================================================
+(A) Brute-force enumeration vs Laplacian (L^m)_00.
+========================================================================
+  [OK ] n=2, m=0: enum = 1,  (L^m)_00 = 1
+  [OK ] n=2, m=1: enum = v01,  (L^m)_00 = v01
+  [OK ] n=2, m=2: enum = 2*v01**2,  (L^m)_00 = 2*v01**2
+  [OK ] n=2, m=3: enum = 4*v01**3,  (L^m)_00 = 4*v01**3
+  [OK ] n=2, m=4: enum = 8*v01**4,  (L^m)_00 = 8*v01**4
+  [OK ] n=3, m=0: enum = 1,  (L^m)_00 = 1
+  [OK ] n=3, m=1: enum = v01 + v02,  (L^m)_00 = v01 + v02
+  [OK ] n=3, m=2: enum = 2*v01**2 + 2*v01*v02 + 2*v02**2,  (L^m)_00 = 2*v01**2 + 2*v01*v02 + 2*v02**2
+  [OK ] n=3, m=3: enum = 4*v01**3 + 5*v01**2*v02 + v01**2*v12 + 5*v01*v02**2 - 2*v01*v02*v12 + 4*v02**3 + v02**2*v12,  (L^m)_00 = 4*v01**3 + 5*v01**2*v02 + v01**2*v12 + 5*v01*v02**2 - 2*v01*v02*v12 + 4*v02**3 + v02**2*v12
+  [OK ] n=3, m=4: enum = 8*v01**4 + 12*v01**3*v02 + 4*v01**3*v12 + 14*v01**2*v02**2 - 4*v01**2*v02*v12 + 2*v01**2*v12**2 + 12*v01*v02**3 - 4*v01*v02**2*v12 - 4*v01*v02*v12**2 + 8*v02**4 + 4*v02**3*v12 + 2*v02**2*v12**2,  (L^m)_00 = 8*v01**4 + 12*v01**3*v02 + 4*v01**3*v12 + 14*v01**2*v02**2 - 4*v01**2*v02*v12 + 2*v01**2*v12**2 + 12*v01*v02**3 - 4*v01*v02**2*v12 - 4*v01*v02*v12**2 + 8*v02**4 + 4*v02**3*v12 + 2*v02**2*v12**2
+  Walk enumeration matches the Laplacian formula at every (n,m) tested.
+
+========================================================================
+(B) Reconstructing each Gunnar atlas diagram from his rules.
+========================================================================
+  n=2,m=1 stay:    Gunnar = v01/(V0 - I*omega + r)**2
+                    mine   = v01/(V0 - I*omega + r)**2
+  n=2,m=2 stay:    Gunnar = v01**2/((V0 - I*omega + r)**2*(V0 - I*omega + 2*r))
+                    mine   = v01**2/((V0 - I*omega + r)**2*(V0 - I*omega + 2*r))
+  n=2,m=2 flip:    Gunnar = v01**2/((V0 - I*omega + r)**2*(V0 - I*omega + 2*r))
+                    mine   = v01**2/((V0 - I*omega + r)**2*(V0 - I*omega + 2*r))
+  n=3,m=2 (no loop): Gunnar = v01*v02/(V0 - I*omega + r)**3
+                      mine   = v01*v02/(V0 - I*omega + r)**3
+  n=3,m=3 cyclic (3 flips): Gunnar = -v01*v02*v12/((V0 - I*omega + r)**2*(V0 - I*omega + 2*r)**2)
+                             mine   = -v01*v02*v12/((V0 - I*omega + r)**2*(V0 - I*omega + 2*r)**2)
+  (Symbol weight matches; but kernel (-iw+V0+2r)^-2 disagrees with
+   the residue computation of his integrand -- see (C) above.)
+
+  n=3,m=3 'stays' triangle: Gunnar's stated weight is +v_{01}v_{12}v_{02},
+  but no walk under the strict rule produces sign +1 on these three edges.
+  Enumeration of all 3-edge walks 0->0 on the cycle:
+    moves=('F', 'F', 'F'), partners=(1, 2, 0), sign=-1
+    moves=('F', 'F', 'F'), partners=(2, 1, 0), sign=-1
+
+  All such walks have sign -1 (three flips). So under the strict rule,
+  the coefficient of v_{01}*v_{02}*v_{12} in (L^3)_{00} is -2, and there
+  is *no* +1 contribution corresponding to Gunnar's first triangle as drawn.
+
+  CRITICAL FLAG: Either
+    (i)  Gunnar's first n=3,m=3 diagram allows a 'spectator'
+         bath--bath vertex (the rule 'one rail must carry the excitation'
+         is locally relaxed when a closed loop touches the worldline at
+         entry/exit points), in which case (L^m)_00 is incomplete and
+         we are missing diagrams like this; OR
+    (ii) the first diagram is a relabelling of the second (cyclic walks
+         0->1->2->0 and 0->2->1->0), and Gunnar dropped the leading minus
+         sign in the first equation -- in which case sum at this monomial
+         is -2 v_{01}v_{02}v_{12} and matches (L^3)_{00}.
+
+========================================================================
+(D) Sanity limits.
+========================================================================
+  V0=0 stay kernel: 1/(-I*omega + 2*r)
+  V0=0 flip kernel: 1/(-I*omega + 2*r)
+
+  uniform n=2, m=1: (L^m)_00=v, predicted v, match=True
+  uniform n=2, m=2: (L^m)_00=2*v**2, predicted 2*v**2, match=True
+  uniform n=2, m=3: (L^m)_00=4*v**3, predicted 4*v**3, match=True
+  uniform n=2, m=4: (L^m)_00=8*v**4, predicted 8*v**4, match=True
+  uniform n=3, m=1: (L^m)_00=2*v, predicted 2*v, match=True
+  uniform n=3, m=2: (L^m)_00=6*v**2, predicted 6*v**2, match=True
+  uniform n=3, m=3: (L^m)_00=18*v**3, predicted 18*v**3, match=True
+  uniform n=3, m=4: (L^m)_00=54*v**4, predicted 54*v**4, match=True
+  uniform n=4, m=1: (L^m)_00=3*v, predicted 3*v, match=True
+  uniform n=4, m=2: (L^m)_00=12*v**2, predicted 12*v**2, match=True
+  uniform n=4, m=3: (L^m)_00=48*v**3, predicted 48*v**3, match=True
+  uniform n=4, m=4: (L^m)_00=192*v**4, predicted 192*v**4, match=True
+
+All checksums passed (with one critical flag noted in (B)).
